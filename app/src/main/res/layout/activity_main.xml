@@ -1,0 +1,161 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/layout_root"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background_material_dark"
+                tools:context=".MainActivity">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@null">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/textTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:text="SimpleCropViewSample"
+                android:textColor="@android:color/white"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                />
+            <Button
+                android:id="@+id/buttonDone"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:text="CROP"
+                android:textSize="@dimen/text_size_small"
+                android:textColor="@android:color/white"
+                android:layout_margin="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.Toolbar>
+
+    <HorizontalScrollView
+        android:id="@+id/tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+        <LinearLayout
+            android:id="@+id/tab_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="64dp"
+            android:orientation="horizontal"
+            android:background="@color/background_floating_material_dark">
+
+            <Button
+                android:id="@+id/buttonFitImage"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="FIT IMAGE"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+
+            <Button
+                android:id="@+id/button1_1"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="1:1"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <Button
+                android:id="@+id/button3_4"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="3:4"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <Button
+                android:id="@+id/button4_3"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="4:3"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <Button
+                android:id="@+id/button9_16"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="9:16"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <Button
+                android:id="@+id/button16_9"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="16:9"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+            <Button
+                android:id="@+id/buttonFree"
+                android:layout_margin="8dp"
+                android:textSize="@dimen/text_size_small"
+                android:text="FREE"
+                android:textColor="@android:color/white"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"/>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <com.isseiaoki.simplecropview.CropImageView
+        android:id="@+id/cropImageView"
+        android:layout_below="@id/toolbar"
+        android:layout_above="@id/tab_bar"
+        android:paddingTop="32dp"
+        android:paddingBottom="64dp"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        custom:cropMode="ratio_fit_image"
+        custom:handleSize="16dp"
+        custom:touchPadding="8dp"
+        custom:handleShowMode="show_always"
+        custom:guideShowMode="show_on_touch"
+        custom:minFrameSize="100dp"
+        custom:frameColor="@android:color/white"
+        custom:backgroundColor="@null"
+        custom:overlayColor="#99000000"
+        custom:frameStrokeWeight="3dp"
+        custom:guideStrokeWeight="1dp"
+        />
+
+    <Button
+        android:id="@+id/buttonChangeImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CHANGE IMAGE"
+        android:textSize="@dimen/text_size_small"
+        android:textColor="@android:color/white"
+        android:layout_alignBottom="@id/cropImageView"
+        android:layout_alignRight="@id/cropImageView"
+        />
+
+    <Button
+        android:id="@+id/buttonChangeSkin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="CHANGE SKIN"
+        android:textSize="@dimen/text_size_small"
+        android:textColor="@android:color/white"
+        android:layout_alignBottom="@id/cropImageView"
+        android:layout_toLeftOf="@id/buttonChangeImage"
+        />
+
+</RelativeLayout>

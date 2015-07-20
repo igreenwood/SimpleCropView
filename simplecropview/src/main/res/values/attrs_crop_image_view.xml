@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CropImageView">
+        <attr name="imgSrc" format="reference" />
+        <attr name="cropMode">
+            <enum name="ratio_fit_image" value="0"/>
+            <enum name="ratio_4_3" value="1"/>
+            <enum name="ratio_3_4" value="2"/>
+            <enum name="ratio_1_1" value="3"/>
+            <enum name="ratio_16_9" value="4"/>
+            <enum name="ratio_9_16" value="5"/>
+            <enum name="ratio_free" value="6"/>
+            <enum name="ratio_custom" value="7"/>
+        </attr>
+        <attr name="backgroundColor" format="color"/>
+        <attr name="overlayColor" format="color"/>
+        <attr name="frameColor" format="color"/>
+        <attr name="guideShowMode">
+            <enum name="show_always" value="1"/>
+            <enum name="show_on_touch" value="2"/>
+            <enum name="not_show" value="3"/>
+        </attr>
+        <attr name="handleShowMode">
+            <enum name="show_always" value="1"/>
+            <enum name="show_on_touch" value="2"/>
+            <enum name="not_show" value="3"/>
+        </attr>
+        <attr name="handleSize" format="dimension"/>
+        <attr name="touchPadding" format="dimension"/>
+        <attr name="minFrameSize" format="dimension"/>
+        <attr name="frameStrokeWeight" format="dimension"/>
+        <attr name="guideStrokeWeight" format="dimension"/>
+        <attr name="cropEnabled" format="boolean"/>
+    </declare-styleable>
+</resources>
