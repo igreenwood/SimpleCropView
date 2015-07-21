@@ -179,7 +179,7 @@ public class CropImageView extends ImageView {
 
         final int viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         final int viewHeight = MeasureSpec.getSize(heightMeasureSpec);
-        
+
         setMeasuredDimension(viewWidth, viewHeight);
     }
 
@@ -933,7 +933,7 @@ public class CropImageView extends ImageView {
 
     @Override
     public void setImageBitmap(Bitmap bitmap){
-        if (this.mBitmap != null) {
+        if (this.mBitmap != null && this.mBitmap != bitmap) {
             this.mBitmap.recycle();
             this.mBitmap = null;
         }
