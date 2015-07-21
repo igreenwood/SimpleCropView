@@ -17,7 +17,6 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -30,22 +29,6 @@ public class CropImageView extends ImageView {
     private static final int MIN_FRAME_SIZE_IN_DP = 100;
     private static final int FRAME_STROKE_WEIGHT_IN_DP = 1;
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 3;
-
-    private Canvas mBitmapCacheCanvas = null;
-    private Bitmap mBitmapCache = null;
-
-    public void createCache(int width, int height) {
-        Log.d(TAG, "id("+getId()+"):(w, h) = ("+width+","+height+")");
-        if (width == 0 || height == 0)return;
-        if (mBitmapCache != null && mBitmapCache.getWidth() == width && mBitmapCache.getHeight() == height)
-            return;
-        if(mBitmapCache != null){
-            mBitmapCache.recycle();
-            mBitmapCache = null;
-        }
-        mBitmapCache = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-        mBitmapCacheCanvas = new Canvas(mBitmapCache);
-    }
 
     private final int TRANSPARENT;
     private final int TRANSLUCENT_WHITE = 0x66FFFFFF;
@@ -196,9 +179,7 @@ public class CropImageView extends ImageView {
 
         final int viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         final int viewHeight = MeasureSpec.getSize(heightMeasureSpec);
-
-        createCache(viewWidth, viewHeight);
-
+        
         setMeasuredDimension(viewWidth, viewHeight);
     }
 
@@ -212,21 +193,19 @@ public class CropImageView extends ImageView {
 
     @Override
     public void onDraw(@NonNull Canvas canvas) {
-        mBitmapCacheCanvas.drawColor(TRANSPARENT, PorterDuff.Mode.CLEAR);
-        mBitmapCacheCanvas.drawColor(mBackgroundColor);
+        canvas.drawColor(TRANSPARENT, PorterDuff.Mode.CLEAR);
+        canvas.drawColor(mBackgroundColor);
 
         if (mIsInitialized){
             setMatrix();
             Matrix localMatrix1 = new Matrix();
             localMatrix1.postConcat(this.mMatrix);
 
-            mBitmapCacheCanvas.drawBitmap(mBitmap, localMatrix1, mPaintBitmap);
+            canvas.drawBitmap(mBitmap, localMatrix1, mPaintBitmap);
 
             // draw edit frame
-            drawEditFrame(mBitmapCacheCanvas);
+            drawEditFrame(canvas);
         }
-
-        canvas.drawBitmap(mBitmapCache, 0, 0, mPaintCache);
     }
 
     /**
