@@ -383,6 +383,7 @@ public class CropImageView extends ImageView {
 
     @Override
     public boolean onTouchEvent(@NonNull MotionEvent event) {
+        if(!mIsInitialized)return true;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 onDown(event);
