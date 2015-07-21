@@ -30,13 +30,16 @@ public class CropImageView extends ImageView {
     private static final int FRAME_STROKE_WEIGHT_IN_DP = 1;
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 3;
 
-    private static Canvas mBitmapCacheCanvas = null;
-    private static Bitmap mBitmapCache = null;
+    private Canvas mBitmapCacheCanvas = null;
+    private Bitmap mBitmapCache = null;
 
-    public static void createCache(int width, int height) {
+    public void createCache(int width, int height) {
         if (mBitmapCache != null && mBitmapCache.getWidth() == width && mBitmapCache.getHeight() == height)
             return;
-
+        if(mBitmapCache != null){
+            mBitmapCache.recycle();
+            mBitmapCache = null;
+        }
         mBitmapCache = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         mBitmapCacheCanvas = new Canvas(mBitmapCache);
     }
