@@ -188,16 +188,8 @@ public class CropImageView extends ImageView {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
-//        final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-
-        if (widthMode != MeasureSpec.EXACTLY)
-            throw new IllegalStateException("Must measure with an exact width!!");
-
         final int viewWidth = MeasureSpec.getSize(widthMeasureSpec);
         final int viewHeight = MeasureSpec.getSize(heightMeasureSpec);
-//        mViewWidth = viewWidth;
-//        mViewHeight = viewHeight;
 
         createCache(viewWidth, viewHeight);
 
