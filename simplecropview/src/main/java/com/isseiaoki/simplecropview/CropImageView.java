@@ -17,6 +17,7 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -34,6 +35,8 @@ public class CropImageView extends ImageView {
     private Bitmap mBitmapCache = null;
 
     public void createCache(int width, int height) {
+        Log.d(TAG, "id("+getId()+"):(w, h) = ("+width+","+height+")");
+        if (width == 0 || height == 0)return;
         if (mBitmapCache != null && mBitmapCache.getWidth() == width && mBitmapCache.getHeight() == height)
             return;
         if(mBitmapCache != null){
@@ -209,18 +212,19 @@ public class CropImageView extends ImageView {
 
     @Override
     public void onDraw(@NonNull Canvas canvas) {
-        if (!mIsInitialized) return;
-
-        setMatrix();
-        Matrix localMatrix1 = new Matrix();
-        localMatrix1.postConcat(this.mMatrix);
-
         mBitmapCacheCanvas.drawColor(TRANSPARENT, PorterDuff.Mode.CLEAR);
         mBitmapCacheCanvas.drawColor(mBackgroundColor);
-        mBitmapCacheCanvas.drawBitmap(mBitmap, localMatrix1, mPaintBitmap);
 
-        // draw edit frame
-        drawEditFrame(mBitmapCacheCanvas);
+        if (mIsInitialized){
+            setMatrix();
+            Matrix localMatrix1 = new Matrix();
+            localMatrix1.postConcat(this.mMatrix);
+
+            mBitmapCacheCanvas.drawBitmap(mBitmap, localMatrix1, mPaintBitmap);
+
+            // draw edit frame
+            drawEditFrame(mBitmapCacheCanvas);
+        }
 
         canvas.drawBitmap(mBitmapCache, 0, 0, mPaintCache);
     }
