@@ -7,7 +7,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v7.graphics.Palette;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 
 import com.isseiaoki.simplecropview.CropImageView;
@@ -17,7 +17,7 @@ public class MainActivity extends Activity {
 
     private CropImageView mCropView;
     private RelativeLayout mRootLayout;
-    private LinearLayout mTabLayout;
+    private HorizontalScrollView mTabLayout;
     private boolean isPortrait = true;
     private boolean applySkin = true;
     private int dark, light, white;
@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.buttonChangeSkin).setOnClickListener(btnListener);
 
         mRootLayout = (RelativeLayout) findViewById(R.id.layout_root);
-        mTabLayout = (LinearLayout) findViewById(R.id.tab_layout);
+        mTabLayout = (HorizontalScrollView) findViewById(R.id.tab_bar);
         dark = getResources().getColor(R.color.background_material_dark);
         light = getResources().getColor(R.color.background_floating_material_dark);
         white = getResources().getColor(android.R.color.white);
