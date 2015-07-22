@@ -128,10 +128,7 @@
         custom:touchPadding="8dp"
         custom:handleShowMode="show_always"
         custom:guideShowMode="show_on_touch"
-        custom:minFrameSize="100dp"
-        custom:frameColor="@android:color/white"
-        custom:backgroundColor="@null"
-        custom:overlayColor="#99000000"
+        custom:minFrameSize="50dp"
         custom:frameStrokeWeight="3dp"
         custom:guideStrokeWeight="1dp"
         />

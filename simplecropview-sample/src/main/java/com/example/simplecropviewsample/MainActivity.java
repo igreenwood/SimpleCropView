@@ -20,10 +20,10 @@ public class MainActivity extends Activity {
     private HorizontalScrollView mTabLayout;
     private boolean isPortrait = true;
     private boolean applySkin = true;
-    private int dark, light, white;
-    private int mColor1, mColor2, mColor3;
+    private int dark, light, white, transparent = 0x66FFFFFF;
+    private int mColor1, mColor2, mColor3, mColor4;
 
-    private static final String KEY_COLOR1="color1", KEY_COLOR2="color2", KEY_COLOR3="color3", KEY_SKIN_FLAG="skin_flg", KEY_IMG_FLAG = "img_flg";
+    private static final String KEY_COLOR1="color1", KEY_COLOR2="color2", KEY_COLOR3="color3", KEY_COLOR4="color4", KEY_SKIN_FLAG="skin_flg", KEY_IMG_FLAG = "img_flg";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +53,8 @@ public class MainActivity extends Activity {
         mColor1 = dark;
         mColor2 = light;
         mColor3 = white;
+        mColor4 = transparent;
+        setColorSkin();
     }
 
     @Override
@@ -62,6 +64,7 @@ public class MainActivity extends Activity {
         outState.putInt(KEY_COLOR1, mColor1);
         outState.putInt(KEY_COLOR2, mColor2);
         outState.putInt(KEY_COLOR3, mColor3);
+        outState.putInt(KEY_COLOR4, mColor4);
         outState.putBoolean(KEY_SKIN_FLAG, applySkin);
         outState.putBoolean(KEY_IMG_FLAG, isPortrait);
     }
@@ -73,6 +76,7 @@ public class MainActivity extends Activity {
         mColor1 = savedInstanceState.getInt(KEY_COLOR1);
         mColor2 = savedInstanceState.getInt(KEY_COLOR2);
         mColor3 = savedInstanceState.getInt(KEY_COLOR3);
+        mColor4 = savedInstanceState.getInt(KEY_COLOR4);
         applySkin = savedInstanceState.getBoolean(KEY_SKIN_FLAG);
         isPortrait = savedInstanceState.getBoolean(KEY_IMG_FLAG);
         setColorSkin();
@@ -141,7 +145,7 @@ public class MainActivity extends Activity {
         mColor1 = dark;
         mColor2 = light;
         mColor3 = white;
-
+        mColor4 = transparent;
         setColorSkin();
     }
 
@@ -151,7 +155,7 @@ public class MainActivity extends Activity {
             mColor1 = palette.getDarkMutedColor(dark);
             mColor2 = palette.getMutedColor(light);
             mColor3 = palette.getVibrantColor(white);
-
+            mColor4 = setAlpha(palette.getVibrantColor(transparent), 0x66);
             setColorSkin();
         }
     }
@@ -161,5 +165,13 @@ public class MainActivity extends Activity {
         mTabLayout.setBackgroundColor(mColor2);
         mCropView.setFrameColor(mColor3);
         mCropView.setBackgroundColor(mColor1);
+        mCropView.setOverlayColor(mColor4);
+    }
+
+    public int setAlpha(int color, int alpha){
+        int r = (color >> 16)&0xFF;
+        int g = (color >> 8)&0xFF;
+        int b = (color)&0xFF;
+        return (alpha << 24)|(r << 16)|(g << 8)|(b);
     }
 }
