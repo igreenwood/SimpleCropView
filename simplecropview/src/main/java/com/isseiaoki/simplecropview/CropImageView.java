@@ -258,11 +258,7 @@ public class CropImageView extends ImageView {
         mPaintFrame.setColor(mFrameColor);
         mPaintFrame.setStrokeWidth(mFrameStrokeWeight);
 
-        canvas.drawLine(mFrameRect.left, mFrameRect.top, mFrameRect.left, mFrameRect.bottom, mPaintFrame);
-        canvas.drawLine(mFrameRect.left, mFrameRect.top, mFrameRect.right, mFrameRect.top, mPaintFrame);
-        canvas.drawLine(mFrameRect.right, mFrameRect.top, mFrameRect.right, mFrameRect.bottom, mPaintFrame);
-        canvas.drawLine(mFrameRect.left, mFrameRect.bottom, mFrameRect.right, mFrameRect.bottom, mPaintFrame);
-
+        canvas.drawRect(mFrameRect.left, mFrameRect.top, mFrameRect.right, mFrameRect.bottom, mPaintFrame);
 
         if (mShowGuide) {
             mPaintFrame.setStrokeWidth(mGuideStrokeWeight);
