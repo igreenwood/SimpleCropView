@@ -8,7 +8,7 @@ android {
         minSdkVersion 9
         targetSdkVersion 22
         versionCode 1
-        versionName "1.0"
+        versionName "1.0.0"
     }
     buildTypes {
         release {
@@ -18,7 +18,88 @@ android {
     }
 }
 
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+group = 'com.isseiaoki'
+version = '1.0.0'
+def siteUrl = 'https://github.com/IsseiAoki/SimpleCropView'
+def gitUrl = 'https://github.com/IsseiAoki/SimpleCropView.git'
+
+
+bintray {
+
+    user = bintray_user
+    key = bintray_api_key
+
+    configurations = ['archives'] //When uploading configuration files
+    pkg {
+        repo = 'maven'
+        name = 'SimpleCropView'
+        desc = 'A simple image cropping library for Android.'
+        websiteUrl = siteUrl
+        issueTrackerUrl = 'https://github.com/IsseiAoki/SimpleCropView/issues'
+        vcsUrl = gitUrl
+        licenses = ['MIT']
+        labels = ['android']
+        publicDownloadNumbers = true
+    }
+}
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                name 'SimpleCropView'
+                url siteUrl
+                licenses {
+                    license {
+                        name 'The MIT License (MIT)'
+                        url 'http://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'isseiaoki'
+                        name 'Issei Aoki'
+                        email 'i.greenwood.dev@gmail.com'
+                    }
+                }
+                scm {
+                    connection 'https://github.com/IsseiAoki/SimpleCropView.git'
+                    developerConnection 'https://github.com/IsseiAoki/SimpleCropView.git'
+                    url siteUrl
+
+                }
+            }
+        }
+    }
+}
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.2.0'
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+task findConventions << {
+    println project.getConvention()
 }

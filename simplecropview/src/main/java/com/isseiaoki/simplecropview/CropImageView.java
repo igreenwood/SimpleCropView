@@ -14,7 +14,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
@@ -192,7 +191,7 @@ public class CropImageView extends ImageView {
     }
 
     @Override
-    public void onDraw(@NonNull Canvas canvas) {
+    public void onDraw(Canvas canvas) {
         canvas.drawColor(TRANSPARENT, PorterDuff.Mode.CLEAR);
         canvas.drawColor(mBackgroundColor);
 
@@ -368,7 +367,7 @@ public class CropImageView extends ImageView {
      */
 
     @Override
-    public boolean onTouchEvent(@NonNull MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         if(!mIsInitialized)return true;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -1180,7 +1179,7 @@ public class CropImageView extends ImageView {
         }
 
         @Override
-        public void writeToParcel(@NonNull Parcel out, int flag) {
+        public void writeToParcel(Parcel out, int flag) {
             super.writeToParcel(out, flag);
             out.writeParcelable(image, flag);
             out.writeSerializable(mode);
