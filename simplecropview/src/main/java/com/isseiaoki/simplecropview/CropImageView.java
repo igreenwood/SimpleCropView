@@ -22,7 +22,8 @@ import android.widget.ImageView;
 
 
 public class CropImageView extends ImageView {
-    private static final String TAG = CropImageView.class.getSimpleName();
+
+    // Constants ///////////////////////////////////////////////////////////////////////////////////
 
     private static final int HANDLE_SIZE_IN_DP = 24;
     private static final int MIN_FRAME_SIZE_IN_DP = 100;
@@ -31,59 +32,47 @@ public class CropImageView extends ImageView {
 
     private final int TRANSPARENT;
     private final int TRANSLUCENT_WHITE = 0x66FFFFFF;
-    private boolean mIsLayoutInitialized = false;
-    private float mMinFrameSize;
-    private int mHandleSize;
-    private int mTouchPadding = 0;
+
+    // Member variables ////////////////////////////////////////////////////////////////////////////
 
     private int mViewWidth = 0;
     private int mViewHeight = 0;
     private Bitmap mBitmap = null;
-    private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
-    private CropMode mCropMode = CropMode.RATIO_1_1;
-    private ShowMode mGuideShowMode = ShowMode.SHOW_ALWAYS;
-    private ShowMode mHandleShowMode = ShowMode.SHOW_ALWAYS;
-    private boolean mShowGuide = true;
-    private boolean mShowHandle = true;
-    private boolean mIsCropEnabled = true;
-    private PointF mCustomRatio = new PointF(1.0f, 1.0f);
-
-    // 拡縮倍率
     private float mScale = 1.0f;
-    // 角度
     private float mAngle = 0.0f;
-
-    // 画像の横幅
     private float mImgWidth = 0.0f;
-    // 画像の縦幅
     private float mImgHeight = 0.0f;
-    // 初期化済みか
     private boolean mIsInitialized = false;
-
-    private float mFrameStrokeWeight = 6.0f;
-    private float mGuideStrokeWeight = 3.0f;
-
-    // 背景色
-    private int mBackgroundColor;
-    // フレーム選択範囲外の色
-    private int mOverlayColor;
-    // フレームの色
-    private int mFrameColor;
-    private float mLastX, mLastY;
-    // 描画用の変数
     private Matrix mMatrix = null;
     private Paint mPaintTransparent;
     private Paint mPaintFrame;
     private Paint mPaintBitmap;
-    private Paint mPaintText;
     private Paint mPaintCache;
     private RectF mFrameRect;
     private RectF mImageRect;
     private PointF mCenter = new PointF();
+    private float mLastX, mLastY;
 
-    /**
-     * Constructor
-     */
+    // Instance variables for customizable attributes //////////////////////////////////////////////
+
+    private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
+    private CropMode mCropMode = CropMode.RATIO_1_1;
+    private ShowMode mGuideShowMode = ShowMode.SHOW_ALWAYS;
+    private ShowMode mHandleShowMode = ShowMode.SHOW_ALWAYS;
+    private float mMinFrameSize;
+    private int mHandleSize;
+    private int mTouchPadding = 0;
+    private boolean mShowGuide = true;
+    private boolean mShowHandle = true;
+    private boolean mIsCropEnabled = true;
+    private PointF mCustomRatio = new PointF(1.0f, 1.0f);
+    private float mFrameStrokeWeight = 6.0f;
+    private float mGuideStrokeWeight = 3.0f;
+    private int mBackgroundColor;
+    private int mOverlayColor;
+    private int mFrameColor;
+
+    // Constructor /////////////////////////////////////////////////////////////////////////////////
 
     public CropImageView(Context context) {
         this(context, null);
@@ -105,7 +94,6 @@ public class CropImageView extends ImageView {
 
         mPaintFrame = new Paint();
         mPaintTransparent = new Paint();
-        mPaintText = new Paint();
         mPaintBitmap = new Paint();
         mPaintBitmap.setFilterBitmap(true);
         mPaintCache = new Paint();
@@ -121,9 +109,7 @@ public class CropImageView extends ImageView {
         handleStyleable(context, attrs, defStyle, mDensity);
     }
 
-    /**
-     * Lifecycle Methods
-     */
+    // Lifecycle methods ///////////////////////////////////////////////////////////////////////////
 
     @Override
     public Parcelable onSaveInstanceState() {
@@ -207,9 +193,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    /**
-     * Handle Styleable
-     */
+    // Handle styleable ////////////////////////////////////////////////////////////////////////////
 
     private void handleStyleable(Context context, AttributeSet attrs, int defStyle, float mDensity) {
         TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.CropImageView, defStyle, 0);
@@ -255,11 +239,9 @@ public class CropImageView extends ImageView {
         }
     }
 
-    /**
-     * Drawing Method
-     */
+    // Drawing method //////////////////////////////////////////////////////////////////////////////
 
-    public void drawEditFrame(Canvas canvas) {
+    private void drawEditFrame(Canvas canvas) {
         if(!mIsCropEnabled)return;
         mPaintTransparent.setFilterBitmap(true);
         mPaintTransparent.setColor(mOverlayColor);
@@ -305,19 +287,16 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public void setMatrix() {
+    private void setMatrix() {
         mMatrix.reset();
         mMatrix.setTranslate(mCenter.x - mImgWidth * 0.5f, mCenter.y - mImgHeight * 0.5f);
         mMatrix.postScale(mScale, mScale, mCenter.x, mCenter.y);
         mMatrix.postRotate(mAngle, mCenter.x, mCenter.y);
     }
 
-    /**
-     * Initializer
-     */
+    // Initializer /////////////////////////////////////////////////////////////////////////////////
 
-    public void initLayout(int viewW, int viewH) {
-        if (mIsLayoutInitialized) return;
+    private void initLayout(int viewW, int viewH) {
         float imgW = mBitmap.getWidth();
         float imgH = mBitmap.getHeight();
         mImgWidth = imgW;
@@ -339,7 +318,7 @@ public class CropImageView extends ImageView {
         mIsInitialized = true;
     }
 
-    public void initCropFrame() {
+    private void initCropFrame() {
         setMatrix();
         float[] arrayOfFloat = new float[8];
         arrayOfFloat[0] = 0.0f;
@@ -362,9 +341,7 @@ public class CropImageView extends ImageView {
         mImageRect = new RectF(l, t, r, b);
     }
 
-    /**
-     * Handle Touch Events
-     */
+    // Touch Event /////////////////////////////////////////////////////////////////////////////////
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -386,14 +363,14 @@ public class CropImageView extends ImageView {
         return true;
     }
 
-    public void onDown(MotionEvent e) {
+    private void onDown(MotionEvent e) {
         invalidate();
         mLastX = e.getX();
         mLastY = e.getY();
         checkTouchArea(e.getX(), e.getY());
     }
 
-    public void onMove(MotionEvent e) {
+    private void onMove(MotionEvent e) {
         float diffX = e.getX() - mLastX;
         float diffY = e.getY() - mLastY;
         switch (mTouchArea) {
@@ -420,23 +397,21 @@ public class CropImageView extends ImageView {
         mLastY = e.getY();
     }
 
-    public void onUp(MotionEvent e) {
+    private void onUp(MotionEvent e) {
         if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = false;
         if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = false;
         mTouchArea = TouchArea.OUT_OF_BOUNDS;
         invalidate();
     }
 
-    public void onCancel() {
+    private void onCancel() {
         mTouchArea = TouchArea.OUT_OF_BOUNDS;
         invalidate();
     }
 
-    /**
-     * Hit Test Methods
-     */
+    // Hit test ////////////////////////////////////////////////////////////////////////////////////
 
-    public void checkTouchArea(float x, float y) {
+    private void checkTouchArea(float x, float y) {
         if (isInsideCornerLeftTop(x, y)) {
             mTouchArea = TouchArea.LEFT_TOP;
             if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
@@ -469,7 +444,7 @@ public class CropImageView extends ImageView {
         mTouchArea = TouchArea.OUT_OF_BOUNDS;
     }
 
-    public boolean isInsideFrame(float x, float y) {
+    private boolean isInsideFrame(float x, float y) {
         if (mFrameRect.left <= x && mFrameRect.right >= x) {
             if (mFrameRect.top <= y && mFrameRect.bottom >= y) {
                 mTouchArea = TouchArea.CENTER;
@@ -479,39 +454,37 @@ public class CropImageView extends ImageView {
         return false;
     }
 
-    public boolean isInsideCornerLeftTop(float x, float y) {
+    private boolean isInsideCornerLeftTop(float x, float y) {
         float dx = x - mFrameRect.left;
         float dy = y - mFrameRect.top;
         float d = dx * dx + dy * dy;
         return sq(mHandleSize + mTouchPadding) >= d;
     }
 
-    public boolean isInsideCornerRightTop(float x, float y) {
+    private boolean isInsideCornerRightTop(float x, float y) {
         float dx = x - mFrameRect.right;
         float dy = y - mFrameRect.top;
         float d = dx * dx + dy * dy;
         return sq(mHandleSize + mTouchPadding) >= d;
     }
 
-    public boolean isInsideCornerLeftBottom(float x, float y) {
+    private boolean isInsideCornerLeftBottom(float x, float y) {
         float dx = x - mFrameRect.left;
         float dy = y - mFrameRect.bottom;
         float d = dx * dx + dy * dy;
         return sq(mHandleSize + mTouchPadding) >= d;
     }
 
-    public boolean isInsideCornerRightBottom(float x, float y) {
+    private boolean isInsideCornerRightBottom(float x, float y) {
         float dx = x - mFrameRect.right;
         float dy = y - mFrameRect.bottom;
         float d = dx * dx + dy * dy;
         return sq(mHandleSize + mTouchPadding) >= d;
     }
 
-    /**
-     * Adjust Frame
-     */
+    // Adjust frame ////////////////////////////////////////////////////////////////////////////////
 
-    public void moveFrame(float x, float y) {
+    private void moveFrame(float x, float y) {
         mFrameRect.left += x;
         mFrameRect.right += x;
         mFrameRect.top += y;
@@ -519,7 +492,7 @@ public class CropImageView extends ImageView {
         checkMoveBounds();
     }
 
-    public void moveHandleLT(float diffX, float diffY) {
+    private void moveHandleLT(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.left += diffX;
             mFrameRect.top += diffY;
@@ -565,7 +538,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public void moveHandleRT(float diffX, float diffY) {
+    private void moveHandleRT(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.right += diffX;
             mFrameRect.top += diffY;
@@ -611,7 +584,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public void moveHandleLB(float diffX, float diffY) {
+    private void moveHandleLB(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.left += diffX;
             mFrameRect.bottom += diffY;
@@ -657,7 +630,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public void moveHandleRB(float diffX, float diffY) {
+    private void moveHandleRB(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.right += diffX;
             mFrameRect.bottom += diffY;
@@ -703,11 +676,9 @@ public class CropImageView extends ImageView {
         }
     }
 
-    /**
-     * Frame Position Correction
-     */
+    // Frame position correction ///////////////////////////////////////////////////////////////////
 
-    public void checkScaleBounds() {
+    private void checkScaleBounds() {
         float lDiff = mFrameRect.left - mImageRect.left;
         float rDiff = mFrameRect.right - mImageRect.right;
         float tDiff = mFrameRect.top - mImageRect.top;
@@ -727,7 +698,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public void checkMoveBounds() {
+    private void checkMoveBounds() {
         float diff = mFrameRect.left - mImageRect.left;
         if (diff < 0) {
             mFrameRect.left -= diff;
@@ -750,27 +721,25 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public boolean isInsideHorizontal(float x) {
+    private boolean isInsideHorizontal(float x) {
         return mImageRect.left <= x && mImageRect.right >= x;
     }
 
-    public boolean isInsideVertical(float y) {
+    private boolean isInsideVertical(float y) {
         return mImageRect.top <= y && mImageRect.bottom >= y;
     }
 
-    public boolean isWidthTooSmall() {
+    private boolean isWidthTooSmall() {
         return getFrameW() < mMinFrameSize;
     }
 
-    public boolean isHeightTooSmall() {
+    private boolean isHeightTooSmall() {
         return getFrameH() < mMinFrameSize;
     }
 
-    /**
-     * Frame Ratio Correction
-     */
+    // Frame aspect ratio correction ///////////////////////////////////////////////////////////////
 
-    public void adjustRatio() {
+    private void adjustRatio() {
         if (mImageRect == null) return;
         float imgW = mImageRect.right - mImageRect.left;
         float imgH = mImageRect.bottom - mImageRect.top;
@@ -798,7 +767,7 @@ public class CropImageView extends ImageView {
         invalidate();
     }
 
-    public float getRatioX(float w) {
+    private float getRatioX(float w) {
         switch (mCropMode) {
             case RATIO_FIT_IMAGE:
                 return mImgWidth;
@@ -821,7 +790,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public float getRatioY(float h) {
+    private float getRatioY(float h) {
         switch (mCropMode) {
             case RATIO_FIT_IMAGE:
                 return mImgHeight;
@@ -844,7 +813,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public float getRatioX() {
+    private float getRatioX() {
         switch (mCropMode) {
             case RATIO_FIT_IMAGE:
                 return mImgWidth;
@@ -865,7 +834,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public float getRatioY() {
+    private float getRatioY() {
         switch (mCropMode) {
             case RATIO_FIT_IMAGE:
                 return mImgHeight;
@@ -886,11 +855,64 @@ public class CropImageView extends ImageView {
         }
     }
 
+    // Utility methods /////////////////////////////////////////////////////////////////////////////
+
+    private float getDensity() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
+                .getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.density;
+    }
+
+    private float sq(float value) {
+        return value * value;
+    }
+
+    // Public methods //////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Get cropped image
-     *
-     * @return Cropped Bitmap
+     * Get source image bitmap
+     * @return src bitmap
+     */
+    public Bitmap getImageBitmap() {
+        return mBitmap;
+    }
+
+    /**
+     * Set source image bitmap
+     * @param bitmap src image bitmap
+     */
+    @Override
+    public void setImageBitmap(Bitmap bitmap){
+        if (this.mBitmap != null && this.mBitmap != bitmap) {
+            this.mBitmap.recycle();
+            this.mBitmap = null;
+        }
+        this.mBitmap = bitmap;
+        if (mBitmap != null) {
+            mImgWidth = mBitmap.getWidth();
+            mImgHeight = mBitmap.getHeight();
+            initLayout(mViewWidth, mViewHeight);
+        } else {
+            mIsInitialized = false;
+        }
+    }
+
+    /**
+     * Set source image resource id
+     * @param resId source image resource id
+     */
+    @Override
+    public void setImageResource(int resId){
+        if (resId != 0) {
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId);
+            setImageBitmap(bitmap);
+        }
+    }
+
+    /**
+     * Get cropped image bitmap
+     * @return cropped image bitmap
      */
     public Bitmap getCroppedBitmap() {
         int x = 0, y = 0, w = 0, h = 0;
@@ -908,108 +930,9 @@ public class CropImageView extends ImageView {
     }
 
     /**
-     * Utility Methods
+     * Set crop mode
+     * @param mode crop mode
      */
-
-    public float getDensity() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE))
-                .getDefaultDisplay().getMetrics(displayMetrics);
-        return displayMetrics.density;
-    }
-
-    public float sq(float value) {
-        return value * value;
-    }
-
-    /**
-     * Getters and Setters
-     */
-
-    public Bitmap getImageBitmap() {
-        return mBitmap;
-    }
-
-    @Override
-    public void setImageBitmap(Bitmap bitmap){
-        if (this.mBitmap != null && this.mBitmap != bitmap) {
-            this.mBitmap.recycle();
-            this.mBitmap = null;
-        }
-        this.mBitmap = bitmap;
-        if (mBitmap != null) {
-            mImgWidth = mBitmap.getWidth();
-            mImgHeight = mBitmap.getHeight();
-            initLayout(mViewWidth, mViewHeight);
-        } else {
-            mIsInitialized = false;
-        }
-    }
-
-    @Override
-    public void setImageResource(int resId){
-        if (resId != 0) {
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), resId);
-            setImageBitmap(bitmap);
-        }
-    }
-
-    public float getScale() {
-        return mScale;
-    }
-
-    public void setScale(float mScale) {
-        this.mScale = mScale;
-    }
-
-    public float getAngle() {
-        return mAngle;
-    }
-
-    public void setAngle(float mAngle) {
-        this.mAngle = mAngle;
-    }
-
-    public PointF getCenter() {
-        return mCenter;
-    }
-
-    public void setCenter(PointF mCenter) {
-        this.mCenter = mCenter;
-    }
-
-    public float getImgWidth() {
-        return mImgWidth;
-    }
-
-    public void setImgWidth(float mImgWidth) {
-        this.mImgWidth = mImgWidth;
-    }
-
-    public float getFrameW() {
-        return (mFrameRect.right - mFrameRect.left);
-    }
-
-    public float getFrameH() {
-        return (mFrameRect.bottom - mFrameRect.top);
-    }
-
-    public float getFrameCenterX() {
-        return (mFrameRect.left + mFrameRect.right) * 0.5f;
-    }
-
-    public float getFrameCenterY() {
-        return (mFrameRect.top + mFrameRect.bottom) * 0.5f;
-    }
-
-    public float getScaledImgW() {
-        return mImageRect.right - mImageRect.left;
-    }
-
-    public float getScaledImgH() {
-        return mImageRect.bottom - mImageRect.top;
-    }
-
     public void setCropMode(CropMode mode) {
         if(mode == CropMode.RATIO_CUSTOM){
             setCustomRatio(1, 1);
@@ -1019,6 +942,11 @@ public class CropImageView extends ImageView {
         }
     }
 
+    /**
+     * Set custom aspect ratio to crop frame
+     * @param ratioX aspect ratio X
+     * @param ratioY aspect ratio Y
+     */
     public void setCustomRatio(int ratioX, int ratioY) {
         if (ratioX == 0 || ratioY == 0) return;
         mCropMode = CropMode.RATIO_CUSTOM;
@@ -1026,33 +954,65 @@ public class CropImageView extends ImageView {
         adjustRatio();
     }
 
+    /**
+     * Set image overlay color
+     * @param overlayColor color resId or color int(ex. 0xFFFFFFFF)
+     */
     public void setOverlayColor(int overlayColor) {
         this.mOverlayColor = overlayColor;
         invalidate();
     }
 
+    /**
+     * Set crop frame color
+     * @param frameColor color resId or color int(ex. 0xFFFFFFFF)
+     */
     public void setFrameColor(int frameColor) {
         this.mFrameColor = frameColor;
         invalidate();
     }
 
+    /**
+     * Set view background color
+     * @param bgColor color resId or color int(ex. 0xFFFFFFFF)
+     */
     public void setBackgroundColor(int bgColor) {
         this.mBackgroundColor = bgColor;
         invalidate();
     }
 
+    /**
+     * Set crop frame minimum size in density-independent pixels.
+     * @param minDp crop frame minimum size in density-independent pixels
+     */
     public void setMinFrameSizeInDp(int minDp) {
         mMinFrameSize = minDp * getDensity();
     }
 
-    public void setTouchPaddingInDp(int paddingDp) {
-        mTouchPadding = (int) (paddingDp * getDensity());
-    }
-
+    /**
+     * Set handle radius in density-independent pixels.
+     * @param handleDp handle radius in density-independent pixels
+     */
     public void setHandleSizeInDp(int handleDp) {
         mHandleSize = (int) (handleDp * getDensity());
     }
 
+    /**
+     * Set crop frame handle touch padding(touch area) in density-independent pixels.
+     *
+     * handle touch area : a circle of radius R.(R = handle size + touch padding)
+     *
+     * @param paddingDp crop frame handle touch padding(touch area) in density-independent pixels
+     */
+    public void setTouchPaddingInDp(int paddingDp) {
+        mTouchPadding = (int) (paddingDp * getDensity());
+    }
+
+    /**
+     * Set guideline show mode.
+     * (SHOW_ALWAYS/NOT_SHOW/SHOW_ON_TOUCH)
+     * @param mode guideline show mode
+     */
     public void setGuideShowMode(ShowMode mode) {
         mGuideShowMode = mode;
         switch (mode) {
@@ -1067,6 +1027,11 @@ public class CropImageView extends ImageView {
         invalidate();
     }
 
+    /**
+     * Set handle show mode.
+     * (SHOW_ALWAYS/NOT_SHOW/SHOW_ON_TOUCH)
+     * @param mode handle show mode
+     */
     public void setHandleShowMode(ShowMode mode) {
         mHandleShowMode = mode;
         switch (mode) {
@@ -1081,24 +1046,50 @@ public class CropImageView extends ImageView {
         invalidate();
     }
 
+    /**
+     * Set frame stroke weight in density-independent pixels.
+     * @param weightDp frame stroke weight in density-independent pixels.
+     */
     public void setFrameStrokeWeightInDp(int weightDp) {
         mFrameStrokeWeight = weightDp * getDensity();
         invalidate();
     }
 
+    /**
+     * Set guideline stroke weight in density-independent pixels.
+     * @param weightDp guideline stroke weight in density-independent pixels.
+     */
     public void setGuideStrokeWeightInDp(int weightDp) {
         mGuideStrokeWeight = weightDp * getDensity();
         invalidate();
     }
 
+    /**
+     * Set whether to show crop frame.
+     * @param enabled should show crop frame?
+     */
     public void setCropEnabled(boolean enabled){
         mIsCropEnabled = enabled;
         invalidate();
     }
 
-    /**
-     * Enum
-     */
+    private void setScale(float mScale) {
+        this.mScale = mScale;
+    }
+
+    private void setCenter(PointF mCenter) {
+        this.mCenter = mCenter;
+    }
+
+    private float getFrameW() {
+        return (mFrameRect.right - mFrameRect.left);
+    }
+
+    private float getFrameH() {
+        return (mFrameRect.bottom - mFrameRect.top);
+    }
+
+    // Enum ////////////////////////////////////////////////////////////////////////////////////////
 
     private enum TouchArea {
         OUT_OF_BOUNDS, CENTER, LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM;
@@ -1130,9 +1121,7 @@ public class CropImageView extends ImageView {
         }
     }
 
-    /**
-     * Save/Restore State Support
-     */
+    // Save/Restore support ////////////////////////////////////////////////////////////////////////
 
     public static class SavedState extends BaseSavedState {
         Bitmap image;
