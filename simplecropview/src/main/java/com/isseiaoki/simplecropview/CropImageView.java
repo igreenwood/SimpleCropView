@@ -880,8 +880,9 @@ public class CropImageView extends ImageView {
      */
     @Override
     public void setImageBitmap(Bitmap bitmap){
+        if(bitmap == null) return;
+        mIsInitialized = false;
         if (this.mBitmap != null && this.mBitmap != bitmap) {
-            this.mBitmap.recycle();
             this.mBitmap = null;
         }
         this.mBitmap = bitmap;
@@ -889,8 +890,6 @@ public class CropImageView extends ImageView {
             mImgWidth = mBitmap.getWidth();
             mImgHeight = mBitmap.getHeight();
             initLayout(mViewWidth, mViewHeight);
-        } else {
-            mIsInitialized = false;
         }
     }
 
