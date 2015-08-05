@@ -341,23 +341,30 @@ public class CropImageView extends ImageView {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        if(!mIsInitialized)return true;
+        if(!mIsInitialized)return false;
+        if(!mIsCropEnabled)return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 onDown(event);
                 return true;
             case MotionEvent.ACTION_MOVE:
                 onMove(event);
+                if(mTouchArea != TouchArea.OUT_OF_BOUNDS){
+                    getParent().requestDisallowInterceptTouchEvent(true);
+                }
                 return true;
             case MotionEvent.ACTION_CANCEL:
+                getParent().requestDisallowInterceptTouchEvent(false);
                 onCancel();
-                return false;
+                return true;
             case MotionEvent.ACTION_UP:
+                getParent().requestDisallowInterceptTouchEvent(false);
                 onUp(event);
-                return false;
+                return true;
         }
-        return true;
+        return false;
     }
+
 
     private void onDown(MotionEvent e) {
         invalidate();
