@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
-import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -47,7 +46,6 @@ public class CropImageView extends ImageView {
     private Paint mPaintTransparent;
     private Paint mPaintFrame;
     private Paint mPaintBitmap;
-    private Paint mPaintCache;
     private RectF mFrameRect;
     private RectF mImageRect;
     private PointF mCenter = new PointF();
@@ -96,12 +94,10 @@ public class CropImageView extends ImageView {
         mPaintTransparent = new Paint();
         mPaintBitmap = new Paint();
         mPaintBitmap.setFilterBitmap(true);
-        mPaintCache = new Paint();
-        mPaintCache.setFilterBitmap(true);
 
         mMatrix = new Matrix();
         mScale = 1.0f;
-        mBackgroundColor = getResources().getColor(android.R.color.transparent);
+        mBackgroundColor = TRANSPARENT;
         mFrameColor = TRANSLUCENT_WHITE;
         mOverlayColor = TRANSLUCENT_WHITE;
 
@@ -178,8 +174,7 @@ public class CropImageView extends ImageView {
 
     @Override
     public void onDraw(Canvas canvas) {
-        canvas.drawColor(TRANSPARENT, PorterDuff.Mode.CLEAR);
-        canvas.drawColor(mBackgroundColor);
+        super.onDraw(canvas);
 
         if (mIsInitialized){
             setMatrix();
@@ -208,7 +203,8 @@ public class CropImageView extends ImageView {
                     break;
                 }
             }
-            mBackgroundColor = ta.getColor(R.styleable.CropImageView_backgroundColor, mBackgroundColor);
+            mBackgroundColor = ta.getColor(R.styleable.CropImageView_backgroundColor, TRANSPARENT);
+            super.setBackgroundColor(mBackgroundColor);
             mOverlayColor = ta.getColor(R.styleable.CropImageView_overlayColor, TRANSLUCENT_WHITE);
             mFrameColor = ta.getColor(R.styleable.CropImageView_frameColor, TRANSLUCENT_WHITE);
             for (ShowMode mode : ShowMode.values()) {
@@ -980,6 +976,7 @@ public class CropImageView extends ImageView {
      */
     public void setBackgroundColor(int bgColor) {
         this.mBackgroundColor = bgColor;
+        super.setBackgroundColor(this.mBackgroundColor);
         invalidate();
     }
 
