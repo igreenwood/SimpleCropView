@@ -15,6 +15,8 @@
         <attr name="backgroundColor" format="color"/>
         <attr name="overlayColor" format="color"/>
         <attr name="frameColor" format="color"/>
+        <attr name="handleColor" format="color"/>
+        <attr name="guideColor" format="color"/>
         <attr name="guideShowMode">
             <enum name="show_always" value="1"/>
             <enum name="show_on_touch" value="2"/>

@@ -30,7 +30,9 @@ public class CropImageView extends ImageView {
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 1;
 
     private final int TRANSPARENT;
-    private final int TRANSLUCENT_WHITE = 0x66FFFFFF;
+    private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
+    private final int WHITE = 0xFFFFFFFF;
+    private final int TRANSLUCENT_BLACK = 0xBB000000;
 
     // Member variables ////////////////////////////////////////////////////////////////////////////
 
@@ -69,6 +71,8 @@ public class CropImageView extends ImageView {
     private int mBackgroundColor;
     private int mOverlayColor;
     private int mFrameColor;
+    private int mHandleColor;
+    private int mGuideColor;
 
     // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -98,8 +102,10 @@ public class CropImageView extends ImageView {
         mMatrix = new Matrix();
         mScale = 1.0f;
         mBackgroundColor = TRANSPARENT;
-        mFrameColor = TRANSLUCENT_WHITE;
-        mOverlayColor = TRANSLUCENT_WHITE;
+        mFrameColor = WHITE;
+        mOverlayColor = TRANSLUCENT_BLACK;
+        mHandleColor = WHITE;
+        mGuideColor = TRANSLUCENT_WHITE;
 
         // handle Styleable
         handleStyleable(context, attrs, defStyle, mDensity);
@@ -128,6 +134,8 @@ public class CropImageView extends ImageView {
         ss.frameStrokeWeight = this.mFrameStrokeWeight;
         ss.guideStrokeWeight = this.mGuideStrokeWeight;
         ss.isCropEnabled = this.mIsCropEnabled;
+        ss.handleColor = this.mHandleColor;
+        ss.guideColor = this.mGuideColor;
         return ss;
     }
 
@@ -150,6 +158,8 @@ public class CropImageView extends ImageView {
         this.mFrameStrokeWeight = ss.frameStrokeWeight;
         this.mGuideStrokeWeight = ss.guideStrokeWeight;
         this.mIsCropEnabled = ss.isCropEnabled;
+        this.mHandleColor = ss.handleColor;
+        this.mGuideColor = ss.guideColor;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -205,8 +215,10 @@ public class CropImageView extends ImageView {
             }
             mBackgroundColor = ta.getColor(R.styleable.CropImageView_backgroundColor, TRANSPARENT);
             super.setBackgroundColor(mBackgroundColor);
-            mOverlayColor = ta.getColor(R.styleable.CropImageView_overlayColor, TRANSLUCENT_WHITE);
-            mFrameColor = ta.getColor(R.styleable.CropImageView_frameColor, TRANSLUCENT_WHITE);
+            mOverlayColor = ta.getColor(R.styleable.CropImageView_overlayColor, TRANSLUCENT_BLACK);
+            mFrameColor = ta.getColor(R.styleable.CropImageView_frameColor, WHITE);
+            mHandleColor = ta.getColor(R.styleable.CropImageView_handleColor, WHITE);
+            mGuideColor = ta.getColor(R.styleable.CropImageView_guideColor, TRANSLUCENT_WHITE);
             for (ShowMode mode : ShowMode.values()) {
                 if (ta.getInt(R.styleable.CropImageView_guideShowMode, 1) == mode.getId()) {
                     mGuideShowMode = mode;
@@ -257,6 +269,7 @@ public class CropImageView extends ImageView {
         canvas.drawRect(mFrameRect.left, mFrameRect.top, mFrameRect.right, mFrameRect.bottom, mPaintFrame);
 
         if (mShowGuide) {
+            mPaintFrame.setColor(mGuideColor);
             mPaintFrame.setStrokeWidth(mGuideStrokeWeight);
             float h1 = mFrameRect.left + (mFrameRect.right - mFrameRect.left) / 3.0f;
             float h2 = mFrameRect.right - (mFrameRect.right - mFrameRect.left) / 3.0f;
@@ -271,7 +284,7 @@ public class CropImageView extends ImageView {
 
         if (mShowHandle) {
             mPaintFrame.setStyle(Paint.Style.FILL);
-
+            mPaintFrame.setColor(mHandleColor);
             canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
             canvas.drawCircle(mFrameRect.right, mFrameRect.top, mHandleSize, mPaintFrame);
             canvas.drawCircle(mFrameRect.left, mFrameRect.bottom, mHandleSize, mPaintFrame);
@@ -971,6 +984,24 @@ public class CropImageView extends ImageView {
     }
 
     /**
+     * Set handle color
+     * @param handleColor color resId or color int(ex. 0xFFFFFFFF)
+     */
+    public void setHandleColor(int handleColor) {
+        this.mHandleColor = handleColor;
+        invalidate();
+    }
+
+    /**
+     * Set guide color
+     * @param guideColor color resId or color int(ex. 0xFFFFFFFF)
+     */
+    public void setGuideColor(int guideColor){
+        this.mGuideColor = guideColor;
+        invalidate();
+    }
+
+    /**
      * Set view background color
      * @param bgColor color resId or color int(ex. 0xFFFFFFFF)
      */
@@ -1140,6 +1171,8 @@ public class CropImageView extends ImageView {
         float frameStrokeWeight;
         float guideStrokeWeight;
         boolean isCropEnabled;
+        int handleColor;
+        int guideColor;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1164,6 +1197,8 @@ public class CropImageView extends ImageView {
             frameStrokeWeight = in.readFloat();
             guideStrokeWeight = in.readFloat();
             isCropEnabled = (in.readInt() != 0);
+            handleColor = in.readInt();
+            guideColor = in.readInt();
         }
 
         @Override
@@ -1186,6 +1221,8 @@ public class CropImageView extends ImageView {
             out.writeFloat(frameStrokeWeight);
             out.writeFloat(guideStrokeWeight);
             out.writeInt(isCropEnabled ? 1 : 0);
+            out.writeInt(handleColor);
+            out.writeInt(guideColor);
         }
     }
 }
