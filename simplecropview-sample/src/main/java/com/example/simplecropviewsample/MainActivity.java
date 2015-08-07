@@ -20,7 +20,7 @@ public class MainActivity extends Activity {
     private HorizontalScrollView mTabLayout;
     private boolean isPortrait = true;
     private boolean applySkin = true;
-    private int dark, light, white, transparent = 0x66FFFFFF;
+    private int dark, light, white, transparent = 0xBB000000;
     private int mColor1, mColor2, mColor3, mColor4;
 
     private static final String KEY_COLOR1="color1", KEY_COLOR2="color2", KEY_COLOR3="color3", KEY_COLOR4="color4", KEY_SKIN_FLAG="skin_flg", KEY_IMG_FLAG = "img_flg";
@@ -155,7 +155,7 @@ public class MainActivity extends Activity {
             mColor1 = palette.getDarkMutedColor(dark);
             mColor2 = palette.getMutedColor(light);
             mColor3 = palette.getVibrantColor(white);
-            mColor4 = setAlpha(palette.getVibrantColor(transparent), 0x66);
+            mColor4 = setAlpha(palette.getDarkMutedColor(transparent), 0x66);
             setColorSkin();
         }
     }
@@ -164,6 +164,8 @@ public class MainActivity extends Activity {
         mRootLayout.setBackgroundColor(mColor1);
         mTabLayout.setBackgroundColor(mColor2);
         mCropView.setFrameColor(mColor3);
+        mCropView.setHandleColor(mColor3);
+        mCropView.setGuideColor(setAlpha(mColor3, 0x66));
         mCropView.setBackgroundColor(mColor1);
         mCropView.setOverlayColor(mColor4);
     }
