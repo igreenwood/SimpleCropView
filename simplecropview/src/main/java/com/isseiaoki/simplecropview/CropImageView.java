@@ -775,7 +775,9 @@ public class CropImageView extends ImageView {
             l = hx - hw;
             r = hx + hw;
         }
-        mFrameRect = new RectF(l, t, r, b);
+        float w = r - l;
+        float h = b - t;
+        mFrameRect = new RectF(l + w/8, t + h/8, r - w/8, b - h/8);
         invalidate();
     }
 
