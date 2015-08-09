@@ -2,21 +2,22 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                tools:context="jp.co.aok.trimimageviewtest.ResultActivity">
+                android:id="@+id/layout_root">
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="64dp"
-        android:background="@color/background_material_dark">
+        android:background="@android:color/white">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_m"
                 android:text="Cropped Image"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
                 />
@@ -30,9 +31,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/toolbar"
-        android:padding="32dp"
         custom:cropEnabled="false"
-        custom:backgroundColor="@color/background_material_dark"
+        custom:backgroundColor="@android:color/white"
         />
 
 </RelativeLayout>

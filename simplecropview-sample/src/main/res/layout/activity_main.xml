@@ -3,9 +3,8 @@
                 xmlns:custom="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/layout_root"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@color/background_material_dark"
-                tools:context=".MainActivity">
+                android:layout_height="match_parent">
+
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -18,9 +17,9 @@
                 android:id="@+id/textTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="18sp"
+                android:textSize="@dimen/text_size_m"
                 android:text="SimpleCropViewSample"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
                 />
@@ -29,8 +28,8 @@
                 android:layout_centerVertical="true"
                 android:layout_alignParentRight="true"
                 android:text="CROP"
-                android:textSize="@dimen/text_size_small"
-                android:textColor="@android:color/white"
+                android:textSize="@dimen/text_size_s"
+                android:textColor="@android:color/black"
                 android:layout_margin="8dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"/>
@@ -55,58 +54,58 @@
             <Button
                 android:id="@+id/buttonFitImage"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="FIT IMAGE"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
 
             <Button
                 android:id="@+id/button1_1"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="1:1"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
             <Button
                 android:id="@+id/button3_4"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="3:4"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
             <Button
                 android:id="@+id/button4_3"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="4:3"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
             <Button
                 android:id="@+id/button9_16"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="9:16"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
             <Button
                 android:id="@+id/button16_9"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="16:9"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
             <Button
                 android:id="@+id/buttonFree"
                 android:layout_margin="8dp"
-                android:textSize="@dimen/text_size_small"
+                android:textSize="@dimen/text_size_s"
                 android:text="FREE"
-                android:textColor="@android:color/white"
+                android:textColor="@android:color/black"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"/>
 
@@ -138,8 +137,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="CHANGE IMAGE"
-        android:textSize="@dimen/text_size_small"
-        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_s"
+        android:textColor="@android:color/black"
         android:layout_alignBottom="@id/cropImageView"
         android:layout_alignRight="@id/cropImageView"
         />
@@ -149,8 +148,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="CHANGE SKIN"
-        android:textSize="@dimen/text_size_small"
-        android:textColor="@android:color/white"
+        android:textSize="@dimen/text_size_s"
+        android:textColor="@android:color/black"
         android:layout_alignBottom="@id/cropImageView"
         android:layout_toLeftOf="@id/buttonChangeImage"
         />
