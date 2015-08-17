@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="base">#FFFFFB</color>
+    <color name="overlay">#AA1C1C1C</color>
+    <color name="text">#1C1C1C</color>
+    <color name="handle">#86C166</color>
+    <color name="frame">#86C166</color>
+    <color name="guide">#AA86C166</color>
+    <color name="menu_bg">#FFFFFB</color>
+</resources>

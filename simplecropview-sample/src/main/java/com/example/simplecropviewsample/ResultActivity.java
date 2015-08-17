@@ -4,8 +4,7 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.ViewGroup;
-
-import com.isseiaoki.simplecropview.CropImageView;
+import android.widget.ImageView;
 
 
 public class ResultActivity extends Activity {
@@ -15,8 +14,11 @@ public class ResultActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
+        // apply custom font
         FontUtils.setFont((ViewGroup)findViewById(R.id.layout_root));
+        // get cropped bitmap from Application
         Bitmap cropped = ((AppController)getApplication()).cropped;
-        ((CropImageView)findViewById(R.id.result_image)).setImageBitmap(cropped);
+        // set cropped bitmap to ImageView
+        ((ImageView)findViewById(R.id.result_image)).setImageBitmap(cropped);
     }
 }
