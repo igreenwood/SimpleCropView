@@ -24,9 +24,9 @@ public class CropImageView extends ImageView {
 
     // Constants ///////////////////////////////////////////////////////////////////////////////////
 
-    private static final int HANDLE_SIZE_IN_DP = 24;
-    private static final int MIN_FRAME_SIZE_IN_DP = 100;
-    private static final int FRAME_STROKE_WEIGHT_IN_DP = 3;
+    private static final int HANDLE_SIZE_IN_DP = 16;
+    private static final int MIN_FRAME_SIZE_IN_DP = 50;
+    private static final int FRAME_STROKE_WEIGHT_IN_DP = 1;
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 1;
 
     private final int TRANSPARENT;
@@ -66,7 +66,7 @@ public class CropImageView extends ImageView {
     private boolean mShowHandle = true;
     private boolean mIsCropEnabled = true;
     private PointF mCustomRatio = new PointF(1.0f, 1.0f);
-    private float mFrameStrokeWeight = 6.0f;
+    private float mFrameStrokeWeight = 3.0f;
     private float mGuideStrokeWeight = 3.0f;
     private int mBackgroundColor;
     private int mOverlayColor;
