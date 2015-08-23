@@ -1,9 +1,8 @@
-[![Android Gems](http://www.android-gems.com/badge/IsseiAoki/SimpleCropView.svg?branch=master)](http://www.android-gems.com/lib/IsseiAoki/SimpleCropView)
-
-
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/cover-art.png)
 
 #SimpleCropView
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-SimpleCropView-green.svg?style=flat)](https://android-arsenal.com/details/1/2366)
+[![Android Gems](http://www.android-gems.com/badge/IsseiAoki/SimpleCropView.svg?branch=master)](http://www.android-gems.com/lib/IsseiAoki/SimpleCropView)
 
 The SimpleCropView is an image cropping library for Android.<br>
 It simplify your code for cropping image and provides easily customizable UI.<br><br>
@@ -136,7 +135,7 @@ cropImageView.setCropMode(CropImageView.CropMode.RATIO_16_9);
 RATIO_4_3, RATIO_3_4, RATIO_1_1, RATIO_16_9, RATIO_9_16, RATIO_FIT_IMAGE, RATIO_FREE
 ```
 
->`RATIO_FREE`:  *non-Fixed aspect ratio mode*<br>
+>`RATIO_FREE`:  *Non-Fixed aspect ratio mode*<br>
 `RATIO_X_Y`:  *Fixed aspect ratio mode*<br>
 `RATIO_FIT_IMAGE`:  *Fixed aspect ratio mode. The same aspect ratio as the original photo.*
 
