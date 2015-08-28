@@ -65,6 +65,7 @@ public class CropImageView extends ImageView {
     private boolean mShowGuide = true;
     private boolean mShowHandle = true;
     private boolean mIsCropEnabled = true;
+    private boolean mIsEnabled = true;
     private PointF mCustomRatio = new PointF(1.0f, 1.0f);
     private float mFrameStrokeWeight = 3.0f;
     private float mGuideStrokeWeight = 3.0f;
@@ -352,6 +353,7 @@ public class CropImageView extends ImageView {
     public boolean onTouchEvent(MotionEvent event) {
         if(!mIsInitialized)return false;
         if(!mIsCropEnabled)return false;
+        if(!mIsEnabled)return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 onDown(event);
@@ -1103,6 +1105,16 @@ public class CropImageView extends ImageView {
     public void setCropEnabled(boolean enabled){
         mIsCropEnabled = enabled;
         invalidate();
+    }
+
+    /**
+     * Set locking the crop frame.
+     * @param enabled should lock crop frame?
+     */
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        mIsEnabled = enabled;
     }
 
     private void setScale(float mScale) {
