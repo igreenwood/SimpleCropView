@@ -93,6 +93,9 @@ public class MainActivity extends Activity {
                     incrementImageIndex();
                     mCropView.setImageBitmap(getImageForIndex(mImageIndex));
                     break;
+                case R.id.buttonRotateImage:
+                    mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
+                    break;
             }
         }
     };
@@ -110,6 +113,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.button16_9).setOnClickListener(btnListener);
         findViewById(R.id.buttonFree).setOnClickListener(btnListener);
         findViewById(R.id.buttonChangeImage).setOnClickListener(btnListener);
+        findViewById(R.id.buttonRotateImage).setOnClickListener(btnListener);
         findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
         mRootLayout = (RelativeLayout) findViewById(R.id.layout_root);
     }

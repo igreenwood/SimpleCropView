@@ -174,20 +174,40 @@
         custom:frameStrokeWeight="1dp"
         custom:guideStrokeWeight="1dp"
         />
-
-    <Button
-        android:id="@+id/buttonChangeImage"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="@dimen/button_height"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
         android:layout_marginBottom="16dp"
-        android:padding="8dp"
-        android:text="CHANGE IMAGE"
-        android:textSize="@dimen/text_size_s"
-        android:textColor="@color/base"
-        android:background="@color/text"
         android:layout_alignBottom="@id/cropImageView"
         android:layout_centerHorizontal="true"
-        />
+        >
+        <Button
+            android:id="@+id/buttonChangeImage"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:layout_marginRight="8dp"
+            android:padding="8dp"
+            android:text="CHANGE IMAGE"
+            android:textSize="@dimen/text_size_s"
+            android:textColor="@color/base"
+            android:background="@color/text"
+            />
+
+        <Button
+            android:id="@+id/buttonRotateImage"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/button_height"
+            android:padding="8dp"
+            android:text="ROTATE IMAGE"
+            android:textSize="@dimen/text_size_s"
+            android:textColor="@color/base"
+            android:background="@color/text"
+            />
+
+    </LinearLayout>
+
+
 
     <View
         android:layout_width="match_parent"
