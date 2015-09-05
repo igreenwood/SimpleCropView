@@ -926,6 +926,19 @@ public class CropImageView extends ImageView {
     }
 
     /**
+     * Rotate image.
+     * @param degrees angle of ration in degrees.
+     */
+    public void rotateImage(RotateDegrees degrees){
+        int angle = degrees.getValue();
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        mBitmap = Bitmap.createBitmap(mBitmap, 0, 0, mBitmap.getWidth(), mBitmap.getHeight(), matrix, true);
+        setImageBitmap(mBitmap);
+    }
+
+    /**
      * Get cropped image bitmap
      * @return cropped image bitmap
      */
@@ -1163,6 +1176,16 @@ public class CropImageView extends ImageView {
         public int getId() {
             return ID;
         }
+    }
+
+    public enum RotateDegrees {
+        ROTATE_90D(90), ROTATE_180D(180), ROTATE_270D(270);
+
+        private final int VALUE;
+
+        private RotateDegrees(final int value) {this.VALUE = value;}
+
+        public int getValue() {return VALUE;}
     }
 
     // Save/Restore support ////////////////////////////////////////////////////////////////////////
