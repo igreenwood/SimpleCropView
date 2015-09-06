@@ -1194,6 +1194,14 @@ public class CropImageView extends ImageView {
         mIsEnabled = enabled;
     }
 
+    /**
+     * Set initial scale of the frame.(0.01 ~ 1.0)
+     * @param initialScale initial scale
+     */
+    public void setInitialFrameScale(float initialScale){
+        mInitialFrameScale = constrain(initialScale, 0.01f, 1.0f, DEFAULT_INITIAL_FRAME_SCALE);
+    }
+
     private void setScale(float mScale) {
         this.mScale = mScale;
     }
