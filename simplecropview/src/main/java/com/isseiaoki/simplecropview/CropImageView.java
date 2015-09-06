@@ -32,6 +32,7 @@ public class CropImageView extends ImageView {
     private static final int MIN_FRAME_SIZE_IN_DP = 50;
     private static final int FRAME_STROKE_WEIGHT_IN_DP = 1;
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 1;
+    private static final float DEFAULT_INITIAL_FRAME_SCALE = 0.75f;
 
     private final int TRANSPARENT;
     private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
@@ -79,6 +80,7 @@ public class CropImageView extends ImageView {
     private int mFrameColor;
     private int mHandleColor;
     private int mGuideColor;
+    private float mInitialFrameScale; // 0.01 ~ 1.0, 0.75 is default value
 
     // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -142,6 +144,7 @@ public class CropImageView extends ImageView {
         ss.isCropEnabled = this.mIsCropEnabled;
         ss.handleColor = this.mHandleColor;
         ss.guideColor = this.mGuideColor;
+        ss.initialFrameScale = this.mInitialFrameScale;
         return ss;
     }
 
@@ -166,6 +169,7 @@ public class CropImageView extends ImageView {
         this.mIsCropEnabled = ss.isCropEnabled;
         this.mHandleColor = ss.handleColor;
         this.mGuideColor = ss.guideColor;
+        this.mInitialFrameScale = ss.initialFrameScale;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -246,6 +250,7 @@ public class CropImageView extends ImageView {
             mFrameStrokeWeight = ta.getDimensionPixelSize(R.styleable.CropImageView_frameStrokeWeight, (int) (FRAME_STROKE_WEIGHT_IN_DP * mDensity));
             mGuideStrokeWeight = ta.getDimensionPixelSize(R.styleable.CropImageView_guideStrokeWeight, (int) (GUIDE_STROKE_WEIGHT_IN_DP * mDensity));
             mIsCropEnabled = ta.getBoolean(R.styleable.CropImageView_cropEnabled, true);
+            mInitialFrameScale = constrain(ta.getFloat(R.styleable.CropImageView_initialFrameScale, DEFAULT_INITIAL_FRAME_SCALE), 0.01f, 1.0f, DEFAULT_INITIAL_FRAME_SCALE);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -797,7 +802,11 @@ public class CropImageView extends ImageView {
         }
         float w = r - l;
         float h = b - t;
-        mFrameRect = new RectF(l + w/8, t + h/8, r - w/8, b - h/8);
+        float cx = l + w/2;
+        float cy = t + h/2;
+        float sw = w * mInitialFrameScale;
+        float sh = h * mInitialFrameScale;
+        mFrameRect = new RectF(cx - sw/2, cy - sh/2, cx + sw/2, cy + sh/2);
         invalidate();
     }
 
@@ -903,6 +912,11 @@ public class CropImageView extends ImageView {
 
     private float sq(float value) {
         return value * value;
+    }
+
+    private float constrain(float val, float min, float max, float defaultVal) {
+        if(val < min || val > max) return defaultVal;
+        return val;
     }
 
     // Public methods //////////////////////////////////////////////////////////////////////////////
@@ -1260,6 +1274,7 @@ public class CropImageView extends ImageView {
         boolean isCropEnabled;
         int handleColor;
         int guideColor;
+        float initialFrameScale;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1286,6 +1301,7 @@ public class CropImageView extends ImageView {
             isCropEnabled = (in.readInt() != 0);
             handleColor = in.readInt();
             guideColor = in.readInt();
+            initialFrameScale = in.readFloat();
         }
 
         @Override
@@ -1310,6 +1326,7 @@ public class CropImageView extends ImageView {
             out.writeInt(isCropEnabled ? 1 : 0);
             out.writeInt(handleColor);
             out.writeInt(guideColor);
+            out.writeFloat(initialFrameScale);
         }
     }
 }
