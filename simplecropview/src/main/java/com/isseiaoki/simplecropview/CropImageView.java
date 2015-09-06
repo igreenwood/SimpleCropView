@@ -996,10 +996,10 @@ public class CropImageView extends ImageView {
 
     /**
      * Crop the square image in a circular
-     * @param square
-     * @return
+     * @param square image bitmap
+     * @return circular image bitmap
      */
-    public static Bitmap getCircularBitmap(Bitmap square) {
+    public Bitmap getCircularBitmap(Bitmap square) {
         if (square == null) return null;
         Bitmap output = Bitmap.createBitmap(square.getWidth(), square.getHeight(),
                 Bitmap.Config.ARGB_8888);
