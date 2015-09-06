@@ -89,6 +89,9 @@ public class MainActivity extends Activity {
                 case R.id.buttonFree:
                     mCropView.setCropMode(CropImageView.CropMode.RATIO_FREE);
                     break;
+                case R.id.buttonCircle:
+                    mCropView.setCropMode(CropImageView.CropMode.CIRCLE);
+                    break;
                 case R.id.buttonChangeImage:
                     incrementImageIndex();
                     mCropView.setImageBitmap(getImageForIndex(mImageIndex));
@@ -115,6 +118,7 @@ public class MainActivity extends Activity {
         findViewById(R.id.buttonChangeImage).setOnClickListener(btnListener);
         findViewById(R.id.buttonRotateImage).setOnClickListener(btnListener);
         findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
+        findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
         mRootLayout = (RelativeLayout) findViewById(R.id.layout_root);
     }
 

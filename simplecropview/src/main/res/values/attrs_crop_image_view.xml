@@ -11,6 +11,7 @@
             <enum name="ratio_9_16" value="5"/>
             <enum name="ratio_free" value="6"/>
             <enum name="ratio_custom" value="7"/>
+            <enum name="circle" value="8"/>
         </attr>
         <attr name="backgroundColor" format="color"/>
         <attr name="overlayColor" format="color"/>

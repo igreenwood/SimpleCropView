@@ -146,6 +146,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/button_height"/>
 
+            <Button
+                android:id="@+id/buttonCircle"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="8dp"
+                android:padding="8dp"
+                android:textSize="@dimen/text_size_s"
+                android:text="CIRCLE"
+                android:textColor="@color/base"
+                android:background="@color/text"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/button_height"/>
+
 
         </LinearLayout>
     </HorizontalScrollView>
