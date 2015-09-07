@@ -11,6 +11,44 @@ Supported on API Level 9 and above.
 
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_basic_usage.gif)
 
+##Version 1.0.8 has been released!!
+SimpleCropView now supports the followings.
+
+* Image Rotation
+* Circle Crop
+* Initial Frame Size
+
+###Image Rotation
+Added `rotateImage(CropImageView.RotateDegrees degrees)` method.
+
+![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/demo_rotate_image.gif)
+
+Code for rotating the image 90 degrees clockwise is followings.
+
+```
+cropImageView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
+```
+
+You can also use `ROTATE_180D` and `ROTATE_270D`.
+
+###Circle Crop
+Added `CIRCLE` to `CropMode`.
+
+![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/demo_circle_crop.gif)
+
+You can also use `custom:cropMode="circle"` in your layout XML.
+
+###Initial Frame Size
+Added `setInitialFrameScale(float scale)`. (scale: 0.01 ~ 1.0. The default value is 0.75.)
+
+| scale | Appearance |
+|:-------------:|:-----:|
+| 0.5 | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.5.jpg" width="100%"> |
+| 0.75 (default) | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.75.jpg" width="100%"> |
+| 1.0 | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_1.0.jpg" width="100%"> |
+
+You can also use `custom:initialFrameScale="1.0"` in your layout XML.
+
 ##Table of Contents
 * [Download](#download) 
 * [Basic Usage](#basic-usage) 
