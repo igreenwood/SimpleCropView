@@ -995,6 +995,28 @@ public class CropImageView extends ImageView {
     }
 
     /**
+     * Get cropped rect image bitmap
+     *
+     * This method always returns rect image.
+     * (If you need a square image with CropMode.CIRCLE, you can use this method.)
+     * @return cropped image bitmap
+     */
+    public Bitmap getRectBitmap() {
+        int x = 0, y = 0, w = 0, h = 0;
+        if (mBitmap != null) {
+            int l = (int) (mFrameRect.left / mScale);
+            int t = (int) (mFrameRect.top / mScale);
+            int r = (int) (mFrameRect.right / mScale);
+            int b = (int) (mFrameRect.bottom / mScale);
+            x = l - (int) (mImageRect.left / mScale);
+            y = t - (int) (mImageRect.top / mScale);
+            w = r - l;
+            h = b - t;
+        }
+        return Bitmap.createBitmap(mBitmap, x, y, w, h, null, false);
+    }
+
+    /**
      * Crop the square image in a circular
      * @param square image bitmap
      * @return circular image bitmap
