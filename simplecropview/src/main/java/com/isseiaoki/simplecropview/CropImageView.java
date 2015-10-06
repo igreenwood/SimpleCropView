@@ -961,6 +961,19 @@ public class CropImageView extends ImageView {
     }
 
     /**
+     * Set image drawable.
+     * @param drawable
+     */
+    @Override
+    public void setImageDrawable(Drawable drawable){
+        if(drawable != null){
+            BitmapDrawable bd = (BitmapDrawable)drawable;
+            Bitmap bm = bd.getBitmap();
+            setImageBitmap(bm);
+        }
+    }
+
+    /**
      * Rotate image.
      * @param degrees angle of ration in degrees.
      */
