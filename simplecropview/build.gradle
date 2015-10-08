@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 22
-        versionCode 9
-        versionName "1.0.8"
+        versionCode 10
+        versionName "1.0.9"
     }
     buildTypes {
         release {
@@ -22,7 +22,7 @@ apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.isseiaoki'
-version = '1.0.8'
+version = '1.0.9'
 def siteUrl = 'https://github.com/IsseiAoki/SimpleCropView'
 def gitUrl = 'https://github.com/IsseiAoki/SimpleCropView.git'
 Properties properties = new Properties()
