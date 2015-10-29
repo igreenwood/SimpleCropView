@@ -1,6 +1,9 @@
 Change Log
 =========
 
+## Version 1.0.19
+* Fixed bug caused by float precision.(#20)
+
 ## Version 1.0.9
 
 * Added getActualCropRect()(#14)
