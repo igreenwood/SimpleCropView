@@ -1000,14 +1000,14 @@ public class CropImageView extends ImageView {
     public Bitmap getCroppedBitmap() {
         int x = 0, y = 0, w = 0, h = 0;
         if (mBitmap != null) {
-            int l = (int) (mFrameRect.left / mScale);
-            int t = (int) (mFrameRect.top / mScale);
-            int r = (int) (mFrameRect.right / mScale);
-            int b = (int) (mFrameRect.bottom / mScale);
-            x = l - (int) (mImageRect.left / mScale);
-            y = t - (int) (mImageRect.top / mScale);
-            w = r - l;
-            h = b - t;
+            float l = (mFrameRect.left / mScale);
+            float t = (mFrameRect.top / mScale);
+            float r = (mFrameRect.right / mScale);
+            float b = (mFrameRect.bottom / mScale);
+            x = Math.round(l - (mImageRect.left / mScale));
+            y = Math.round(t - (mImageRect.top / mScale));
+            w = Math.round(r - l);
+            h = Math.round(b - t);
         }
         Bitmap cropped = Bitmap.createBitmap(mBitmap, x, y, w, h, null, false);
         if (mCropMode != CropMode.CIRCLE) return cropped;
@@ -1025,14 +1025,14 @@ public class CropImageView extends ImageView {
     public Bitmap getRectBitmap() {
         int x = 0, y = 0, w = 0, h = 0;
         if (mBitmap != null) {
-            int l = (int) (mFrameRect.left / mScale);
-            int t = (int) (mFrameRect.top / mScale);
-            int r = (int) (mFrameRect.right / mScale);
-            int b = (int) (mFrameRect.bottom / mScale);
-            x = l - (int) (mImageRect.left / mScale);
-            y = t - (int) (mImageRect.top / mScale);
-            w = r - l;
-            h = b - t;
+            float l = (mFrameRect.left / mScale);
+            float t = (mFrameRect.top / mScale);
+            float r = (mFrameRect.right / mScale);
+            float b = (mFrameRect.bottom / mScale);
+            x = Math.round(l - (mImageRect.left / mScale));
+            y = Math.round(t - (mImageRect.top / mScale));
+            w = Math.round(r - l);
+            h = Math.round(b - t);
         }
         return Bitmap.createBitmap(mBitmap, x, y, w, h, null, false);
     }
