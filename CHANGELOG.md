@@ -1,7 +1,7 @@
 Change Log
 =========
 
-## Version 1.0.19
+## Version 1.0.10
 * Fixed bug caused by float precision.(#20)
 
 ## Version 1.0.9
