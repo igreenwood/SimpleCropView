@@ -38,7 +38,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.isseiaoki:simplecropview:1.0.10'
+    compile 'com.isseiaoki:simplecropview:1.0.11'
 }
 ```
 
