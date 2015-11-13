@@ -1,7 +1,7 @@
 Change Log
 =========
 ## Version 1.0.11
-* Fixed runtime exception when parcelling, added CREATOR(#25)
+* Fixed runtime exception when parcelling, added CREATOR(#17,#25)
 * Fixed logic for setting image
 * Added setImageURI(#19, #24)
 
