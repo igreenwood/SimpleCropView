@@ -1194,6 +1194,15 @@ public class CropImageView extends ImageView {
     }
 
     /**
+     * Set crop frame minimum size in pixels.
+     *
+     * @param minPx crop frame minimum size in pixels
+     */
+    public void setMinFrameSizeInPx(int minPx) {
+        mMinFrameSize = minPx;
+    }
+
+    /**
      * Set handle radius in density-independent pixels.
      *
      * @param handleDp handle radius in density-independent pixels
