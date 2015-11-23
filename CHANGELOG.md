@@ -1,5 +1,11 @@
 Change Log
 =========
+## Version 1.0.13
+* Added setMinFrameSizeInPx(#27,#28)
+
+## Version 1.0.12
+* Fixed bugs related to drawable.(#31)
+
 ## Version 1.0.11
 * Fixed runtime exception when parcelling, added CREATOR(#17,#25)
 * Fixed logic for setting image
