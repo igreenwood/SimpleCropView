@@ -1,5 +1,8 @@
 Change Log
 =========
+## Version 1.0.14
+* remove "application android:label" from Manifest of library
+
 ## Version 1.0.13
 * Added setMinFrameSizeInPx(#27,#28)
 
