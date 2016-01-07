@@ -1011,7 +1011,7 @@ public class CropImageView extends ImageView {
         Bitmap source = getBitmap();
         if (source == null) return null;
 
-        int x, y, w, h;
+        int x, y, w, h, sw, sh;
         float l = (mFrameRect.left / mScale);
         float t = (mFrameRect.top / mScale);
         float r = (mFrameRect.right / mScale);
@@ -1020,6 +1020,15 @@ public class CropImageView extends ImageView {
         y = Math.round(t - (mImageRect.top / mScale));
         w = Math.round(r - l);
         h = Math.round(b - t);
+
+        if(w > source.getWidth()){
+            w = source.getWidth();
+            x = 0;
+        }
+        if(h > source.getHeight()){
+            h = source.getHeight();
+            y = 0;
+        }
 
         Bitmap cropped = Bitmap.createBitmap(source, x, y, w, h, null, false);
         if (mCropMode != CropMode.CIRCLE) return cropped;
@@ -1047,6 +1056,15 @@ public class CropImageView extends ImageView {
         y = Math.round(t - (mImageRect.top / mScale));
         w = Math.round(r - l);
         h = Math.round(b - t);
+
+        if(w > source.getWidth()){
+            w = source.getWidth();
+            x = 0;
+        }
+        if(h > source.getHeight()){
+            h = source.getHeight();
+            y = 0;
+        }
 
         return Bitmap.createBitmap(source, x, y, w, h, null, false);
     }
