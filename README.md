@@ -5,7 +5,7 @@
 [![Android Gems](http://www.android-gems.com/badge/IsseiAoki/SimpleCropView.svg?branch=master)](http://www.android-gems.com/lib/IsseiAoki/SimpleCropView)
 
 The SimpleCropView is an image cropping library for Android.<br>
-It simplify your code for cropping image and provides easily customizable UI.<br><br>
+It simplifies your code for cropping image and provides an easily customizable UI.<br><br>
 Supported on API Level 9 and above.
 
 
@@ -25,7 +25,7 @@ Supported on API Level 9 and above.
   * [Stroke Weight and Handle Size](#stroke-weight-and-handle-size)
   * [Handle Touch Padding](#handle-touch-padding)
   * [Handle and Guide ShowMode](#handle-and-guide-showmode)
-* [Picasso Compatibility](#picasso-compatibility)
+* [Picasso and Glide Compatibility](#picasso-glide-compatibility)
 * [XML Attributes](#xml-attributes) 
 * [Developed By](#developed-by) 
 * [License](#license) 
@@ -120,7 +120,7 @@ For a working implementation of this project see the `simplecropview-sample` fol
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/demo_rotate_image.gif)
 
-Code for rotating the image 90 degrees clockwise is followings.
+Code for rotating the image 90 degrees clockwise:
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
@@ -182,6 +182,7 @@ The minimum size of the image cropping frame in dp.
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setMinFrameSizeInDp(100);
 ```
+You can also use `custom:minFrameSize="100dp"` in your layout XML.
 
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_minimum_frame_size.gif)
 
@@ -192,6 +193,7 @@ The initial frame size of the image cropping frame. (scale: 0.01 ~ 1.0. The defa
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setInitialFrameScale(1.0f);
 ```
+You can also use `custom:initialFrameScale="1.0"` in your layout XML.
 
 | scale | Appearance |
 |:-------------:|:-----:|
@@ -211,6 +213,13 @@ cropImageView.setFrameColor(getResources().getColor(R.color.frame));
 cropImageView.setHandleColor(getResources().getColor(R.color.handle));
 cropImageView.setGuideColor(getResources().getColor(R.color.guide));
 ```
+You can also use 
+`custom:backgroundColor="#FFFFFFFB`
+`custom:overlayColor="#AA1C1C1C"`
+`custom:frameColor="@color/frame"`
+`custom:handleColor="@color/handle"`
+`custom:guideColor="@color/guide"`
+in your layout XML.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/color-attributes.png)
 
@@ -222,6 +231,11 @@ cropImageView.setFrameStrokeWeightInDp(1);
 cropImageView.setGuideStrokeWeightInDp(1);
 cropImageView.setHandleSizeInDp(getResources().getDimension(R.dimen.handle_size));
 ```
+You can also use 
+`custom:frameStrokeWeight="1dp"`
+`custom:guideStrokeWeight="1dp"`
+`custom:handleSize="8dp"`
+in your layout XML.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/size-attributes.png)
 
@@ -233,6 +247,7 @@ Additional touch area for the image cropping frame handle.
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setTouchPadding(16);
 ```
+You can also use `custom:touchPadding="16dp"` in your layout XML.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/handle-touch-padding.png)
 
@@ -257,13 +272,18 @@ SHOW_ALWAYS, NOT_SHOW, SHOW_ON_TOUCH
 | SHOW_ALWAYS | SHOW_ON_TOUCH | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_guide_show_on_touch.gif" width="100%"> |
 | SHOW_ON_TOUCH | NOT_SHOW | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_handle_show_on_touch.gif" width="100%"> |
 
-##Picasso Compatibility
+##Picasso and Glide Compatibility
 `com.isseiaoki.simplecropview.CropImageView` is a kind of `ImageView`.
-You can use it with Picasso as follows.
+You can use it with Picasso or Glide as follows:
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 Picasso.with(context).load(imageUrl).into(cropImageView);
+```
+or
+```java
+CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
+Glide.with(context).load(imageUrl).into(cropImageView);
 ```
 
 >Some option does not work correctly because CropImageView does not support ImageView.ScaleType.
