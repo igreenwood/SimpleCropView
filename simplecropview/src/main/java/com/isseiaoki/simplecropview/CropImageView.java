@@ -80,7 +80,8 @@ public class CropImageView extends ImageView {
     private int mHandleColor;
     private int mGuideColor;
     private float mInitialFrameScale; // 0.01 ~ 1.0, 0.75 is default value
-
+    private int mCurrentCropHandlerMode = CropHandlerMode.CORNER;
+    
     // Constructor /////////////////////////////////////////////////////////////////////////////////
 
     public CropImageView(Context context) {
@@ -310,10 +311,15 @@ public class CropImageView extends ImageView {
         if (mShowHandle) {
             mPaintFrame.setStyle(Paint.Style.FILL);
             mPaintFrame.setColor(mHandleColor);
-            canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
-            canvas.drawCircle(mFrameRect.right, mFrameRect.top, mHandleSize, mPaintFrame);
-            canvas.drawCircle(mFrameRect.left, mFrameRect.bottom, mHandleSize, mPaintFrame);
-            canvas.drawCircle(mFrameRect.right, mFrameRect.bottom, mHandleSize, mPaintFrame);
+            if(mCurrentCropHandlerMode == CropHandlerMode.CIRCLE) {
+                canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
+                canvas.drawCircle(mFrameRect.right, mFrameRect.top, mHandleSize, mPaintFrame);
+                canvas.drawCircle(mFrameRect.left, mFrameRect.bottom, mHandleSize, mPaintFrame);
+                canvas.drawCircle(mFrameRect.right, mFrameRect.bottom, mHandleSize, mPaintFrame);
+            }else if(mCurrentCropHandlerMode == CropHandlerMode.CORNER) {
+                mPaintFrame.setStrokeWidth(mHandleSize / 2);
+                drawCorners(canvas);
+            }
         }
     }
 
@@ -322,6 +328,34 @@ public class CropImageView extends ImageView {
         mMatrix.setTranslate(mCenter.x - mImgWidth * 0.5f, mCenter.y - mImgHeight * 0.5f);
         mMatrix.postScale(mScale, mScale, mCenter.x, mCenter.y);
         mMatrix.postRotate(mAngle, mCenter.x, mCenter.y);
+    }
+    
+    private void drawCorners(Canvas canvas) {
+
+        float w = mPaintFrame.getStrokeWidth() ;
+        float l = mFrameRect.left;
+        float t = mFrameRect.top;
+        float r = mFrameRect.right;
+        float b = mFrameRect.bottom;
+        float mCornerOffset = mPaintFrame.getStrokeWidth() / 2 ;
+        float mCornerExtension = w ;
+        float mCornerLength = mHandleSize * 4;
+
+        // Top left
+        canvas.drawLine(l - mCornerOffset, t - mCornerExtension, l - mCornerOffset, t + mCornerLength, mPaintFrame);
+        canvas.drawLine(l, t - mCornerOffset, l + mCornerLength, t - mCornerOffset, mPaintFrame);
+
+        // Top right
+        canvas.drawLine(r + mCornerOffset, t - mCornerExtension, r + mCornerOffset, t + mCornerLength, mPaintFrame);
+        canvas.drawLine(r, t - mCornerOffset, r - mCornerLength, t - mCornerOffset, mPaintFrame);
+
+        // Bottom left
+        canvas.drawLine(l - mCornerOffset, b + mCornerExtension, l - mCornerOffset, b - mCornerLength, mPaintFrame);
+        canvas.drawLine(l, b + mCornerOffset, l + mCornerLength, b + mCornerOffset, mPaintFrame);
+
+        // Bottom left
+        canvas.drawLine(r + mCornerOffset, b + mCornerExtension, r + mCornerOffset, b - mCornerLength, mPaintFrame);
+        canvas.drawLine(r, b + mCornerOffset, r - mCornerLength, b + mCornerOffset, mPaintFrame);
     }
 
     // Initializer /////////////////////////////////////////////////////////////////////////////////
@@ -1304,6 +1338,19 @@ public class CropImageView extends ImageView {
         mIsCropEnabled = enabled;
         invalidate();
     }
+    
+    /**
+     * Set whether Crop Corner Handler style
+     * 
+     * @param {@link CornerCropImageView.CropHandlerMode }
+     */
+    public void setCurrentCropHandlerMode(int mode){
+        if(mode == CropHandlerMode.CIRCLE || mode == CropHandlerMode.CORNER) {
+            mCurrentCropHandlerMode = mode;
+        } else {
+            throw new InvalidParameterException();
+        }
+    }
 
     /**
      * Set locking the crop frame.
@@ -1386,7 +1433,12 @@ public class CropImageView extends ImageView {
             return VALUE;
         }
     }
-
+    
+    public interface CropHandlerMode{
+        int CIRCLE = 0;
+        int CORNER = 1;
+    }
+    
     // Save/Restore support ////////////////////////////////////////////////////////////////////////
 
     public static class SavedState extends BaseSavedState {
