@@ -1021,13 +1021,11 @@ public class CropImageView extends ImageView {
         w = Math.round(r - l);
         h = Math.round(b - t);
 
-        if(w > source.getWidth()){
-            w = source.getWidth();
-            x = 0;
+        if(x+w > source.getWidth()){
+            w = source.getWidth()-x;
         }
-        if(h > source.getHeight()){
-            h = source.getHeight();
-            y = 0;
+        if(y+h > source.getHeight()){
+            h = source.getHeight()-y;
         }
 
         Bitmap cropped = Bitmap.createBitmap(source, x, y, w, h, null, false);
