@@ -1,5 +1,8 @@
 Change Log
 =========
+## Version 1.0.16
+* Fixed bug x + width must be <= bitmap.width() (#40)
+
 ## Version 1.0.15
 * Added code for preventing java.lang.IllegalArgumentException: bug x + width must be <= bitmap.width()(#40)
 
