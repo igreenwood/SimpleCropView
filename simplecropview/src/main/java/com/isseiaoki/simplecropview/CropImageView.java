@@ -15,6 +15,7 @@ import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -22,6 +23,11 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.ImageView;
+
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
 
 
 public class CropImageView extends ImageView {
@@ -57,6 +63,7 @@ public class CropImageView extends ImageView {
     private RectF mImageRect;
     private PointF mCenter = new PointF();
     private float mLastX, mLastY;
+    private boolean mIsRotating = false;
 
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -189,7 +196,7 @@ public class CropImageView extends ImageView {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        if (getDrawable() != null) initLayout(mViewWidth, mViewHeight);
+        if (getDrawable() != null) setupLayout(mViewWidth, mViewHeight);
     }
 
     @Override
@@ -276,27 +283,29 @@ public class CropImageView extends ImageView {
         if (mShowHandle) drawHandles(canvas);
     }
 
-    private void drawHandles(Canvas canvas) {
-        mPaintFrame.setStyle(Paint.Style.FILL);
-        mPaintFrame.setColor(mHandleColor);
-        canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
-        canvas.drawCircle(mFrameRect.right, mFrameRect.top, mHandleSize, mPaintFrame);
-        canvas.drawCircle(mFrameRect.left, mFrameRect.bottom, mHandleSize, mPaintFrame);
-        canvas.drawCircle(mFrameRect.right, mFrameRect.bottom, mHandleSize, mPaintFrame);
-    }
+    private void drawOverlay(Canvas canvas) {
+        mPaintTransparent.setAntiAlias(true);
+        mPaintTransparent.setFilterBitmap(true);
+        mPaintTransparent.setColor(mOverlayColor);
+        mPaintTransparent.setStyle(Paint.Style.FILL);
 
-    private void drawGuidelines(Canvas canvas) {
-        mPaintFrame.setColor(mGuideColor);
-        mPaintFrame.setStrokeWidth(mGuideStrokeWeight);
-        float h1 = mFrameRect.left + (mFrameRect.right - mFrameRect.left) / 3.0f;
-        float h2 = mFrameRect.right - (mFrameRect.right - mFrameRect.left) / 3.0f;
-        float v1 = mFrameRect.top + (mFrameRect.bottom - mFrameRect.top) / 3.0f;
-        float v2 = mFrameRect.bottom - (mFrameRect.bottom - mFrameRect.top) / 3.0f;
+        if(mIsRotating){
 
-        canvas.drawLine(h1, mFrameRect.top, h1, mFrameRect.bottom, mPaintFrame);
-        canvas.drawLine(h2, mFrameRect.top, h2, mFrameRect.bottom, mPaintFrame);
-        canvas.drawLine(mFrameRect.left, v1, mFrameRect.right, v1, mPaintFrame);
-        canvas.drawLine(mFrameRect.left, v2, mFrameRect.right, v2, mPaintFrame);
+        }else{
+            Path path = new Path();
+            if (mCropMode == CropMode.CIRCLE) {
+                path.addRect(mImageRect, Path.Direction.CW);
+                PointF circleCenter = new PointF((mFrameRect.left + mFrameRect.right) / 2,
+                        (mFrameRect.top + mFrameRect.bottom) / 2);
+                float circleRadius = (mFrameRect.right - mFrameRect.left) / 2;
+                path.addCircle(circleCenter.x, circleCenter.y, circleRadius, Path.Direction.CCW);
+                canvas.drawPath(path, mPaintTransparent);
+            } else {
+                path.addRect(mImageRect, Path.Direction.CW);
+                path.addRect(mFrameRect, Path.Direction.CCW);
+                canvas.drawPath(path, mPaintTransparent);
+            }
+        }
     }
 
     private void drawFrame(Canvas canvas) {
@@ -305,29 +314,40 @@ public class CropImageView extends ImageView {
         mPaintFrame.setStyle(Paint.Style.STROKE);
         mPaintFrame.setColor(mFrameColor);
         mPaintFrame.setStrokeWidth(mFrameStrokeWeight);
-        canvas.drawRect(mFrameRect.left, mFrameRect.top, mFrameRect.right, mFrameRect.bottom,
-                mPaintFrame);
+        if(mIsRotating){
+
+        }else{
+            canvas.drawRect(mFrameRect, mPaintFrame);
+        }
     }
 
-    private void drawOverlay(Canvas canvas) {
-        mPaintTransparent.setAntiAlias(true);
-        mPaintTransparent.setFilterBitmap(true);
-        mPaintTransparent.setColor(mOverlayColor);
-        mPaintTransparent.setStyle(Paint.Style.FILL);
+    private void drawGuidelines(Canvas canvas) {
+        mPaintFrame.setColor(mGuideColor);
+        mPaintFrame.setStrokeWidth(mGuideStrokeWeight);
+        if(mIsRotating){
 
-        if (mCropMode == CropMode.CIRCLE) {
-            Path path = new Path();
-            path.addRect(mImageRect.left, mImageRect.top, mImageRect.right, mImageRect.bottom,
-                         Path.Direction.CW);
-            path.addCircle((mFrameRect.left + mFrameRect.right) / 2,
-                           (mFrameRect.top + mFrameRect.bottom) / 2,
-                           (mFrameRect.right - mFrameRect.left) / 2, Path.Direction.CCW);
-            canvas.drawPath(path, mPaintTransparent);
-        } else {
-            Path path = new Path();
-            path.addRect(mImageRect.left, mImageRect.top, mImageRect.right, mImageRect.bottom, Path.Direction.CW);
-            path.addRect(mFrameRect.left, mFrameRect.top, mFrameRect.right, mFrameRect.bottom, Path.Direction.CCW);
-            canvas.drawPath(path, mPaintTransparent);
+        }else{
+            float h1 = mFrameRect.left + (mFrameRect.right - mFrameRect.left) / 3.0f;
+            float h2 = mFrameRect.right - (mFrameRect.right - mFrameRect.left) / 3.0f;
+            float v1 = mFrameRect.top + (mFrameRect.bottom - mFrameRect.top) / 3.0f;
+            float v2 = mFrameRect.bottom - (mFrameRect.bottom - mFrameRect.top) / 3.0f;
+            canvas.drawLine(h1, mFrameRect.top, h1, mFrameRect.bottom, mPaintFrame);
+            canvas.drawLine(h2, mFrameRect.top, h2, mFrameRect.bottom, mPaintFrame);
+            canvas.drawLine(mFrameRect.left, v1, mFrameRect.right, v1, mPaintFrame);
+            canvas.drawLine(mFrameRect.left, v2, mFrameRect.right, v2, mPaintFrame);
+        }
+    }
+
+    private void drawHandles(Canvas canvas) {
+        mPaintFrame.setStyle(Paint.Style.FILL);
+        mPaintFrame.setColor(mHandleColor);
+        if(mIsRotating){
+
+        }else{
+            canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
+            canvas.drawCircle(mFrameRect.right, mFrameRect.top, mHandleSize, mPaintFrame);
+            canvas.drawCircle(mFrameRect.left, mFrameRect.bottom, mHandleSize, mPaintFrame);
+            canvas.drawCircle(mFrameRect.right, mFrameRect.bottom, mHandleSize, mPaintFrame);
         }
     }
 
@@ -338,51 +358,81 @@ public class CropImageView extends ImageView {
         mMatrix.postRotate(mAngle, mCenter.x, mCenter.y);
     }
 
-    // Initializer /////////////////////////////////////////////////////////////////////////////////
+    // Layout calculation //////////////////////////////////////////////////////////////////////////
 
-    private void initLayout(int viewW, int viewH) {
+    private void setupLayout(int viewW, int viewH) {
+        if(viewW == 0 || viewH == 0)return;
+        setCenter(new PointF(getPaddingLeft() + viewW * 0.5f, getPaddingTop() + viewH * 0.5f));
+        setScale(calcScale(viewW, viewH, mAngle));
+        setMatrix();
+        mImageRect = calcImageRect(0f, 0f, mImgWidth, mImgHeight, mMatrix);
+        mFrameRect = calcFrameRect(mImageRect);
+        invalidate();
+        mIsInitialized = true;
+    }
+
+    private float calcScale(int viewW, int viewH, float angle) {
         mImgWidth = getDrawable().getIntrinsicWidth();
         mImgHeight = getDrawable().getIntrinsicHeight();
         if (mImgWidth <= 0) mImgWidth = viewW;
         if (mImgHeight <= 0) mImgHeight = viewH;
-        float w = (float) viewW;
-        float h = (float) viewH;
-        float viewRatio = w / h;
-        float imgRatio = getRotatedWidth() / getRotatedHeight();
+        float viewRatio = (float)viewW / (float)viewH;
+        float imgRatio = getRotatedWidth(angle) / getRotatedHeight(angle);
         float scale = 1.0f;
         if (imgRatio >= viewRatio) {
-            scale = w / getRotatedWidth();
+            scale = viewW / getRotatedWidth(angle);
         } else if (imgRatio < viewRatio) {
-            scale = h / getRotatedHeight();
+            scale = viewH / getRotatedHeight(angle);
         }
-        setCenter(new PointF(getPaddingLeft() + w * 0.5f, getPaddingTop() + h * 0.5f));
-        setScale(scale);
-        initCropFrame();
-        adjustRatio();
-        mIsInitialized = true;
+        return scale;
     }
 
-    private void initCropFrame() {
-        setMatrix();
+    private RectF calcImageRect(float left, float top, float right, float bottom, Matrix matrix){
         float[] arrayOfFloat = new float[8];
-        arrayOfFloat[0] = 0.0f;
-        arrayOfFloat[1] = 0.0f;
-        arrayOfFloat[2] = 0.0f;
-        arrayOfFloat[3] = mImgHeight;
-        arrayOfFloat[4] = mImgWidth;
-        arrayOfFloat[5] = 0.0f;
-        arrayOfFloat[6] = mImgWidth;
-        arrayOfFloat[7] = mImgHeight;
-
-        mMatrix.mapPoints(arrayOfFloat);
-
+        arrayOfFloat[0] = left;
+        arrayOfFloat[1] = top;
+        arrayOfFloat[2] = left;
+        arrayOfFloat[3] = bottom;
+        arrayOfFloat[4] = right;
+        arrayOfFloat[5] = top;
+        arrayOfFloat[6] = right;
+        arrayOfFloat[7] = bottom;
+        matrix.mapPoints(arrayOfFloat);
         float l = arrayOfFloat[0];
         float t = arrayOfFloat[1];
         float r = arrayOfFloat[6];
         float b = arrayOfFloat[7];
+        return new RectF(Math.min(l, r), Math.min(t, b), Math.max(l, r), Math.max(t, b));
+    }
 
-        mFrameRect = new RectF(Math.min(l, r), Math.min(t, b), Math.max(l, r), Math.max(t, b));
-        mImageRect = new RectF(Math.min(l, r), Math.min(t, b), Math.max(l, r), Math.max(t, b));
+    private RectF calcFrameRect(RectF imageRect){
+        float frameW = getRatioX(imageRect.width());
+        float frameH = getRatioY(imageRect.height());
+        float imgRatio = imageRect.width() / imageRect.height();
+        float frameRatio = frameW / frameH;
+        float l = imageRect.left, t = imageRect.top, r = imageRect.right, b = imageRect.bottom;
+        if (frameRatio >= imgRatio) {
+            l = imageRect.left;
+            r = imageRect.right;
+            float hy = (imageRect.top + imageRect.bottom) * 0.5f;
+            float hh = (imageRect.width() / frameRatio) * 0.5f;
+            t = hy - hh;
+            b = hy + hh;
+        } else if (frameRatio < imgRatio) {
+            t = imageRect.top;
+            b = imageRect.bottom;
+            float hx = (imageRect.left + imageRect.right) * 0.5f;
+            float hw = imageRect.height() * frameRatio * 0.5f;
+            l = hx - hw;
+            r = hx + hw;
+        }
+        float w = r - l;
+        float h = b - t;
+        float cx = l + w / 2;
+        float cy = t + h / 2;
+        float sw = w * mInitialFrameScale;
+        float sh = h * mInitialFrameScale;
+        return new RectF(cx - sw / 2, cy - sh / 2, cx + sw / 2, cy + sh / 2);
     }
 
     // Touch Event /////////////////////////////////////////////////////////////////////////////////
@@ -391,6 +441,7 @@ public class CropImageView extends ImageView {
     public boolean onTouchEvent(MotionEvent event) {
         if (!mIsInitialized) return false;
         if (!mIsCropEnabled) return false;
+        if (mIsRotating) return false;
         if (!mIsEnabled) return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -534,12 +585,12 @@ public class CropImageView extends ImageView {
         return sq(mHandleSize + mTouchPadding) >= d;
     }
 
-    private float getRotatedWidth(){
-        return mAngle % 180 == 0 ? mImgWidth : mImgHeight;
+    private float getRotatedWidth(float angle){
+        return angle % 180 == 0 ? mImgWidth : mImgHeight;
     }
 
-    private float getRotatedHeight(){
-        return mAngle % 180 == 0 ? mImgHeight : mImgWidth;
+    private float getRotatedHeight(float angle){
+        return angle % 180 == 0 ? mImgHeight : mImgWidth;
     }
 
 
@@ -800,35 +851,9 @@ public class CropImageView extends ImageView {
 
     // Frame aspect ratio correction ///////////////////////////////////////////////////////////////
 
-    private void adjustRatio() {
-        if (mImageRect == null) return;
-        float frameW = getRatioX(mImageRect.width());
-        float frameH = getRatioY(mImageRect.height());
-        float imgRatio = mImageRect.width() / mImageRect.height();
-        float frameRatio = frameW / frameH;
-        float l = mImageRect.left, t = mImageRect.top, r = mImageRect.right, b = mImageRect.bottom;
-        if (frameRatio >= imgRatio) {
-            l = mImageRect.left;
-            r = mImageRect.right;
-            float hy = (mImageRect.top + mImageRect.bottom) * 0.5f;
-            float hh = (mImageRect.width() / frameRatio) * 0.5f;
-            t = hy - hh;
-            b = hy + hh;
-        } else if (frameRatio < imgRatio) {
-            t = mImageRect.top;
-            b = mImageRect.bottom;
-            float hx = (mImageRect.left + mImageRect.right) * 0.5f;
-            float hw = mImageRect.height() * frameRatio * 0.5f;
-            l = hx - hw;
-            r = hx + hw;
-        }
-        float w = r - l;
-        float h = b - t;
-        float cx = l + w / 2;
-        float cy = t + h / 2;
-        float sw = w * mInitialFrameScale;
-        float sh = h * mInitialFrameScale;
-        mFrameRect = new RectF(cx - sw / 2, cy - sh / 2, cx + sw / 2, cy + sh / 2);
+    private void recalculateFrameRect() {
+        if(mImageRect == null) return;
+        mFrameRect = calcFrameRect(mImageRect);
         invalidate();
     }
 
@@ -1004,7 +1029,7 @@ public class CropImageView extends ImageView {
         Drawable d = getDrawable();
         mAngle = 0f;
         if (d != null) {
-            initLayout(mViewWidth, mViewHeight);
+            setupLayout(mViewWidth, mViewHeight);
         }
     }
 
@@ -1014,8 +1039,55 @@ public class CropImageView extends ImageView {
      * @param degrees angle of ration in degrees.
      */
     public void rotateImage(RotateDegrees degrees) {
-        mAngle = (mAngle + degrees.getValue()) % 360;
-        initLayout(mViewWidth, mViewHeight);
+        rotateImage(degrees, false);
+    }
+
+    public void rotateImage(RotateDegrees degrees, boolean animate){
+        if(mIsRotating)return;
+        final float currentAngle = mAngle;
+        final float newAngle = (mAngle + degrees.getValue());
+        final float angleDiff = newAngle - currentAngle;
+        final float currentScale = mScale;
+        final float newScale = calcScale(mViewWidth, mViewHeight, newAngle);
+        if(animate){
+            final float scaleDiff = newScale - currentScale;
+            SimpleValueAnimator animator = getAnimator();
+            animator.addAnimatorListener(new SimpleValueAnimatorListener() {
+                @Override
+                public void onAnimationStarted() {
+                    mIsRotating = true;
+                }
+
+                @Override
+                public void onAnimationUpdated(float scale) {
+                    mAngle = currentAngle + angleDiff * scale;
+                    mScale = currentScale + scaleDiff * scale;
+                    setMatrix();
+                    invalidate();
+                }
+
+                @Override
+                public void onAnimationFinished() {
+                    mAngle = newAngle % 360;
+                    mScale = newScale;
+                    setupLayout(mViewWidth, mViewHeight);
+                    mIsRotating = false;
+                }
+            });
+            animator.startAnimation(200);
+        }else{
+            mAngle = newAngle % 360;
+            mScale = newScale;
+            setupLayout(mViewWidth, mViewHeight);
+        }
+    }
+
+    public SimpleValueAnimator getAnimator(){
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+            return new ValueAnimatorV8();
+        }else{
+            return new ValueAnimatorV14();
+        }
     }
 
     /**
@@ -1149,7 +1221,7 @@ public class CropImageView extends ImageView {
             setCustomRatio(1, 1);
         } else {
             mCropMode = mode;
-            adjustRatio();
+            recalculateFrameRect();
         }
     }
 
@@ -1163,7 +1235,7 @@ public class CropImageView extends ImageView {
         if (ratioX == 0 || ratioY == 0) return;
         mCropMode = CropMode.RATIO_CUSTOM;
         mCustomRatio = new PointF(ratioX, ratioY);
-        adjustRatio();
+        recalculateFrameRect();
     }
 
     /**
