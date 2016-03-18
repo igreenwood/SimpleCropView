@@ -65,6 +65,7 @@ public class CropImageView extends ImageView {
     private PointF mCenter = new PointF();
     private float mLastX, mLastY;
     private boolean mIsRotating = false;
+    private boolean mIsAnimating = false;
 
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -450,8 +451,9 @@ public class CropImageView extends ImageView {
     public boolean onTouchEvent(MotionEvent event) {
         if (!mIsInitialized) return false;
         if (!mIsCropEnabled) return false;
-        if (mIsRotating) return false;
         if (!mIsEnabled) return false;
+        if (mIsRotating) return false;
+        if (mIsAnimating) return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 onDown(event);
@@ -862,8 +864,41 @@ public class CropImageView extends ImageView {
 
     private void recalculateFrameRect() {
         if(mImageRect == null) return;
-        mFrameRect = calcFrameRect(mImageRect);
-        invalidate();
+        final RectF currentRect = new RectF(mFrameRect);
+        final RectF newRect = calcFrameRect(mImageRect);
+        final float diffL = newRect.left - currentRect.left;
+        final float diffT = newRect.top - currentRect.top;
+        final float diffR = newRect.right - currentRect.right;
+        final float diffB = newRect.bottom - currentRect.bottom;
+        if(mIsAnimationEnabled){
+            SimpleValueAnimator animator = getAnimator();
+            animator.addAnimatorListener(new SimpleValueAnimatorListener() {
+                @Override
+                public void onAnimationStarted() {
+                    mIsAnimating = true;
+                }
+
+                @Override
+                public void onAnimationUpdated(float scale) {
+                    mFrameRect = new RectF(currentRect.left + diffL * scale,
+                            currentRect.top + diffT * scale,
+                            currentRect.right + diffR * scale,
+                            currentRect.bottom + diffB * scale);
+                    invalidate();
+                }
+
+                @Override
+                public void onAnimationFinished() {
+                    mFrameRect = newRect;
+                    invalidate();
+                    mIsAnimating = false;
+                }
+            });
+            animator.startAnimation(mAnimationDuration);
+        }else{
+            mFrameRect = calcFrameRect(mImageRect);
+            invalidate();
+        }
     }
 
     private float getRatioX(float w) {
