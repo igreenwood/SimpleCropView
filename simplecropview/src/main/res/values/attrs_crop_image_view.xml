@@ -35,5 +35,7 @@
         <attr name="guideStrokeWeight" format="dimension"/>
         <attr name="cropEnabled" format="boolean"/>
         <attr name="initialFrameScale" format="float"/>
+        <attr name="animationEnabled" format="boolean"/>
+        <attr name="animationDuration" format="integer"/>
     </declare-styleable>
 </resources>

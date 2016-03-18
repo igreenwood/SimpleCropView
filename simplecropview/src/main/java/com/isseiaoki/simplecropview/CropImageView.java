@@ -40,6 +40,7 @@ public class CropImageView extends ImageView {
     private static final int FRAME_STROKE_WEIGHT_IN_DP = 1;
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 1;
     private static final float DEFAULT_INITIAL_FRAME_SCALE = 0.75f;
+    private static final int DEFAULT_ANIMATION_DURATION_MILLIS = 500;
 
     private final int TRANSPARENT;
     private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
@@ -87,6 +88,8 @@ public class CropImageView extends ImageView {
     private int mHandleColor;
     private int mGuideColor;
     private float mInitialFrameScale; // 0.01 ~ 1.0, 0.75 is default value
+    private boolean mIsAnimationEnabled = true;
+    private int mAnimationDuration = DEFAULT_ANIMATION_DURATION_MILLIS;
 
     // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -153,6 +156,8 @@ public class CropImageView extends ImageView {
         ss.guideColor = this.mGuideColor;
         ss.initialFrameScale = this.mInitialFrameScale;
         ss.angle = this.mAngle;
+        ss.isAnimationEnabled = this.mIsAnimationEnabled;
+        ss.animationDuration = this.mAnimationDuration;
         return ss;
     }
 
@@ -179,6 +184,8 @@ public class CropImageView extends ImageView {
         this.mGuideColor = ss.guideColor;
         this.mInitialFrameScale = ss.initialFrameScale;
         this.mAngle = ss.angle;
+        this.mIsAnimationEnabled = ss.isAnimationEnabled;
+        this.mAnimationDuration = ss.animationDuration;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -264,8 +271,10 @@ public class CropImageView extends ImageView {
                     (int) (GUIDE_STROKE_WEIGHT_IN_DP * mDensity));
             mIsCropEnabled = ta.getBoolean(R.styleable.CropImageView_cropEnabled, true);
             mInitialFrameScale = constrain(ta.getFloat(R.styleable.CropImageView_initialFrameScale,
-                                                       DEFAULT_INITIAL_FRAME_SCALE), 0.01f, 1.0f,
-                                           DEFAULT_INITIAL_FRAME_SCALE);
+                            DEFAULT_INITIAL_FRAME_SCALE), 0.01f, 1.0f,
+                    DEFAULT_INITIAL_FRAME_SCALE);
+            mIsAnimationEnabled = ta.getBoolean(R.styleable.CropImageView_animationEnabled, true);
+            mAnimationDuration = ta.getInt(R.styleable.CropImageView_animationDuration, DEFAULT_ANIMATION_DURATION_MILLIS);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -1038,18 +1047,14 @@ public class CropImageView extends ImageView {
      *
      * @param degrees angle of ration in degrees.
      */
-    public void rotateImage(RotateDegrees degrees) {
-        rotateImage(degrees, false);
-    }
-
-    public void rotateImage(RotateDegrees degrees, boolean animate){
+    public void rotateImage(RotateDegrees degrees){
         if(mIsRotating)return;
         final float currentAngle = mAngle;
         final float newAngle = (mAngle + degrees.getValue());
         final float angleDiff = newAngle - currentAngle;
         final float currentScale = mScale;
         final float newScale = calcScale(mViewWidth, mViewHeight, newAngle);
-        if(animate){
+        if(mIsAnimationEnabled){
             final float scaleDiff = newScale - currentScale;
             SimpleValueAnimator animator = getAnimator();
             animator.addAnimatorListener(new SimpleValueAnimatorListener() {
@@ -1074,7 +1079,7 @@ public class CropImageView extends ImageView {
                     mIsRotating = false;
                 }
             });
-            animator.startAnimation(200);
+            animator.startAnimation(mAnimationDuration);
         }else{
             mAngle = newAngle % 360;
             mScale = newScale;
@@ -1416,6 +1421,22 @@ public class CropImageView extends ImageView {
         mInitialFrameScale = constrain(initialScale, 0.01f, 1.0f, DEFAULT_INITIAL_FRAME_SCALE);
     }
 
+    /**
+     * Set whether to animate
+     * @param enabled
+     */
+    public void setAnimationEnabled(boolean enabled){
+        mIsAnimationEnabled = enabled;
+    }
+
+    /**
+     * Set duration of animation
+     * @param duration
+     */
+    public void setAnimationDuration(int duration){
+        mAnimationDuration = duration;
+    }
+
     private void setScale(float mScale) {
         this.mScale = mScale;
     }
@@ -1503,6 +1524,8 @@ public class CropImageView extends ImageView {
         int guideColor;
         float initialFrameScale;
         float angle;
+        boolean isAnimationEnabled;
+        int animationDuration;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1531,6 +1554,8 @@ public class CropImageView extends ImageView {
             guideColor = in.readInt();
             initialFrameScale = in.readFloat();
             angle = in.readFloat();
+            isAnimationEnabled = (in.readInt() != 0);
+            animationDuration = in.readInt();
         }
 
         @Override
@@ -1557,6 +1582,8 @@ public class CropImageView extends ImageView {
             out.writeInt(guideColor);
             out.writeFloat(initialFrameScale);
             out.writeFloat(angle);
+            out.writeInt(isAnimationEnabled ? 1 : 0);
+            out.writeInt(animationDuration);
         }
 
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

@@ -97,7 +97,7 @@ public class MainActivity extends Activity {
                     mCropView.setImageBitmap(getImageForIndex(mImageIndex));
                     break;
                 case R.id.buttonRotateImage:
-                    mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D, true);
+                    mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
                     break;
             }
         }
