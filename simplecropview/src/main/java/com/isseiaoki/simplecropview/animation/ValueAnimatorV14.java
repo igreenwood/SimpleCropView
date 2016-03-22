@@ -3,6 +3,7 @@ package com.isseiaoki.simplecropview.animation;
 import android.animation.Animator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.view.animation.Interpolator;
 
 @SuppressLint("NewApi")
 public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
@@ -25,10 +26,11 @@ public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorL
         }
     };
 
-    public ValueAnimatorV14(){
+    public ValueAnimatorV14(Interpolator interpolator){
         animator = ValueAnimator.ofFloat(0.0f, 1.0f);
         animator.addListener(this);
         animator.addUpdateListener(this);
+        animator.setInterpolator(interpolator);
     }
 
     @Override

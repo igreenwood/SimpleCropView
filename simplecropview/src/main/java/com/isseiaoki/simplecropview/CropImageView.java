@@ -22,6 +22,8 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.WindowManager;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
 import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
@@ -46,6 +48,7 @@ public class CropImageView extends ImageView {
     private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
     private final int WHITE = 0xFFFFFFFF;
     private final int TRANSLUCENT_BLACK = 0xBB000000;
+    private final Interpolator DEFAULT_INTERPOLATOR = new AccelerateDecelerateInterpolator();
 
     // Member variables ////////////////////////////////////////////////////////////////////////////
 
@@ -66,6 +69,8 @@ public class CropImageView extends ImageView {
     private float mLastX, mLastY;
     private boolean mIsRotating = false;
     private boolean mIsAnimating = false;
+    private SimpleValueAnimator mAnimator = null;
+    private Interpolator mInterpolator = DEFAULT_INTERPOLATOR;
 
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -90,7 +95,7 @@ public class CropImageView extends ImageView {
     private int mGuideColor;
     private float mInitialFrameScale; // 0.01 ~ 1.0, 0.75 is default value
     private boolean mIsAnimationEnabled = true;
-    private int mAnimationDuration = DEFAULT_ANIMATION_DURATION_MILLIS;
+    private int mAnimationDurationMillis = DEFAULT_ANIMATION_DURATION_MILLIS;
 
     // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -158,7 +163,7 @@ public class CropImageView extends ImageView {
         ss.initialFrameScale = this.mInitialFrameScale;
         ss.angle = this.mAngle;
         ss.isAnimationEnabled = this.mIsAnimationEnabled;
-        ss.animationDuration = this.mAnimationDuration;
+        ss.animationDuration = this.mAnimationDurationMillis;
         return ss;
     }
 
@@ -186,7 +191,7 @@ public class CropImageView extends ImageView {
         this.mInitialFrameScale = ss.initialFrameScale;
         this.mAngle = ss.angle;
         this.mIsAnimationEnabled = ss.isAnimationEnabled;
-        this.mAnimationDuration = ss.animationDuration;
+        this.mAnimationDurationMillis = ss.animationDuration;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -275,7 +280,7 @@ public class CropImageView extends ImageView {
                             DEFAULT_INITIAL_FRAME_SCALE), 0.01f, 1.0f,
                     DEFAULT_INITIAL_FRAME_SCALE);
             mIsAnimationEnabled = ta.getBoolean(R.styleable.CropImageView_animationEnabled, true);
-            mAnimationDuration = ta.getInt(R.styleable.CropImageView_animationDuration, DEFAULT_ANIMATION_DURATION_MILLIS);
+            mAnimationDurationMillis = ta.getInt(R.styleable.CropImageView_animationDuration, DEFAULT_ANIMATION_DURATION_MILLIS);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -862,8 +867,11 @@ public class CropImageView extends ImageView {
 
     // Frame aspect ratio correction ///////////////////////////////////////////////////////////////
 
-    private void recalculateFrameRect() {
+    private void recalculateFrameRect(int durationMillis) {
         if(mImageRect == null) return;
+        if(mIsAnimating){
+            getAnimator().cancelAnimation();
+        }
         final RectF currentRect = new RectF(mFrameRect);
         final RectF newRect = calcFrameRect(mImageRect);
         final float diffL = newRect.left - currentRect.left;
@@ -894,7 +902,7 @@ public class CropImageView extends ImageView {
                     mIsAnimating = false;
                 }
             });
-            animator.startAnimation(mAnimationDuration);
+            animator.startAnimation(durationMillis);
         }else{
             mFrameRect = calcFrameRect(mImageRect);
             invalidate();
@@ -1078,12 +1086,14 @@ public class CropImageView extends ImageView {
     }
 
     /**
-     * Rotate image.
-     *
-     * @param degrees angle of ration in degrees.
+     * Rotate image
+     * @param degrees
+     * @param durationMillis
      */
-    public void rotateImage(RotateDegrees degrees){
-        if(mIsRotating)return;
+    public void rotateImage(RotateDegrees degrees, int durationMillis){
+        if(mIsRotating){
+            getAnimator().cancelAnimation();
+        }
         final float currentAngle = mAngle;
         final float newAngle = (mAngle + degrees.getValue());
         final float angleDiff = newAngle - currentAngle;
@@ -1114,7 +1124,7 @@ public class CropImageView extends ImageView {
                     mIsRotating = false;
                 }
             });
-            animator.startAnimation(mAnimationDuration);
+            animator.startAnimation(durationMillis);
         }else{
             mAngle = newAngle % 360;
             mScale = newScale;
@@ -1122,13 +1132,29 @@ public class CropImageView extends ImageView {
         }
     }
 
-    public SimpleValueAnimator getAnimator(){
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-            return new ValueAnimatorV8();
-        }else{
-            return new ValueAnimatorV14();
+    /**
+     * Rotate image
+     * @param degrees
+     */
+    public void rotateImage(RotateDegrees degrees){
+        rotateImage(degrees, mAnimationDurationMillis);
+    }
+
+    private SimpleValueAnimator getAnimator(){
+        setupAnimatorIfNeeded();
+        return mAnimator;
+    }
+
+    private void setupAnimatorIfNeeded() {
+        if(mAnimator == null){
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH){
+                mAnimator =  new ValueAnimatorV8(mInterpolator);
+            }else{
+                mAnimator = new ValueAnimatorV14(mInterpolator);
+            }
         }
     }
+
 
     /**
      * Get cropped image bitmap
@@ -1253,29 +1279,46 @@ public class CropImageView extends ImageView {
 
     /**
      * Set crop mode
-     *
-     * @param mode crop mode
+     * @param mode
+     * @param durationMillis
      */
-    public void setCropMode(CropMode mode) {
+    public void setCropMode(CropMode mode, int durationMillis) {
         if (mode == CropMode.RATIO_CUSTOM) {
             setCustomRatio(1, 1);
         } else {
             mCropMode = mode;
-            recalculateFrameRect();
+            recalculateFrameRect(durationMillis);
         }
     }
 
     /**
-     * Set custom aspect ratio to crop frame
-     *
-     * @param ratioX aspect ratio X
-     * @param ratioY aspect ratio Y
+     * Set crop mode
+     * @param mode
      */
-    public void setCustomRatio(int ratioX, int ratioY) {
+    public void setCropMode(CropMode mode){
+        setCropMode(mode, mAnimationDurationMillis);
+    }
+
+    /**
+     * Set custom aspect ratio to crop frame
+     * @param ratioX
+     * @param ratioY
+     * @param durationMillis
+     */
+    public void setCustomRatio(int ratioX, int ratioY, int durationMillis) {
         if (ratioX == 0 || ratioY == 0) return;
         mCropMode = CropMode.RATIO_CUSTOM;
         mCustomRatio = new PointF(ratioX, ratioY);
-        recalculateFrameRect();
+        recalculateFrameRect(durationMillis);
+    }
+
+    /**
+     * Set custom aspect ratio to crop frame
+     * @param ratioX
+     * @param ratioY
+     */
+    public void setCustomRatio(int ratioX, int ratioY) {
+        setCustomRatio(ratioX, ratioY, mAnimationDurationMillis);
     }
 
     /**
@@ -1466,10 +1509,21 @@ public class CropImageView extends ImageView {
 
     /**
      * Set duration of animation
-     * @param duration
+     * @param durationMillis
      */
-    public void setAnimationDuration(int duration){
-        mAnimationDuration = duration;
+    public void setAnimationDuration(int durationMillis){
+        mAnimationDurationMillis = durationMillis;
+    }
+
+    /**
+     * Set interpolator of animation
+     * (Default interpolator is AccelerateDecelerateInterpolator)
+     * @param interpolator
+     */
+    public void setInterpolator(Interpolator interpolator){
+        mInterpolator = interpolator;
+        mAnimator = null;
+        setupAnimatorIfNeeded();
     }
 
     private void setScale(float mScale) {

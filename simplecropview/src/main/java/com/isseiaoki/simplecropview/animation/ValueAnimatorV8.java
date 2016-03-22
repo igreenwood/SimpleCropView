@@ -13,7 +13,7 @@ public class ValueAnimatorV8 implements SimpleValueAnimator{
     private static final int UPDATE_SPAN = Math.round((float)1000/(float)FRAME_RATE);
     private static final int DEFAULT_ANIMATION_DURATION = 150;
 
-    final Interpolator interpolator = new AccelerateDecelerateInterpolator();
+    private Interpolator mInterpolator;
     ScheduledExecutorService service;
     long start;
     boolean isAnimationStarted = false;
@@ -46,13 +46,13 @@ public class ValueAnimatorV8 implements SimpleValueAnimator{
                 service.shutdown();
                 return;
             }
-            float scale = Math.min(interpolator.getInterpolation((float) elapsed / duration), 1);
+            float scale = Math.min(mInterpolator.getInterpolation((float) elapsed / duration), 1);
             animatorListener.onAnimationUpdated(scale);
         }
     };
 
-    public ValueAnimatorV8(){
-
+    public ValueAnimatorV8(Interpolator interpolator){
+        this.mInterpolator = interpolator;
     }
 
     @Override
