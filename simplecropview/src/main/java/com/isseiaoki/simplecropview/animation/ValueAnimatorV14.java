@@ -6,7 +6,7 @@ import android.annotation.SuppressLint;
 
 @SuppressLint("NewApi")
 public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
-    private static final int DEFAULT_ANIMATION_DURATION = 300;
+    private static final int DEFAULT_ANIMATION_DURATION = 150;
     private ValueAnimator animator;
     private SimpleValueAnimatorListener animatorListener = new SimpleValueAnimatorListener() {
         @Override

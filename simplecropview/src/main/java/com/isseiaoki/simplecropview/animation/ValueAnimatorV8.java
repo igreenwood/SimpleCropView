@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class ValueAnimatorV8 implements SimpleValueAnimator{
     private static final int FRAME_RATE = 30;
     private static final int UPDATE_SPAN = Math.round((float)1000/(float)FRAME_RATE);
-    private static final int DEFAULT_ANIMATION_DURATION = 300;
+    private static final int DEFAULT_ANIMATION_DURATION = 150;
 
     final Interpolator interpolator = new AccelerateDecelerateInterpolator();
     ScheduledExecutorService service;
