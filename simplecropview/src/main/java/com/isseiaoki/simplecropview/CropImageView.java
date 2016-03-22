@@ -303,7 +303,7 @@ public class CropImageView extends ImageView {
 
         }else{
             Path path = new Path();
-            if (mCropMode == CropMode.CIRCLE) {
+            if (!mIsAnimating && mCropMode == CropMode.CIRCLE) {
                 path.addRect(mImageRect, Path.Direction.CW);
                 PointF circleCenter = new PointF((mFrameRect.left + mFrameRect.right) / 2,
                         (mFrameRect.top + mFrameRect.bottom) / 2);
