@@ -1,16 +1,15 @@
 package com.isseiaoki.simplecropview.animation;
 
 import android.os.SystemClock;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class ValueAnimatorV8 implements SimpleValueAnimator{
+public class ValueAnimatorV8 implements SimpleValueAnimator {
     private static final int FRAME_RATE = 30;
-    private static final int UPDATE_SPAN = Math.round((float)1000/(float)FRAME_RATE);
+    private static final int UPDATE_SPAN = Math.round((float) 1000 / (float) FRAME_RATE);
     private static final int DEFAULT_ANIMATION_DURATION = 150;
 
     private Interpolator mInterpolator;
@@ -51,7 +50,7 @@ public class ValueAnimatorV8 implements SimpleValueAnimator{
         }
     };
 
-    public ValueAnimatorV8(Interpolator interpolator){
+    public ValueAnimatorV8(Interpolator interpolator) {
         this.mInterpolator = interpolator;
     }
 
@@ -83,6 +82,6 @@ public class ValueAnimatorV8 implements SimpleValueAnimator{
 
     @Override
     public void addAnimatorListener(SimpleValueAnimatorListener animatorListener) {
-        if(animatorListener != null)this.animatorListener = animatorListener;
+        if (animatorListener != null) this.animatorListener = animatorListener;
     }
 }

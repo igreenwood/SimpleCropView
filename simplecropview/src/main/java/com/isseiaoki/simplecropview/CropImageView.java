@@ -31,7 +31,7 @@ import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
 import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
 import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
 
-
+@SuppressWarnings("unused")
 public class CropImageView extends ImageView {
     private static final String TAG = CropImageView.class.getSimpleName();
 
@@ -44,7 +44,7 @@ public class CropImageView extends ImageView {
     private static final float DEFAULT_INITIAL_FRAME_SCALE = 0.75f;
     private static final int DEFAULT_ANIMATION_DURATION_MILLIS = 150;
 
-    private final int TRANSPARENT;
+    private final int TRANSPARENT = 0x00000000;
     private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
     private final int WHITE = 0xFFFFFFFF;
     private final int TRANSLUCENT_BLACK = 0xBB000000;
@@ -109,7 +109,6 @@ public class CropImageView extends ImageView {
 
     public CropImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        TRANSPARENT = getResources().getColor(android.R.color.transparent);
 
         float mDensity = getDensity();
         mHandleSize = (int) (mDensity * HANDLE_SIZE_IN_DP);
@@ -140,8 +139,7 @@ public class CropImageView extends ImageView {
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
-        Bitmap bm = getBitmap();
-        ss.image = bm;
+        ss.image = getBitmap();
         ss.mode = this.mCropMode;
         ss.backgroundColor = this.mBackgroundColor;
         ss.overlayColor = this.mOverlayColor;
@@ -604,6 +602,7 @@ public class CropImageView extends ImageView {
         checkMoveBounds();
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private void moveHandleLT(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.left += diffX;
@@ -650,6 +649,7 @@ public class CropImageView extends ImageView {
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private void moveHandleRT(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.right += diffX;
@@ -696,6 +696,7 @@ public class CropImageView extends ImageView {
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private void moveHandleLB(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.left += diffX;
@@ -742,6 +743,7 @@ public class CropImageView extends ImageView {
         }
     }
 
+    @SuppressWarnings("UnnecessaryLocalVariable")
     private void moveHandleRB(float diffX, float diffY) {
         if (mCropMode == CropMode.RATIO_FREE) {
             mFrameRect.right += diffX;
@@ -1040,7 +1042,7 @@ public class CropImageView extends ImageView {
     /**
      * Set image drawable.
      *
-     * @param drawable
+     * @param drawable source image drawable
      */
     @Override
     public void setImageDrawable(Drawable drawable) {
@@ -1052,7 +1054,7 @@ public class CropImageView extends ImageView {
     /**
      * Set image uri
      *
-     * @param uri
+     * @param uri source image local uri
      */
     @Override
     public void setImageURI(Uri uri) {
@@ -1072,8 +1074,8 @@ public class CropImageView extends ImageView {
     /**
      * Rotate image
      *
-     * @param degrees
-     * @param durationMillis
+     * @param degrees rotation angle
+     * @param durationMillis animation duration in milliseconds
      */
     public void rotateImage(RotateDegrees degrees, int durationMillis) {
         if (mIsRotating) {
@@ -1120,7 +1122,7 @@ public class CropImageView extends ImageView {
     /**
      * Rotate image
      *
-     * @param degrees
+     * @param degrees rotation angle
      */
     public void rotateImage(RotateDegrees degrees) {
         rotateImage(degrees, mAnimationDurationMillis);
@@ -1266,8 +1268,8 @@ public class CropImageView extends ImageView {
     /**
      * Set crop mode
      *
-     * @param mode
-     * @param durationMillis
+     * @param mode crop mode
+     * @param durationMillis animation duration in milliseconds
      */
     public void setCropMode(CropMode mode, int durationMillis) {
         if (mode == CropMode.RATIO_CUSTOM) {
@@ -1281,7 +1283,7 @@ public class CropImageView extends ImageView {
     /**
      * Set crop mode
      *
-     * @param mode
+     * @param mode crop mode
      */
     public void setCropMode(CropMode mode) {
         setCropMode(mode, mAnimationDurationMillis);
@@ -1290,9 +1292,9 @@ public class CropImageView extends ImageView {
     /**
      * Set custom aspect ratio to crop frame
      *
-     * @param ratioX
-     * @param ratioY
-     * @param durationMillis
+     * @param ratioX ratio x
+     * @param ratioY ratio y
+     * @param durationMillis animation duration in milliseconds
      */
     public void setCustomRatio(int ratioX, int ratioY, int durationMillis) {
         if (ratioX == 0 || ratioY == 0) return;
@@ -1304,8 +1306,8 @@ public class CropImageView extends ImageView {
     /**
      * Set custom aspect ratio to crop frame
      *
-     * @param ratioX
-     * @param ratioY
+     * @param ratioX ratio x
+     * @param ratioY ratio y
      */
     public void setCustomRatio(int ratioX, int ratioY) {
         setCustomRatio(ratioX, ratioY, mAnimationDurationMillis);
@@ -1492,7 +1494,7 @@ public class CropImageView extends ImageView {
     /**
      * Set whether to animate
      *
-     * @param enabled
+     * @param enabled is animation enabled
      */
     public void setAnimationEnabled(boolean enabled) {
         mIsAnimationEnabled = enabled;
@@ -1501,7 +1503,7 @@ public class CropImageView extends ImageView {
     /**
      * Set duration of animation
      *
-     * @param durationMillis
+     * @param durationMillis animation duration in milliseconds
      */
     public void setAnimationDuration(int durationMillis) {
         mAnimationDurationMillis = durationMillis;
@@ -1511,7 +1513,7 @@ public class CropImageView extends ImageView {
      * Set interpolator of animation
      * (Default interpolator is AccelerateDecelerateInterpolator)
      *
-     * @param interpolator
+     * @param interpolator interpolator used for animation
      */
     public void setInterpolator(Interpolator interpolator) {
         mInterpolator = interpolator;
@@ -1538,7 +1540,7 @@ public class CropImageView extends ImageView {
     // Enum ////////////////////////////////////////////////////////////////////////////////////////
 
     private enum TouchArea {
-        OUT_OF_BOUNDS, CENTER, LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM;
+        OUT_OF_BOUNDS, CENTER, LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM
     }
 
     public enum CropMode {
@@ -1546,7 +1548,7 @@ public class CropImageView extends ImageView {
                 5), RATIO_FREE(6), RATIO_CUSTOM(7), CIRCLE(8);
         private final int ID;
 
-        private CropMode(final int id) {
+        CropMode(final int id) {
             this.ID = id;
         }
 
@@ -1559,7 +1561,7 @@ public class CropImageView extends ImageView {
         SHOW_ALWAYS(1), SHOW_ON_TOUCH(2), NOT_SHOW(3);
         private final int ID;
 
-        private ShowMode(final int id) {
+        ShowMode(final int id) {
             this.ID = id;
         }
 
@@ -1573,7 +1575,7 @@ public class CropImageView extends ImageView {
 
         private final int VALUE;
 
-        private RotateDegrees(final int value) {
+        RotateDegrees(final int value) {
             this.VALUE = value;
         }
 

@@ -1,8 +1,8 @@
 package com.isseiaoki.simplecropview.animation;
-
+@SuppressWarnings("unused")
 public interface SimpleValueAnimator {
-    public void startAnimation(long duration);
-    public void cancelAnimation();
-    public boolean isAnimationStarted();
-    public void addAnimatorListener(SimpleValueAnimatorListener animatorListener);
+    void startAnimation(long duration);
+    void cancelAnimation();
+    boolean isAnimationStarted();
+    void addAnimatorListener(SimpleValueAnimatorListener animatorListener);
 }

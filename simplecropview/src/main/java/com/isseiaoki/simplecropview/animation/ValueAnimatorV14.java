@@ -2,10 +2,11 @@ package com.isseiaoki.simplecropview.animation;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.os.Build;
 import android.view.animation.Interpolator;
 
-@SuppressLint("NewApi")
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
     private static final int DEFAULT_ANIMATION_DURATION = 150;
     private ValueAnimator animator;
