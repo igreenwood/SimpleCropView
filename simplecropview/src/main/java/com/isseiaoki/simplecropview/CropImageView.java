@@ -60,7 +60,7 @@ public class CropImageView extends ImageView {
     private float mImgHeight = 0.0f;
     private boolean mIsInitialized = false;
     private Matrix mMatrix = null;
-    private Paint mPaintTransparent;
+    private Paint mPaintTranslucent;
     private Paint mPaintFrame;
     private Paint mPaintBitmap;
     private RectF mFrameRect;
@@ -117,7 +117,7 @@ public class CropImageView extends ImageView {
         mGuideStrokeWeight = mDensity * GUIDE_STROKE_WEIGHT_IN_DP;
 
         mPaintFrame = new Paint();
-        mPaintTransparent = new Paint();
+        mPaintTranslucent = new Paint();
         mPaintBitmap = new Paint();
         mPaintBitmap.setFilterBitmap(true);
 
@@ -298,10 +298,10 @@ public class CropImageView extends ImageView {
     }
 
     private void drawOverlay(Canvas canvas) {
-        mPaintTransparent.setAntiAlias(true);
-        mPaintTransparent.setFilterBitmap(true);
-        mPaintTransparent.setColor(mOverlayColor);
-        mPaintTransparent.setStyle(Paint.Style.FILL);
+        mPaintTranslucent.setAntiAlias(true);
+        mPaintTranslucent.setFilterBitmap(true);
+        mPaintTranslucent.setColor(mOverlayColor);
+        mPaintTranslucent.setStyle(Paint.Style.FILL);
         Path path = new Path();
         if (!mIsAnimating && mCropMode == CropMode.CIRCLE) {
             path.addRect(mImageRect, Path.Direction.CW);
@@ -309,11 +309,11 @@ public class CropImageView extends ImageView {
                     (mFrameRect.top + mFrameRect.bottom) / 2);
             float circleRadius = (mFrameRect.right - mFrameRect.left) / 2;
             path.addCircle(circleCenter.x, circleCenter.y, circleRadius, Path.Direction.CCW);
-            canvas.drawPath(path, mPaintTransparent);
+            canvas.drawPath(path, mPaintTranslucent);
         } else {
             path.addRect(mImageRect, Path.Direction.CW);
             path.addRect(mFrameRect, Path.Direction.CCW);
-            canvas.drawPath(path, mPaintTransparent);
+            canvas.drawPath(path, mPaintTranslucent);
         }
     }
 
