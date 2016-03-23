@@ -303,7 +303,7 @@ public class CropImageView extends ImageView {
         mPaintTranslucent.setColor(mOverlayColor);
         mPaintTranslucent.setStyle(Paint.Style.FILL);
         Path path = new Path();
-        if (!mIsAnimating && mCropMode == CropMode.CIRCLE) {
+        if (!mIsAnimating && (mCropMode == CropMode.CIRCLE || mCropMode == CropMode.SHOW_CIRCLE_BUT_CROP_AS_SQUARE)) {
             path.addRect(mImageRect, Path.Direction.CW);
             PointF circleCenter = new PointF((mFrameRect.left + mFrameRect.right) / 2,
                     (mFrameRect.top + mFrameRect.bottom) / 2);
@@ -911,6 +911,7 @@ public class CropImageView extends ImageView {
                 return 9.0f;
             case RATIO_1_1:
             case CIRCLE:
+            case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
                 return 1.0f;
             case RATIO_CUSTOM:
                 return mCustomRatio.x;
@@ -935,6 +936,7 @@ public class CropImageView extends ImageView {
                 return 16.0f;
             case RATIO_1_1:
             case CIRCLE:
+            case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
                 return 1.0f;
             case RATIO_CUSTOM:
                 return mCustomRatio.y;
@@ -957,6 +959,7 @@ public class CropImageView extends ImageView {
                 return 9.0f;
             case RATIO_1_1:
             case CIRCLE:
+            case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
                 return 1.0f;
             case RATIO_CUSTOM:
                 return mCustomRatio.x;
@@ -979,6 +982,7 @@ public class CropImageView extends ImageView {
                 return 16.0f;
             case RATIO_1_1:
             case CIRCLE:
+            case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
                 return 1.0f;
             case RATIO_CUSTOM:
                 return mCustomRatio.y;
@@ -1177,42 +1181,6 @@ public class CropImageView extends ImageView {
         Bitmap cropped = Bitmap.createBitmap(rotated, x, y, w, h, null, false);
         if (mCropMode != CropMode.CIRCLE) return cropped;
         return getCircularBitmap(cropped);
-    }
-
-    /**
-     * Get cropped rect image bitmap
-     * <p/>
-     * This method always returns rect image.
-     * (If you need a square image with CropMode.CIRCLE, you can use this method.)
-     *
-     * @return cropped image bitmap
-     */
-    public Bitmap getRectBitmap() {
-        Bitmap source = getBitmap();
-        if (source == null) return null;
-
-        Matrix rotateMatrix = new Matrix();
-        rotateMatrix.setRotate(mAngle, source.getWidth() / 2, source.getHeight() / 2);
-        Bitmap rotated = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), rotateMatrix, true);
-
-        int x, y, w, h;
-        float l = (mFrameRect.left / mScale);
-        float t = (mFrameRect.top / mScale);
-        float r = (mFrameRect.right / mScale);
-        float b = (mFrameRect.bottom / mScale);
-        x = Math.round(l - (mImageRect.left / mScale));
-        y = Math.round(t - (mImageRect.top / mScale));
-        w = Math.round(r - l);
-        h = Math.round(b - t);
-
-        if (x + w > rotated.getWidth()) {
-            w = rotated.getWidth() - x;
-        }
-        if (y + h > rotated.getHeight()) {
-            h = rotated.getHeight() - y;
-        }
-
-        return Bitmap.createBitmap(rotated, x, y, w, h, null, false);
     }
 
     /**
@@ -1545,7 +1513,7 @@ public class CropImageView extends ImageView {
 
     public enum CropMode {
         RATIO_FIT_IMAGE(0), RATIO_4_3(1), RATIO_3_4(2), RATIO_1_1(3), RATIO_16_9(4), RATIO_9_16(
-                5), RATIO_FREE(6), RATIO_CUSTOM(7), CIRCLE(8);
+                5), RATIO_FREE(6), RATIO_CUSTOM(7), CIRCLE(8), SHOW_CIRCLE_BUT_CROP_AS_SQUARE(9);
         private final int ID;
 
         CropMode(final int id) {
