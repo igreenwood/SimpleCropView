@@ -16,6 +16,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
@@ -30,6 +32,13 @@ import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
 import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
 import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
 import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
+import com.isseiaoki.simplecropview.callback.CropCallback;
+import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
+
+import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @SuppressWarnings("unused")
 public class CropImageView extends ImageView {
@@ -48,7 +57,6 @@ public class CropImageView extends ImageView {
     private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
     private final int WHITE = 0xFFFFFFFF;
     private final int TRANSLUCENT_BLACK = 0xBB000000;
-    private final Interpolator DEFAULT_INTERPOLATOR = new AccelerateDecelerateInterpolator();
 
     // Member variables ////////////////////////////////////////////////////////////////////////////
 
@@ -70,7 +78,19 @@ public class CropImageView extends ImageView {
     private boolean mIsRotating = false;
     private boolean mIsAnimating = false;
     private SimpleValueAnimator mAnimator = null;
+    private final Interpolator DEFAULT_INTERPOLATOR = new AccelerateDecelerateInterpolator();
     private Interpolator mInterpolator = DEFAULT_INTERPOLATOR;
+    private LoadCallback mLoadCallback = null;
+    private CropCallback mCropCallback = null;
+    private SaveCallback mSaveCallback = null;
+    private ExecutorService mExecutor;
+    private Handler mHandler = new Handler(Looper.getMainLooper());
+    private Uri mSourceUri = null;
+    private Uri mSaveUri = null;
+    private int mExifRotation = 0;
+    private int maxX;
+    private int maxY;
+    private boolean mIsLogginEnabled = false;
 
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -110,6 +130,7 @@ public class CropImageView extends ImageView {
     public CropImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
+        mExecutor = Executors.newSingleThreadExecutor();
         float mDensity = getDensity();
         mHandleSize = (int) (mDensity * HANDLE_SIZE_IN_DP);
         mMinFrameSize = mDensity * MIN_FRAME_SIZE_IN_DP;
@@ -162,6 +183,8 @@ public class CropImageView extends ImageView {
         ss.angle = this.mAngle;
         ss.isAnimationEnabled = this.mIsAnimationEnabled;
         ss.animationDuration = this.mAnimationDurationMillis;
+        ss.exifRotation = this.mExifRotation;
+        ss.sourceUri = this.mSourceUri;
         return ss;
     }
 
@@ -190,6 +213,8 @@ public class CropImageView extends ImageView {
         this.mAngle = ss.angle;
         this.mIsAnimationEnabled = ss.isAnimationEnabled;
         this.mAnimationDurationMillis = ss.animationDuration;
+        this.mExifRotation = ss.exifRotation;
+        this.mSourceUri = ss.sourceUri;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -223,6 +248,12 @@ public class CropImageView extends ImageView {
                 drawCropFrame(canvas);
             }
         }
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        mExecutor.shutdown();
+        super.onDetachedFromWindow();
     }
 
     // Handle styleable ////////////////////////////////////////////////////////////////////////////
@@ -364,8 +395,8 @@ public class CropImageView extends ImageView {
         setMatrix();
         mImageRect = calcImageRect(0f, 0f, mImgWidth, mImgHeight, mMatrix);
         mFrameRect = calcFrameRect(mImageRect);
-        invalidate();
         mIsInitialized = true;
+        invalidate();
     }
 
     private float calcScale(int viewW, int viewH, float angle) {
@@ -1026,9 +1057,7 @@ public class CropImageView extends ImageView {
      */
     @Override
     public void setImageBitmap(Bitmap bitmap) {
-        mIsInitialized = false;
-        super.setImageBitmap(bitmap);
-        updateDrawableInfo();
+        super.setImageBitmap(bitmap); // calles setImageDrawable internally
     }
 
     /**
@@ -1069,9 +1098,51 @@ public class CropImageView extends ImageView {
 
     private void updateDrawableInfo() {
         Drawable d = getDrawable();
-        mAngle = 0f;
+        mAngle = mExifRotation;
         if (d != null) {
             setupLayout(mViewWidth, mViewHeight);
+        }
+    }
+
+    /**
+     * Load image
+     *
+     * @param sourceUri Image Uri
+     * @param callback Callback
+     */
+    public void startLoad(Uri sourceUri, LoadCallback callback){
+        mLoadCallback = callback;
+        mSourceUri = sourceUri;
+        if(sourceUri == null){
+            if(callback != null) mLoadCallback.onError();
+            throw new IllegalStateException("Source Uri is null");
+        }else{
+            mExecutor.submit(new Runnable() {
+                @Override
+                public void run() {
+                    File file = Utils.getFileFromUri(getContext(), mSourceUri);
+                    mExifRotation = Utils.getExifRotation(file);
+                    int maxSize = Utils.getMaxSize();
+                    int requestSize = Math.max(mViewWidth, mViewHeight);
+                    if (requestSize == 0) requestSize = maxSize;
+                    try {
+                        final Bitmap sampledBitmap = Utils.decodeSampledBitmapFromFile(file, requestSize);
+                        mHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setImageBitmap(sampledBitmap);
+                                if (mLoadCallback != null) mLoadCallback.onSuccess();
+                            }
+                        });
+                    } catch (OutOfMemoryError e) {
+                        Logger.e("OOM Error : " + e.getMessage(), e);
+                        if(mLoadCallback != null) mLoadCallback.onError();
+                    } catch (Exception e) {
+                        Logger.e("Something go wrong : " + e.getMessage(), e);
+                        if(mLoadCallback != null) mLoadCallback.onError();
+                    }
+                }
+            });
         }
     }
 
@@ -1489,6 +1560,38 @@ public class CropImageView extends ImageView {
         setupAnimatorIfNeeded();
     }
 
+    /**
+     * Set whether to log exception
+     * @param enabled is logging enabled
+     */
+    public void setLoggingEnabled(boolean enabled){
+        Logger.enabled = enabled;
+    }
+
+    /**
+     * Set Image Load callback
+     * @param callback callback
+     */
+    public void setLoadCallback(LoadCallback callback){
+        mLoadCallback = callback;
+    }
+
+    /**
+     * Set Image Crop callback
+     * @param callback callback
+     */
+    public void setCropCallback(CropCallback callback){
+        mCropCallback = callback;
+    }
+
+    /**
+     * Set Image Save callback
+     * @param callback callback
+     */
+    public void setSaveCallback(SaveCallback callback){
+        mSaveCallback = callback;
+    }
+
     private void setScale(float mScale) {
         this.mScale = mScale;
     }
@@ -1578,6 +1681,8 @@ public class CropImageView extends ImageView {
         float angle;
         boolean isAnimationEnabled;
         int animationDuration;
+        int exifRotation;
+        Uri sourceUri;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1608,6 +1713,8 @@ public class CropImageView extends ImageView {
             angle = in.readFloat();
             isAnimationEnabled = (in.readInt() != 0);
             animationDuration = in.readInt();
+            exifRotation = in.readInt();
+            sourceUri = in.readParcelable(Uri.class.getClassLoader());
         }
 
         @Override
@@ -1636,6 +1743,8 @@ public class CropImageView extends ImageView {
             out.writeFloat(angle);
             out.writeInt(isAnimationEnabled ? 1 : 0);
             out.writeInt(animationDuration);
+            out.writeInt(exifRotation);
+            out.writeParcelable(sourceUri, flag);
         }
 
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
