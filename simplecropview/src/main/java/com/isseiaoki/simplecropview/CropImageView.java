@@ -53,10 +53,10 @@ public class CropImageView extends ImageView {
     private static final float DEFAULT_INITIAL_FRAME_SCALE = 0.75f;
     private static final int DEFAULT_ANIMATION_DURATION_MILLIS = 150;
 
-    private final int TRANSPARENT = 0x00000000;
-    private final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
-    private final int WHITE = 0xFFFFFFFF;
-    private final int TRANSLUCENT_BLACK = 0xBB000000;
+    private static final int TRANSPARENT = 0x00000000;
+    private static final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
+    private static final int WHITE = 0xFFFFFFFF;
+    private static final int TRANSLUCENT_BLACK = 0xBB000000;
 
     // Member variables ////////////////////////////////////////////////////////////////////////////
 
@@ -90,7 +90,7 @@ public class CropImageView extends ImageView {
     private int mExifRotation = 0;
     private int maxX;
     private int maxY;
-    private boolean mIsLogginEnabled = false;
+    private boolean mIsLoggingEnabled = false;
 
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -1138,7 +1138,7 @@ public class CropImageView extends ImageView {
                         Logger.e("OOM Error : " + e.getMessage(), e);
                         if(mLoadCallback != null) mLoadCallback.onError();
                     } catch (Exception e) {
-                        Logger.e("Something go wrong : " + e.getMessage(), e);
+                        Logger.e("Something went wrong : " + e.getMessage(), e);
                         if(mLoadCallback != null) mLoadCallback.onError();
                     }
                 }
