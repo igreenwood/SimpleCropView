@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 public class AppController extends Application{
     private static final String TAG = AppController.class.getSimpleName();
     private static AppController instance;
-    public Bitmap cropped = null;
 
     @Override
     public void onCreate(){

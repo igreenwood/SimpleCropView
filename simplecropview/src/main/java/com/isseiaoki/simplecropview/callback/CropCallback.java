@@ -2,7 +2,7 @@ package com.isseiaoki.simplecropview.callback;
 
 import android.graphics.Bitmap;
 
-public interface CropCallback {
-    void onSuccess(Bitmap cropped);
+public interface CropCallback extends Callback {
+    void onSuccess(Bitmap cropped, int rotationAngle);
     void onError();
 }

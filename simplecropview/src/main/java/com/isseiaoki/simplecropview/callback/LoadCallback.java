@@ -1,9 +1,7 @@
 package com.isseiaoki.simplecropview.callback;
 
 
-import android.graphics.Bitmap;
-
-public interface LoadCallback {
+public interface LoadCallback extends Callback{
     void onSuccess();
     void onError();
 }

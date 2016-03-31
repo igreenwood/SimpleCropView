@@ -18,6 +18,8 @@ import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
 
+import java.io.File;
+
 public class MainFragment extends Fragment {
     public static final String TAG = MainFragment.class.getSimpleName();
     private static final int REQUEST_PICK_IMAGE = 10011;
@@ -63,7 +65,7 @@ public class MainFragment extends Fragment {
         // apply custom font
         FontUtils.setFont(mRootLayout);
         // set bitmap to CropImageView
-        if(mCropView.getImageBitmap() == null){
+        if (mCropView.getImageBitmap() == null) {
             mCropView.setImageBitmap(getImageForIndex(mImageIndex));
         }
     }
@@ -72,17 +74,9 @@ public class MainFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             mImageIndex = savedInstanceState.getInt(KEY_IMG_INDEX);
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        mCropView.setLoadCallback(null);
-        mCropView.setCropCallback(null);
-        mCropView.setSaveCallback(null);
-        super.onDestroy();
     }
 
     @Override
@@ -94,7 +88,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent result) {
         super.onActivityResult(requestCode, resultCode, result);
-        if(requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK){
+        if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
             mCropView.startLoad(result.getData(), new LoadCallback() {
                 @Override
@@ -122,25 +116,33 @@ public class MainFragment extends Fragment {
                 case R.id.buttonDone:
                     // Get cropped bitmap and pass it to Application
                     showProgress();
-                    mCropView.startCrop(null, new CropCallback() {
-                        @Override
-                        public void onSuccess(Bitmap cropped) {
-                            Log.d(TAG, "onSuccess");
-                            if(AppController.getInstance().cropped != null){
-                                AppController.getInstance().cropped.recycle();
-                                AppController.getInstance().cropped = null;
-                            }
-                            AppController.getInstance().cropped = cropped;
-                            dismissProgress();
-                            ((MainActivity) getActivity()).startResultActivity();
-                        }
+                    mCropView.startCrop(
+                            createSaveUri(),
+                            new CropCallback() {
+                                @Override
+                                public void onSuccess(Bitmap cropped, int rotationAngle) {
+                                    Log.d(TAG, "crop success");
+                                }
 
-                        @Override
-                        public void onError() {
-                            Log.d(TAG, "onError");
-                            dismissProgress();
-                        }
-                    }, null);
+                                @Override
+                                public void onError() {
+                                    Log.d(TAG, "crop error");
+                                }
+                            },
+                            new SaveCallback() {
+                                @Override
+                                public void onSuccess(Uri outputUri) {
+                                    Log.d(TAG, "save success");
+                                    dismissProgress();
+                                    ((MainActivity) getActivity()).startResultActivity(outputUri);
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Log.d(TAG, "save error");
+                                    dismissProgress();
+                                }
+                            });
                     break;
                 case R.id.buttonFitImage:
                     mCropView.setCropMode(CropImageView.CropMode.RATIO_FIT_IMAGE);
@@ -220,11 +222,11 @@ public class MainFragment extends Fragment {
         return BitmapFactory.decodeResource(getResources(), resId);
     }
 
-    public void pickImage(){
+    public void pickImage() {
         startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), REQUEST_PICK_IMAGE);
     }
 
-    public void showProgress(){
+    public void showProgress() {
         ProgressDialogFragment f = ProgressDialogFragment.getInstance();
         getFragmentManager()
                 .beginTransaction()
@@ -233,10 +235,14 @@ public class MainFragment extends Fragment {
                 .commit();
     }
 
-    public void dismissProgress(){
-        ProgressDialogFragment f = (ProgressDialogFragment)getFragmentManager().findFragmentByTag(PROGRESS_DIALOG);
-        if(f != null){
+    public void dismissProgress() {
+        ProgressDialogFragment f = (ProgressDialogFragment) getFragmentManager().findFragmentByTag(PROGRESS_DIALOG);
+        if (f != null) {
             getFragmentManager().beginTransaction().remove(f).commit();
         }
+    }
+
+    public Uri createSaveUri() {
+        return Uri.fromFile(new File(getActivity().getCacheDir(), "cropped"));
     }
 }

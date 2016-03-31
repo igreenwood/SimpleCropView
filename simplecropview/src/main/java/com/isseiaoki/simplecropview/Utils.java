@@ -1,6 +1,7 @@
 package com.isseiaoki.simplecropview;
 
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -43,6 +44,22 @@ public class Utils {
         return 0;
     }
 
+    public static int getExifOrientation(Context context, Uri uri) {
+        Cursor cursor = null;
+        String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
+        try {
+            cursor = context.getContentResolver().query(uri, projection, null, null, null);
+            if (cursor == null || !cursor.moveToFirst()) {
+                return 0;
+            }
+            return cursor.getInt(0);
+        } catch (RuntimeException ignored) {
+            return 0;
+        } finally {
+            closeQuietly(cursor);
+        }
+    }
+
     public static int getRotateDegreeFromOrientation(int orientation) {
         int degree = 0;
         switch (orientation) {
@@ -59,6 +76,66 @@ public class Utils {
                 break;
         }
         return degree;
+    }
+
+    public static Matrix getMatrixFromExifOrientation(int orientation) {
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_UNDEFINED:
+                break;
+            case ExifInterface.ORIENTATION_NORMAL:
+                break;
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.postScale(-1.0f, 1.0f);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.postRotate(180.0f);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.postScale(1.0f, -1.0f);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.postRotate(90.0f);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.postRotate(-90.0f);
+                matrix.postScale(1.0f, -1.0f);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.postRotate(90.0f);
+                matrix.postScale(1.0f, -1.0f);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.postRotate(-90.0f);
+                break;
+        }
+        return matrix;
+    }
+
+    public static int getExifOrientationFromAngle(int angle) {
+        int normalizedAngle = angle % 360;
+        switch (normalizedAngle) {
+            case 0:
+                return ExifInterface.ORIENTATION_NORMAL;
+            case 90:
+                return ExifInterface.ORIENTATION_ROTATE_90;
+            case 180:
+                return ExifInterface.ORIENTATION_ROTATE_180;
+            case 270:
+                return ExifInterface.ORIENTATION_ROTATE_270;
+            default:
+                return ExifInterface.ORIENTATION_NORMAL;
+        }
+    }
+
+    public static void setExifOrientation(File file, int exifOrientation) {
+        if (file == null) return;
+        try {
+            ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+            exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(exifOrientation));
+        } catch (IOException e) {
+            Logger.e("Cannot get Exif data" + e.getMessage(), e);
+        }
     }
 
     /**
@@ -159,7 +236,7 @@ public class Utils {
                 }
             }
         } finally {
-            tryClose(cursor);
+            closeQuietly(cursor);
         }
         return null;
     }
@@ -229,8 +306,8 @@ public class Utils {
             return new File(filePath);
         } catch (IOException ignored) {
         } finally {
-            tryClose(input);
-            tryClose(output);
+            closeQuietly(input);
+            closeQuietly(output);
         }
         return null;
     }
@@ -258,7 +335,7 @@ public class Utils {
             BitmapFactory.decodeStream(is, null, options);
         } catch (FileNotFoundException ignored) {
         } finally {
-            tryClose(is);
+            closeQuietly(is);
         }
         int inSampleSize = 1;
         Log.d(TAG, "calculateInSampleSize");
@@ -306,7 +383,7 @@ public class Utils {
         return maxSize;
     }
 
-    public static void tryClose(Closeable closeable) {
+    public static void closeQuietly(Closeable closeable) {
         if (closeable == null) return;
         try {
             closeable.close();

@@ -35,13 +35,14 @@ import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
 import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
 import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
 import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
+import com.isseiaoki.simplecropview.callback.Callback;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -102,6 +103,8 @@ public class CropImageView extends ImageView {
     private int mOutputHeight;
     private boolean mIsLoggingEnabled = false;
     private boolean mIsCropping = false;
+    private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.PNG;
+    private int mCompressQuality = 100;
 
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -196,6 +199,9 @@ public class CropImageView extends ImageView {
         ss.animationDuration = this.mAnimationDurationMillis;
         ss.exifRotation = this.mExifRotation;
         ss.sourceUri = this.mSourceUri;
+        ss.saveUri = this.mSaveUri;
+        ss.compressFormat = this.mCompressFormat;
+        ss.compressQuality = this.mCompressQuality;
         return ss;
     }
 
@@ -226,6 +232,9 @@ public class CropImageView extends ImageView {
         this.mAnimationDurationMillis = ss.animationDuration;
         this.mExifRotation = ss.exifRotation;
         this.mSourceUri = ss.sourceUri;
+        this.mSaveUri = ss.saveUri;
+        this.mCompressFormat = ss.compressFormat;
+        this.mCompressQuality = ss.compressQuality;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -1134,38 +1143,50 @@ public class CropImageView extends ImageView {
         mLoadCallback = callback;
         mSourceUri = sourceUri;
         if (sourceUri == null) {
-            if (mLoadCallback != null) mLoadCallback.onError();
+            postErrorOnMainThread(mLoadCallback);
             throw new IllegalStateException("Source Uri must not be null");
         }
         mExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                File file = Utils.getFileFromUri(getContext(), mSourceUri);
-                mExifRotation = Utils.getExifRotation(file);
+                mExifRotation = Utils.getExifOrientation(getContext(), mSourceUri);
                 int maxSize = Utils.getMaxSize();
                 int requestSize = Math.max(mViewWidth, mViewHeight);
                 if (requestSize == 0) requestSize = maxSize;
-                Log.d(TAG, "requestSize = "+requestSize);
+                Log.d(TAG, "requestSize = " + requestSize);
                 try {
                     final Bitmap sampledBitmap = Utils.decodeSampledBitmapFromUri(getContext(), mSourceUri, requestSize);
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d(TAG, "load: (w, h) = ("+sampledBitmap.getWidth()+","+sampledBitmap.getHeight()+")");
+                            Log.d(TAG, "load: (w, h) = (" + sampledBitmap.getWidth() + "," + sampledBitmap.getHeight() + ")");
                             setImageBitmap(sampledBitmap);
                             if (mLoadCallback != null) mLoadCallback.onSuccess();
                         }
                     });
                 } catch (OutOfMemoryError e) {
                     Logger.e("OOM Error: " + e.getMessage(), e);
-                    if (mLoadCallback != null) mLoadCallback.onError();
+                    postErrorOnMainThread(mLoadCallback);
                 } catch (Exception e) {
                     Logger.e("Something went wrong: " + e.getMessage(), e);
-                    if (mLoadCallback != null) mLoadCallback.onError();
+                    postErrorOnMainThread(mLoadCallback);
                 }
             }
         });
+    }
 
+    private void postErrorOnMainThread(final Callback callback){
+        if(callback == null) return;
+        if(Looper.myLooper() == Looper.getMainLooper()){
+            callback.onError();
+        }else{
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onError();
+                }
+            });
+        }
     }
 
     /**
@@ -1313,8 +1334,8 @@ public class CropImageView extends ImageView {
         mCropCallback = cropCallback;
         mSaveCallback = saveCallback;
         if (mIsCropping) {
-            if (mCropCallback != null) mCropCallback.onError();
-            if (mSaveCallback != null) mSaveCallback.onError();
+            postErrorOnMainThread(mCropCallback);
+            postErrorOnMainThread(mSaveCallback);
             return;
         }
         mIsCropping = true;
@@ -1330,21 +1351,35 @@ public class CropImageView extends ImageView {
                 // Use file for crop
                 else {
                     cropped = decodeRegion();
+                    if (mCropMode == CropMode.CIRCLE) {
+                        cropped = getCircularBitmap(cropped);
+                    }
                 }
 
                 // Success
                 if (cropped != null) {
                     cropped = scaleBitmapIfNeeded(cropped);
-                    if (mCropCallback != null) mCropCallback.onSuccess(cropped);
+                    final Bitmap tmp = cropped;
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (mCropCallback != null) mCropCallback.onSuccess(tmp, (int)mAngle);
+                        }
+                    });
                 }
                 // Error
                 else {
-                    if (mCropCallback != null) mCropCallback.onError();
+                    postErrorOnMainThread(mCropCallback);
                 }
+
+                if (mSaveUri == null) {
+                    postErrorOnMainThread(mSaveCallback);
+                    return;
+                }
+                saveToFile(cropped, mSaveUri);
                 mIsCropping = false;
             }
         });
-        // TODO: Save file
     }
 
     private Bitmap decodeRegion() {
@@ -1356,7 +1391,7 @@ public class CropImageView extends ImageView {
             BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(is, false);
             final int originalImageWidth = decoder.getWidth();
             final int originalImageHeight = decoder.getHeight();
-            Log.d(TAG, "decoder: (w, h) = ("+originalImageWidth+","+originalImageHeight+")");
+            Log.d(TAG, "decoder: (w, h) = (" + originalImageWidth + "," + originalImageHeight + ")");
             Rect cropRect = calcCropRect(originalImageWidth, originalImageHeight);
             if (mAngle != 0) {
                 Matrix matrix = new Matrix();
@@ -1367,8 +1402,8 @@ public class CropImageView extends ImageView {
                 cropRect = new Rect((int) rotated.left, (int) rotated.top, (int) rotated.right, (int) rotated.bottom);
             }
             cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
-            Log.d(TAG, "cropRect = "+cropRect.toString());
-            Log.d(TAG, "cropped: (w, h) = ("+cropped.getWidth()+","+cropped.getHeight()+")");
+            Log.d(TAG, "cropRect = " + cropRect.toString());
+            Log.d(TAG, "cropped: (w, h) = (" + cropped.getWidth() + "," + cropped.getHeight() + ")");
         } catch (IOException e) {
             Logger.e("Image Crop Error:" + e.getMessage(), e);
         } catch (OutOfMemoryError e) {
@@ -1376,7 +1411,7 @@ public class CropImageView extends ImageView {
         } catch (Exception e) {
             Logger.e("Something went wrong: " + e.getMessage(), e);
         } finally {
-            Utils.tryClose(is);
+            Utils.closeQuietly(is);
         }
         return cropped;
     }
@@ -1427,6 +1462,32 @@ public class CropImageView extends ImageView {
         int imageW = Math.round(getRotatedWidth(mAngle, originalImageWidth, originalImageHeight));
         int imageH = Math.round(getRotatedHeight(mAngle, originalImageWidth, originalImageHeight));
         return new Rect(Math.max(left, 0), Math.max(top, 0), Math.min(right, imageW), Math.min(bottom, imageH));
+    }
+
+    private void saveToFile(Bitmap bitmap, final Uri uri) {
+        OutputStream outputStream = null;
+        try {
+            outputStream = getContext().getContentResolver().openOutputStream(uri);
+            if (outputStream != null) {
+                bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
+            }
+        } catch (IOException e) {
+            Logger.e("Cannot open file: " + uri, e);
+            postErrorOnMainThread(mSaveCallback);
+        } finally {
+            Utils.closeQuietly(outputStream);
+        }
+        //TODO:save exif information correctly.
+        Utils.setExifOrientation(
+                Utils.getFileFromUri(getContext(), uri),
+                Utils.getExifOrientationFromAngle((int) mAngle)
+        );
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mSaveCallback != null) mSaveCallback.onSuccess(uri);
+            }
+        });
     }
 
     private Bitmap getBitmap() {
@@ -1778,6 +1839,23 @@ public class CropImageView extends ImageView {
         mMaxHeight = maxHeight;
     }
 
+    /**
+     * Set compress format for output
+     *
+     * @param format compress format{@link android.graphics.Bitmap.CompressFormat}
+     */
+    public void setCompressFormat(Bitmap.CompressFormat format) {
+        mCompressFormat = format;
+    }
+
+    /**
+     * Set compress quality for output
+     * @param quality compress quality(0-100: 100 is default.)
+     */
+    public void setCompressQuality(int quality) {
+        mCompressQuality = quality;
+    }
+
     private void setScale(float mScale) {
         this.mScale = mScale;
     }
@@ -1869,6 +1947,9 @@ public class CropImageView extends ImageView {
         int animationDuration;
         int exifRotation;
         Uri sourceUri;
+        Uri saveUri;
+        Bitmap.CompressFormat compressFormat;
+        int compressQuality;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1901,6 +1982,9 @@ public class CropImageView extends ImageView {
             animationDuration = in.readInt();
             exifRotation = in.readInt();
             sourceUri = in.readParcelable(Uri.class.getClassLoader());
+            saveUri = in.readParcelable(Uri.class.getClassLoader());
+            compressFormat = (Bitmap.CompressFormat) in.readSerializable();
+            compressQuality = in.readInt();
         }
 
         @Override
@@ -1931,6 +2015,9 @@ public class CropImageView extends ImageView {
             out.writeInt(animationDuration);
             out.writeInt(exifRotation);
             out.writeParcelable(sourceUri, flag);
+            out.writeParcelable(saveUri, flag);
+            out.writeSerializable(compressFormat);
+            out.writeInt(compressQuality);
         }
 
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
