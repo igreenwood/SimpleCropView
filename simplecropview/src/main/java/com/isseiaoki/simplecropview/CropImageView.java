@@ -1272,9 +1272,7 @@ public class CropImageView extends ImageView {
         Bitmap cropped;
         if (source == null) return null;
 
-        Matrix rotateMatrix = new Matrix();
-        rotateMatrix.setRotate(mAngle, source.getWidth() / 2, source.getHeight() / 2);
-        Bitmap rotated = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), rotateMatrix, true);
+        Bitmap rotated = getRotatedBitmap(source);
 
         int x, y, w, h;
         float l = (mFrameRect.left / mScale);
@@ -1298,6 +1296,12 @@ public class CropImageView extends ImageView {
             cropped = getCircularBitmap(cropped);
         }
         return cropped;
+    }
+
+    public Bitmap getRotatedBitmap(Bitmap bitmap){
+        Matrix rotateMatrix = new Matrix();
+        rotateMatrix.setRotate(mAngle, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), rotateMatrix, true);
     }
 
     /**
@@ -1402,6 +1406,9 @@ public class CropImageView extends ImageView {
                 cropRect = new Rect((int) rotated.left, (int) rotated.top, (int) rotated.right, (int) rotated.bottom);
             }
             cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
+            if(mAngle != 0){
+              cropped = getRotatedBitmap(cropped);
+            }
             Log.d(TAG, "cropRect = " + cropRect.toString());
             Log.d(TAG, "cropped: (w, h) = (" + cropped.getWidth() + "," + cropped.getHeight() + ")");
         } catch (IOException e) {
@@ -1477,11 +1484,7 @@ public class CropImageView extends ImageView {
         } finally {
             Utils.closeQuietly(outputStream);
         }
-        //TODO:save exif information correctly.
-        Utils.setExifOrientation(
-                Utils.getFileFromUri(getContext(), uri),
-                Utils.getExifOrientationFromAngle((int) mAngle)
-        );
+
         mHandler.post(new Runnable() {
             @Override
             public void run() {

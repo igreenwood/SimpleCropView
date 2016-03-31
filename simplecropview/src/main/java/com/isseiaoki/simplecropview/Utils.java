@@ -1,7 +1,6 @@
 package com.isseiaoki.simplecropview;
 
 import android.annotation.TargetApi;
-import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -125,16 +124,6 @@ public class Utils {
                 return ExifInterface.ORIENTATION_ROTATE_270;
             default:
                 return ExifInterface.ORIENTATION_NORMAL;
-        }
-    }
-
-    public static void setExifOrientation(File file, int exifOrientation) {
-        if (file == null) return;
-        try {
-            ExifInterface exif = new ExifInterface(file.getAbsolutePath());
-            exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(exifOrientation));
-        } catch (IOException e) {
-            Logger.e("Cannot get Exif data" + e.getMessage(), e);
         }
     }
 
