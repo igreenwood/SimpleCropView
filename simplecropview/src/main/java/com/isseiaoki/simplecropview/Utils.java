@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.opengl.GLES10;
@@ -20,21 +21,24 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
+@SuppressWarnings("unused")
 public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
     private static final int SIZE_DEFAULT = 2048;
     private static final int SIZE_LIMIT = 4096;
 
-    public static int getExifRotation(File file){
-        if(file == null) return 0;
-        try{
+    public static int getExifRotation(File file) {
+        if (file == null) return 0;
+        try {
             ExifInterface exif = new ExifInterface(file.getAbsolutePath());
             return getRotateDegreeFromOrientation(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED));
-        }catch (IOException e){
-            Logger.e("Cannot get exif data : "+e.getMessage(), e);
+        } catch (IOException e) {
+            Logger.e("Cannot get exif data : " + e.getMessage(), e);
         }
         return 0;
     }
@@ -213,7 +217,7 @@ public class Utils {
         String filePath = new File(context.getCacheDir(), "tmp").getAbsolutePath();
         try {
             ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
-            if(pfd == null) return null;
+            if (pfd == null) return null;
             FileDescriptor fd = pfd.getFileDescriptor();
             input = new FileInputStream(fd);
             output = new FileOutputStream(filePath);
@@ -231,32 +235,72 @@ public class Utils {
         return null;
     }
 
-    public static Bitmap decodeSampledBitmapFromFile(File file, int requestSize) {
+    public static Bitmap decodeSampledBitmapFromUri(Context context, Uri sourceUri, int requestSize) {
+        InputStream is = null;
+        try {
+            is = context.getContentResolver().openInputStream(sourceUri);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = Utils.calculateInSampleSize(context, sourceUri, requestSize);
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeStream(is, null, options);
+    }
+
+    public static int calculateInSampleSize(Context context, Uri sourceUri, int requestSize) {
+        InputStream is = null;
         // check image size
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file.getAbsolutePath());
-        // calculate sample size
-        options.inSampleSize = calculateInSampleSize(options, requestSize);
-        // decode
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(file.getAbsolutePath());
-    }
-
-    public static int calculateInSampleSize(BitmapFactory.Options options, int requestSize) {
+        try {
+            is = context.getContentResolver().openInputStream(sourceUri);
+            BitmapFactory.decodeStream(is, null, options);
+        } catch (FileNotFoundException ignored) {
+        } finally {
+            tryClose(is);
+        }
         int inSampleSize = 1;
-        while (options.outWidth / inSampleSize > requestSize || options.outHeight / inSampleSize > requestSize){
+        Log.d(TAG, "calculateInSampleSize");
+        Log.d(TAG, "options.outWidth = " + options.outWidth);
+        Log.d(TAG, "options.outHeight = " + options.outHeight);
+        Log.d(TAG, "requestSize = " + requestSize);
+        while (options.outWidth / inSampleSize > requestSize || options.outHeight / inSampleSize > requestSize) {
             inSampleSize *= 2;
         }
-        Log.d(TAG, "inSampleSize = "+inSampleSize);
+        Log.d(TAG, "inSampleSize = " + inSampleSize);
         return inSampleSize;
     }
 
-    public static int getMaxSize(){
+    public static Bitmap getScaledBitmapForHeight(Bitmap bitmap, int outHeight) {
+        float currentWidth = bitmap.getWidth();
+        float currentHeight = bitmap.getHeight();
+        float ratio = currentWidth / currentHeight;
+        int outWidth = Math.round(outHeight * ratio);
+        return getScaledBitmap(bitmap, outWidth, outHeight);
+    }
+
+    public static Bitmap getScaledBitmapForWidth(Bitmap bitmap, int outWidth) {
+        float currentWidth = bitmap.getWidth();
+        float currentHeight = bitmap.getHeight();
+        float ratio = currentWidth / currentHeight;
+        int outHeight = Math.round(outWidth / ratio);
+        return getScaledBitmap(bitmap, outWidth, outHeight);
+    }
+
+    public static Bitmap getScaledBitmap(Bitmap bitmap, int outWidth, int outHeight) {
+        int currentWidth = bitmap.getWidth();
+        int currentHeight = bitmap.getHeight();
+        Matrix scaleMatrix = new Matrix();
+        scaleMatrix.postScale((float) outWidth / (float) currentWidth, (float) outHeight / (float) currentHeight);
+        return Bitmap.createBitmap(bitmap, 0, 0, currentWidth, currentHeight, scaleMatrix, true);
+    }
+
+    public static int getMaxSize() {
         int maxSize = SIZE_DEFAULT;
         int[] arr = new int[1];
         GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, arr, 0);
-        if(arr[0] > 0){
+        if (arr[0] > 0) {
             maxSize = Math.min(arr[0], SIZE_LIMIT);
         }
         return maxSize;

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -13,7 +14,9 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.isseiaoki.simplecropview.CropImageView;
+import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
 
 public class MainFragment extends Fragment {
     public static final String TAG = MainFragment.class.getSimpleName();
@@ -118,8 +121,26 @@ public class MainFragment extends Fragment {
             switch (v.getId()) {
                 case R.id.buttonDone:
                     // Get cropped bitmap and pass it to Application
-                    AppController.getInstance().cropped = mCropView.getCroppedBitmap();
-                    ((MainActivity)getActivity()).startResultActivity();
+                    showProgress();
+                    mCropView.startCrop(null, new CropCallback() {
+                        @Override
+                        public void onSuccess(Bitmap cropped) {
+                            Log.d(TAG, "onSuccess");
+                            if(AppController.getInstance().cropped != null){
+                                AppController.getInstance().cropped.recycle();
+                                AppController.getInstance().cropped = null;
+                            }
+                            AppController.getInstance().cropped = cropped;
+                            dismissProgress();
+                            ((MainActivity) getActivity()).startResultActivity();
+                        }
+
+                        @Override
+                        public void onError() {
+                            Log.d(TAG, "onError");
+                            dismissProgress();
+                        }
+                    }, null);
                     break;
                 case R.id.buttonFitImage:
                     mCropView.setCropMode(CropImageView.CropMode.RATIO_FIT_IMAGE);
