@@ -1,5 +1,6 @@
-package com.isseiaoki.simplecropview;
+package com.isseiaoki.simplecropview.util;
 
+@SuppressWarnings("unused")
 public class Logger {
     private static final String TAG = "SimpleCropView";
     public static boolean enabled = false;

@@ -24,7 +24,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -39,6 +38,8 @@ import com.isseiaoki.simplecropview.callback.Callback;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Logger;
+import com.isseiaoki.simplecropview.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -97,8 +98,8 @@ public class CropImageView extends ImageView {
     private Uri mSourceUri = null;
     private Uri mSaveUri = null;
     private int mExifRotation = 0;
-    private int mMaxWidth;
-    private int mMaxHeight;
+    private int mOutputMaxWidth;
+    private int mOutputMaxHeight;
     private int mOutputWidth = 0;
     private int mOutputHeight = 0;
     private boolean mIsLoggingEnabled = false;
@@ -202,6 +203,11 @@ public class CropImageView extends ImageView {
         ss.saveUri = this.mSaveUri;
         ss.compressFormat = this.mCompressFormat;
         ss.compressQuality = this.mCompressQuality;
+        ss.isLoggingEnabled = this.mIsLoggingEnabled;
+        ss.outputMaxWidth = this.mOutputMaxWidth;
+        ss.outputMaxHeight = this.mOutputMaxHeight;
+        ss.outputWidth = this.mOutputWidth;
+        ss.outputHeight = this.mOutputHeight;
         return ss;
     }
 
@@ -235,6 +241,11 @@ public class CropImageView extends ImageView {
         this.mSaveUri = ss.saveUri;
         this.mCompressFormat = ss.compressFormat;
         this.mCompressQuality = ss.compressQuality;
+        this.mIsLoggingEnabled = ss.isLoggingEnabled;
+        this.mOutputMaxWidth = ss.outputMaxWidth;
+        this.mOutputMaxHeight = ss.outputMaxHeight;
+        this.mOutputWidth = ss.outputWidth;
+        this.mOutputHeight = ss.outputHeight;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -1128,7 +1139,6 @@ public class CropImageView extends ImageView {
      * @param callback  Callback
      */
     public void startLoad(Uri sourceUri, LoadCallback callback) {
-        Log.d(TAG, "startLoad");
         mLoadCallback = callback;
         mSourceUri = sourceUri;
         if (sourceUri == null) {
@@ -1142,7 +1152,6 @@ public class CropImageView extends ImageView {
                 int maxSize = Utils.getMaxSize();
                 int requestSize = Math.max(mViewWidth, mViewHeight);
                 if (requestSize == 0) requestSize = maxSize;
-                Log.d(TAG, "requestSize = " + requestSize);
                 try {
                     final Bitmap sampledBitmap = Utils.decodeSampledBitmapFromUri(getContext(),
                                                                                   mSourceUri,
@@ -1150,8 +1159,6 @@ public class CropImageView extends ImageView {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            Log.d(TAG,
-                                  "load: (w, h) = (" + sampledBitmap.getWidth() + "," + sampledBitmap.getHeight() + ")");
                             setImageBitmap(sampledBitmap);
                             if (mLoadCallback != null) mLoadCallback.onSuccess();
                         }
@@ -1283,9 +1290,8 @@ public class CropImageView extends ImageView {
         int bottom = Math.round(mFrameRect.bottom * scaleToOriginal - offsetY);
         int imageW = Math.round(getRotatedWidth(mAngle, originalImageWidth, originalImageHeight));
         int imageH = Math.round(getRotatedHeight(mAngle, originalImageWidth, originalImageHeight));
-        Rect newRect =  new Rect(Math.max(left, 0), Math.max(top, 0), Math.min(right, imageW),
+        return new Rect(Math.max(left, 0), Math.max(top, 0), Math.min(right, imageW),
                                  Math.min(bottom, imageH));
-        return newRect;
     }
 
     public Bitmap getRotatedBitmap(Bitmap bitmap) {
@@ -1324,7 +1330,6 @@ public class CropImageView extends ImageView {
     }
 
     public void startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback) {
-        Log.d(TAG, "startCrop");
         mSaveUri = saveUri;
         mCropCallback = cropCallback;
         mSaveCallback = saveCallback;
@@ -1378,7 +1383,6 @@ public class CropImageView extends ImageView {
     }
 
     private Bitmap decodeRegion() {
-        Log.d(TAG, "decodeRegion");
         Bitmap cropped = null;
         InputStream is = null;
         try {
@@ -1387,8 +1391,6 @@ public class CropImageView extends ImageView {
             BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(is, false);
             final int originalImageWidth = decoder.getWidth();
             final int originalImageHeight = decoder.getHeight();
-            Log.d(TAG,
-                  "decoder: (w, h) = (" + originalImageWidth + "," + originalImageHeight + ")");
             Rect cropRect = calcCropRect(originalImageWidth, originalImageHeight);
             if (mAngle != 0) {
                 Matrix matrix = new Matrix();
@@ -1404,9 +1406,6 @@ public class CropImageView extends ImageView {
             if (mAngle != 0) {
                 cropped = getRotatedBitmap(cropped);
             }
-            Log.d(TAG, "cropRect = " + cropRect.toString());
-            Log.d(TAG,
-                  "cropped: (w, h) = (" + cropped.getWidth() + "," + cropped.getHeight() + ")");
         } catch (IOException e) {
             Logger.e("Image Crop Error:" + e.getMessage(), e);
         } catch (OutOfMemoryError e) {
@@ -1433,14 +1432,14 @@ public class CropImageView extends ImageView {
             outHeight = mOutputHeight;
             outWidth = Math.round(mOutputHeight * imageRatio);
         } else {
-            if (mMaxWidth > 0 && mMaxHeight > 0 && (width > mMaxWidth || height > mMaxHeight)) {
-                float maxRatio = (float) mMaxWidth / (float) mMaxHeight;
+            if (mOutputMaxWidth > 0 && mOutputMaxHeight > 0 && (width > mOutputMaxWidth || height > mOutputMaxHeight)) {
+                float maxRatio = (float) mOutputMaxWidth / (float) mOutputMaxHeight;
                 if (maxRatio >= imageRatio) {
-                    outHeight = mMaxHeight;
-                    outWidth = Math.round((float) mMaxHeight * imageRatio);
+                    outHeight = mOutputMaxHeight;
+                    outWidth = Math.round((float) mOutputMaxHeight * imageRatio);
                 } else {
-                    outWidth = mMaxWidth;
-                    outHeight = Math.round((float) mMaxWidth / imageRatio);
+                    outWidth = mOutputMaxWidth;
+                    outHeight = Math.round((float) mOutputMaxWidth / imageRatio);
                 }
             }
         }
@@ -1450,12 +1449,6 @@ public class CropImageView extends ImageView {
             cropped.recycle();
             cropped = scaled;
         }
-
-        Log.d(TAG, "width = "+width);
-        Log.d(TAG, "height = "+height);
-        Log.d(TAG, "outWidth = "+outWidth);
-        Log.d(TAG, "outHeight = "+outHeight);
-        Log.d(TAG, "imageRatio = "+imageRatio);
         return cropped;
     }
 
@@ -1827,8 +1820,8 @@ public class CropImageView extends ImageView {
      * @param maxHeight max output height
      */
     public void setOutputMaxSize(int maxWidth, int maxHeight) {
-        mMaxWidth = maxWidth;
-        mMaxHeight = maxHeight;
+        mOutputMaxWidth = maxWidth;
+        mOutputMaxHeight = maxHeight;
     }
 
     /**
@@ -1943,6 +1936,11 @@ public class CropImageView extends ImageView {
         Uri saveUri;
         Bitmap.CompressFormat compressFormat;
         int compressQuality;
+        boolean isLoggingEnabled;
+        int outputMaxWidth;
+        int outputMaxHeight;
+        int outputWidth;
+        int outputHeight;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -1978,6 +1976,11 @@ public class CropImageView extends ImageView {
             saveUri = in.readParcelable(Uri.class.getClassLoader());
             compressFormat = (Bitmap.CompressFormat) in.readSerializable();
             compressQuality = in.readInt();
+            isLoggingEnabled = (in.readInt() != 0);
+            outputMaxWidth = in.readInt();
+            outputMaxHeight = in.readInt();
+            outputWidth = in.readInt();
+            outputHeight = in.readInt();
         }
 
         @Override
@@ -2011,6 +2014,11 @@ public class CropImageView extends ImageView {
             out.writeParcelable(saveUri, flag);
             out.writeSerializable(compressFormat);
             out.writeInt(compressQuality);
+            out.writeInt(isLoggingEnabled ? 1 : 0);
+            out.writeInt(outputMaxWidth);
+            out.writeInt(outputMaxHeight);
+            out.writeInt(outputWidth);
+            out.writeInt(outputHeight);
         }
 
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

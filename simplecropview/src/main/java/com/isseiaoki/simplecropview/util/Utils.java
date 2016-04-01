@@ -1,4 +1,4 @@
-package com.isseiaoki.simplecropview;
+package com.isseiaoki.simplecropview.util;
 
 import android.annotation.TargetApi;
 import android.content.ContentUris;
@@ -15,7 +15,6 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import java.io.Closeable;
 import java.io.File;
@@ -327,14 +326,9 @@ public class Utils {
             closeQuietly(is);
         }
         int inSampleSize = 1;
-        Log.d(TAG, "calculateInSampleSize");
-        Log.d(TAG, "options.outWidth = " + options.outWidth);
-        Log.d(TAG, "options.outHeight = " + options.outHeight);
-        Log.d(TAG, "requestSize = " + requestSize);
         while (options.outWidth / inSampleSize > requestSize || options.outHeight / inSampleSize > requestSize) {
             inSampleSize *= 2;
         }
-        Log.d(TAG, "inSampleSize = " + inSampleSize);
         return inSampleSize;
     }
 
