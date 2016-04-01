@@ -29,6 +29,12 @@ public class MainActivity extends FragmentActivity {
         Log.i(TAG, "onConfigurationChanged");
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
     public void startResultActivity(Uri uri){
         // Start ResultActivity
         startActivity(ResultActivity.createIntent(this, uri));

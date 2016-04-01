@@ -231,7 +231,6 @@ public class MainFragment extends Fragment {
         getFragmentManager()
                 .beginTransaction()
                 .add(f, PROGRESS_DIALOG)
-                .addToBackStack(null)
                 .commit();
     }
 
