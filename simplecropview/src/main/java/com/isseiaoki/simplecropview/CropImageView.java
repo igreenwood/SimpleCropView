@@ -99,8 +99,8 @@ public class CropImageView extends ImageView {
     private int mExifRotation = 0;
     private int mMaxWidth;
     private int mMaxHeight;
-    private int mOutputWidth;
-    private int mOutputHeight;
+    private int mOutputWidth = 0;
+    private int mOutputHeight = 0;
     private boolean mIsLoggingEnabled = false;
     private boolean mIsCropping = false;
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.PNG;
@@ -950,17 +950,17 @@ public class CropImageView extends ImageView {
             case RATIO_FREE:
                 return w;
             case RATIO_4_3:
-                return 4.0f;
+                return 4;
             case RATIO_3_4:
-                return 3.0f;
+                return 3;
             case RATIO_16_9:
-                return 16.0f;
+                return 16;
             case RATIO_9_16:
-                return 9.0f;
+                return 9;
             case RATIO_1_1:
             case CIRCLE:
             case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
-                return 1.0f;
+                return 1;
             case RATIO_CUSTOM:
                 return mCustomRatio.x;
             default:
@@ -975,17 +975,17 @@ public class CropImageView extends ImageView {
             case RATIO_FREE:
                 return h;
             case RATIO_4_3:
-                return 3.0f;
+                return 3;
             case RATIO_3_4:
-                return 4.0f;
+                return 4;
             case RATIO_16_9:
-                return 9.0f;
+                return 9;
             case RATIO_9_16:
-                return 16.0f;
+                return 16;
             case RATIO_1_1:
             case CIRCLE:
             case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
-                return 1.0f;
+                return 1;
             case RATIO_CUSTOM:
                 return mCustomRatio.y;
             default:
@@ -998,21 +998,21 @@ public class CropImageView extends ImageView {
             case RATIO_FIT_IMAGE:
                 return mImageRect.width();
             case RATIO_4_3:
-                return 4.0f;
+                return 4;
             case RATIO_3_4:
-                return 3.0f;
+                return 3;
             case RATIO_16_9:
-                return 16.0f;
+                return 16;
             case RATIO_9_16:
-                return 9.0f;
+                return 9;
             case RATIO_1_1:
             case CIRCLE:
             case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
-                return 1.0f;
+                return 1;
             case RATIO_CUSTOM:
                 return mCustomRatio.x;
             default:
-                return 1.0f;
+                return 1;
         }
     }
 
@@ -1021,21 +1021,21 @@ public class CropImageView extends ImageView {
             case RATIO_FIT_IMAGE:
                 return mImageRect.height();
             case RATIO_4_3:
-                return 3.0f;
+                return 3;
             case RATIO_3_4:
-                return 4.0f;
+                return 4;
             case RATIO_16_9:
-                return 9.0f;
+                return 9;
             case RATIO_9_16:
-                return 16.0f;
+                return 16;
             case RATIO_1_1:
             case CIRCLE:
             case SHOW_CIRCLE_BUT_CROP_AS_SQUARE:
-                return 1.0f;
+                return 1;
             case RATIO_CUSTOM:
                 return mCustomRatio.y;
             default:
-                return 1.0f;
+                return 1;
         }
     }
     // Utility methods /////////////////////////////////////////////////////////////////////////////
@@ -1424,7 +1424,7 @@ public class CropImageView extends ImageView {
         int height = cropped.getHeight();
         int outWidth = 0;
         int outHeight = 0;
-        float imageRatio = (float) width / (float) height;
+        float imageRatio = getRatioX() / getRatioY();
 
         if (mOutputWidth > 0) {
             outWidth = mOutputWidth;
@@ -1450,6 +1450,12 @@ public class CropImageView extends ImageView {
             cropped.recycle();
             cropped = scaled;
         }
+
+        Log.d(TAG, "width = "+width);
+        Log.d(TAG, "height = "+height);
+        Log.d(TAG, "outWidth = "+outWidth);
+        Log.d(TAG, "outHeight = "+outHeight);
+        Log.d(TAG, "imageRatio = "+imageRatio);
         return cropped;
     }
 
@@ -1798,7 +1804,7 @@ public class CropImageView extends ImageView {
      */
     public void setOutputWidth(int outputWidth) {
         mOutputWidth = outputWidth;
-        setOutputHeight(0);
+        mOutputHeight = 0;
     }
 
     /**
@@ -1809,7 +1815,7 @@ public class CropImageView extends ImageView {
      */
     public void setOutputHeight(int outputHeight) {
         mOutputHeight = outputHeight;
-        setOutputWidth(0);
+        mOutputWidth = 0;
     }
 
     /**
