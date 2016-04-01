@@ -145,10 +145,10 @@ public class MainFragment extends Fragment {
                             });
                     break;
                 case R.id.buttonFitImage:
-                    mCropView.setCropMode(CropImageView.CropMode.RATIO_FIT_IMAGE);
+                    mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
                     break;
                 case R.id.button1_1:
-                    mCropView.setCropMode(CropImageView.CropMode.RATIO_1_1);
+                    mCropView.setCropMode(CropImageView.CropMode.SQUARE);
                     break;
                 case R.id.button3_4:
                     mCropView.setCropMode(CropImageView.CropMode.RATIO_3_4);
@@ -166,13 +166,13 @@ public class MainFragment extends Fragment {
                     mCropView.setCustomRatio(7, 5);
                     break;
                 case R.id.buttonFree:
-                    mCropView.setCropMode(CropImageView.CropMode.RATIO_FREE);
+                    mCropView.setCropMode(CropImageView.CropMode.FREE);
                     break;
                 case R.id.buttonCircle:
                     mCropView.setCropMode(CropImageView.CropMode.CIRCLE);
                     break;
                 case R.id.buttonShowCircleButCropAsSquare:
-                    mCropView.setCropMode(CropImageView.CropMode.SHOW_CIRCLE_BUT_CROP_AS_SQUARE);
+                    mCropView.setCropMode(CropImageView.CropMode.CIRCLE_SQUARE);
                     break;
 //                case R.id.buttonChangeImage:
 //                    incrementImageIndex();
