@@ -189,7 +189,7 @@
         custom:guideColor="@color/guide"
         custom:overlayColor="@color/overlay"
         custom:frameColor="@color/frame"
-        custom:handleSize="8dp"
+        custom:handleSize="16dp"
         custom:touchPadding="8dp"
         custom:handleShowMode="show_always"
         custom:guideShowMode="show_on_touch"
