@@ -1,5 +1,16 @@
 package com.isseiaoki.simplecropview;
 
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
+import com.isseiaoki.simplecropview.callback.Callback;
+import com.isseiaoki.simplecropview.callback.CropCallback;
+import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Logger;
+import com.isseiaoki.simplecropview.util.Utils;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -29,17 +40,6 @@ import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
-
-import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
-import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
-import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
-import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
-import com.isseiaoki.simplecropview.callback.Callback;
-import com.isseiaoki.simplecropview.callback.CropCallback;
-import com.isseiaoki.simplecropview.callback.LoadCallback;
-import com.isseiaoki.simplecropview.callback.SaveCallback;
-import com.isseiaoki.simplecropview.util.Logger;
-import com.isseiaoki.simplecropview.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -291,8 +291,8 @@ public class CropImageView extends ImageView {
 
     private void handleStyleable(Context context, AttributeSet attrs, int defStyle,
                                  float mDensity) {
-        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.scv_CropImageView, defStyle,
-                                                       0);
+        TypedArray ta = context.obtainStyledAttributes(attrs, R.styleable.scv_CropImageView,
+                defStyle, 0);
         Drawable drawable;
         mCropMode = CropMode.SQUARE;
         try {
@@ -304,20 +304,25 @@ public class CropImageView extends ImageView {
                     break;
                 }
             }
-            mBackgroundColor = ta.getColor(R.styleable.scv_CropImageView_scv_background_color, TRANSPARENT);
-            mOverlayColor = ta.getColor(R.styleable.scv_CropImageView_scv_overlay_color, TRANSLUCENT_BLACK);
+            mBackgroundColor = ta.getColor(R.styleable.scv_CropImageView_scv_background_color,
+                    TRANSPARENT);
+            mOverlayColor = ta.getColor(R.styleable.scv_CropImageView_scv_overlay_color,
+                    TRANSLUCENT_BLACK);
             mFrameColor = ta.getColor(R.styleable.scv_CropImageView_scv_frame_color, WHITE);
             mHandleColor = ta.getColor(R.styleable.scv_CropImageView_scv_handle_color, WHITE);
-            mGuideColor = ta.getColor(R.styleable.scv_CropImageView_scv_guide_color, TRANSLUCENT_WHITE);
+            mGuideColor = ta.getColor(R.styleable.scv_CropImageView_scv_guide_color,
+                    TRANSLUCENT_WHITE);
             for (ShowMode mode : ShowMode.values()) {
-                if (ta.getInt(R.styleable.scv_CropImageView_scv_guide_show_mode, 1) == mode.getId()) {
+                if (ta.getInt(R.styleable.scv_CropImageView_scv_guide_show_mode,
+                        1) == mode.getId()) {
                     mGuideShowMode = mode;
                     break;
                 }
             }
 
             for (ShowMode mode : ShowMode.values()) {
-                if (ta.getInt(R.styleable.scv_CropImageView_scv_handle_show_mode, 1) == mode.getId()) {
+                if (ta.getInt(R.styleable.scv_CropImageView_scv_handle_show_mode,
+                        1) == mode.getId()) {
                     mHandleShowMode = mode;
                     break;
                 }
@@ -325,10 +330,12 @@ public class CropImageView extends ImageView {
             setGuideShowMode(mGuideShowMode);
             setHandleShowMode(mHandleShowMode);
             mHandleSize = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_handle_size,
-                                                   (int) (HANDLE_SIZE_IN_DP * mDensity));
-            mTouchPadding = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_touch_padding, 0);
-            mMinFrameSize = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_min_frame_size,
-                                                     (int) (MIN_FRAME_SIZE_IN_DP * mDensity));
+                    (int) (HANDLE_SIZE_IN_DP * mDensity));
+            mTouchPadding = ta.getDimensionPixelSize(
+                    R.styleable.scv_CropImageView_scv_touch_padding, 0);
+            mMinFrameSize = ta.getDimensionPixelSize(
+                    R.styleable.scv_CropImageView_scv_min_frame_size,
+                    (int) (MIN_FRAME_SIZE_IN_DP * mDensity));
             mFrameStrokeWeight = ta.getDimensionPixelSize(
                     R.styleable.scv_CropImageView_scv_frame_stroke_weight,
                     (int) (FRAME_STROKE_WEIGHT_IN_DP * mDensity));
@@ -336,12 +343,15 @@ public class CropImageView extends ImageView {
                     R.styleable.scv_CropImageView_scv_guide_stroke_weight,
                     (int) (GUIDE_STROKE_WEIGHT_IN_DP * mDensity));
             mIsCropEnabled = ta.getBoolean(R.styleable.scv_CropImageView_scv_crop_enabled, true);
-            mInitialFrameScale = constrain(ta.getFloat(R.styleable.scv_CropImageView_scv_initial_frame_scale,
-                                                       DEFAULT_INITIAL_FRAME_SCALE), 0.01f, 1.0f,
-                                           DEFAULT_INITIAL_FRAME_SCALE);
-            mIsAnimationEnabled = ta.getBoolean(R.styleable.scv_CropImageView_scv_animation_enabled, true);
-            mAnimationDurationMillis = ta.getInt(R.styleable.scv_CropImageView_scv_animation_duration,
-                                                 DEFAULT_ANIMATION_DURATION_MILLIS);
+            mInitialFrameScale = constrain(
+                    ta.getFloat(R.styleable.scv_CropImageView_scv_initial_frame_scale,
+                            DEFAULT_INITIAL_FRAME_SCALE), 0.01f, 1.0f,
+                    DEFAULT_INITIAL_FRAME_SCALE);
+            mIsAnimationEnabled = ta.getBoolean(R.styleable.scv_CropImageView_scv_animation_enabled,
+                    true);
+            mAnimationDurationMillis = ta.getInt(
+                    R.styleable.scv_CropImageView_scv_animation_duration,
+                    DEFAULT_ANIMATION_DURATION_MILLIS);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -366,10 +376,11 @@ public class CropImageView extends ImageView {
         mPaintTranslucent.setColor(mOverlayColor);
         mPaintTranslucent.setStyle(Paint.Style.FILL);
         Path path = new Path();
-        if (!mIsAnimating && (mCropMode == CropMode.CIRCLE || mCropMode == CropMode.CIRCLE_SQUARE)) {
+        if (!mIsAnimating
+                && (mCropMode == CropMode.CIRCLE || mCropMode == CropMode.CIRCLE_SQUARE)) {
             path.addRect(mImageRect, Path.Direction.CW);
             PointF circleCenter = new PointF((mFrameRect.left + mFrameRect.right) / 2,
-                                             (mFrameRect.top + mFrameRect.bottom) / 2);
+                    (mFrameRect.top + mFrameRect.bottom) / 2);
             float circleRadius = (mFrameRect.right - mFrameRect.left) / 2;
             path.addCircle(circleCenter.x, circleCenter.y, circleRadius, Path.Direction.CCW);
             canvas.drawPath(path, mPaintTranslucent);
@@ -633,22 +644,6 @@ public class CropImageView extends ImageView {
         float dy = y - mFrameRect.bottom;
         float d = dx * dx + dy * dy;
         return sq(mHandleSize + mTouchPadding) >= d;
-    }
-
-    private float getRotatedWidth(float angle) {
-        return getRotatedWidth(angle, mImgWidth, mImgHeight);
-    }
-
-    private float getRotatedWidth(float angle, float width, float height) {
-        return angle % 180 == 0 ? width : height;
-    }
-
-    private float getRotatedHeight(float angle) {
-        return getRotatedHeight(angle, mImgWidth, mImgHeight);
-    }
-
-    private float getRotatedHeight(float angle, float width, float height) {
-        return angle % 180 == 0 ? height : width;
     }
 
     // Adjust frame ////////////////////////////////////////////////////////////////////////////////
@@ -934,9 +929,9 @@ public class CropImageView extends ImageView {
                 @Override
                 public void onAnimationUpdated(float scale) {
                     mFrameRect = new RectF(currentRect.left + diffL * scale,
-                                           currentRect.top + diffT * scale,
-                                           currentRect.right + diffR * scale,
-                                           currentRect.bottom + diffB * scale);
+                            currentRect.top + diffT * scale,
+                            currentRect.right + diffR * scale,
+                            currentRect.bottom + diffB * scale);
                     invalidate();
                 }
 
@@ -1049,7 +1044,8 @@ public class CropImageView extends ImageView {
                 return 1;
         }
     }
-    // Utility methods /////////////////////////////////////////////////////////////////////////////
+
+    // Utility /////////////////////////////////////////////////////////////////////////////////////
 
     private float getDensity() {
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -1065,6 +1061,180 @@ public class CropImageView extends ImageView {
     private float constrain(float val, float min, float max, float defaultVal) {
         if (val < min || val > max) return defaultVal;
         return val;
+    }
+
+    private void postErrorOnMainThread(final Callback callback) {
+        if (callback == null) return;
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            callback.onError();
+        } else {
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    callback.onError();
+                }
+            });
+        }
+    }
+
+    private Bitmap getBitmap() {
+        Bitmap bm = null;
+        Drawable d = getDrawable();
+        if (d != null && d instanceof BitmapDrawable) bm = ((BitmapDrawable) d).getBitmap();
+        return bm;
+    }
+
+    private float getRotatedWidth(float angle) {
+        return getRotatedWidth(angle, mImgWidth, mImgHeight);
+    }
+
+    private float getRotatedWidth(float angle, float width, float height) {
+        return angle % 180 == 0 ? width : height;
+    }
+
+    private float getRotatedHeight(float angle) {
+        return getRotatedHeight(angle, mImgWidth, mImgHeight);
+    }
+
+    private float getRotatedHeight(float angle, float width, float height) {
+        return angle % 180 == 0 ? height : width;
+    }
+
+    private Bitmap getRotatedBitmap(Bitmap bitmap) {
+        Matrix rotateMatrix = new Matrix();
+        rotateMatrix.setRotate(mAngle, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                rotateMatrix, true);
+    }
+
+    // Animation ///////////////////////////////////////////////////////////////////////////////////
+
+    private SimpleValueAnimator getAnimator() {
+        setupAnimatorIfNeeded();
+        return mAnimator;
+    }
+
+    private void setupAnimatorIfNeeded() {
+        if (mAnimator == null) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                mAnimator = new ValueAnimatorV8(mInterpolator);
+            } else {
+                mAnimator = new ValueAnimatorV14(mInterpolator);
+            }
+        }
+    }
+
+    // Cropping ////////////////////////////////////////////////////////////////////////////////////
+
+    private Bitmap decodeRegion() {
+        Bitmap cropped = null;
+        InputStream is = null;
+        try {
+            is = getContext().getContentResolver()
+                    .openInputStream(mSourceUri);
+            BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(is, false);
+            final int originalImageWidth = decoder.getWidth();
+            final int originalImageHeight = decoder.getHeight();
+            Rect cropRect = calcCropRect(originalImageWidth, originalImageHeight);
+            if (mAngle != 0) {
+                Matrix matrix = new Matrix();
+                matrix.setRotate(-mAngle);
+                RectF rotated = new RectF();
+                matrix.mapRect(rotated, new RectF(cropRect));
+                rotated.offset(rotated.left < 0 ? originalImageWidth : 0,
+                        rotated.top < 0 ? originalImageHeight : 0);
+                cropRect = new Rect((int) rotated.left, (int) rotated.top, (int) rotated.right,
+                        (int) rotated.bottom);
+            }
+            cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
+            if (mAngle != 0) {
+                cropped = getRotatedBitmap(cropped);
+            }
+        } catch (IOException e) {
+            Logger.e("An error occurred while cropping the image: " + e.getMessage(), e);
+        } catch (OutOfMemoryError e) {
+            Logger.e("OOM Error: " + e.getMessage(), e);
+        } catch (Exception e) {
+            Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
+        } finally {
+            Utils.closeQuietly(is);
+        }
+        return cropped;
+    }
+
+    private Rect calcCropRect(int originalImageWidth, int originalImageHeight) {
+        float scaleToOriginal = getRotatedWidth(mAngle, originalImageWidth,
+                originalImageHeight) / mImageRect.width();
+        float offsetX = mImageRect.left * scaleToOriginal;
+        float offsetY = mImageRect.top * scaleToOriginal;
+        int left = Math.round(mFrameRect.left * scaleToOriginal - offsetX);
+        int top = Math.round(mFrameRect.top * scaleToOriginal - offsetY);
+        int right = Math.round(mFrameRect.right * scaleToOriginal - offsetX);
+        int bottom = Math.round(mFrameRect.bottom * scaleToOriginal - offsetY);
+        int imageW = Math.round(getRotatedWidth(mAngle, originalImageWidth, originalImageHeight));
+        int imageH = Math.round(getRotatedHeight(mAngle, originalImageWidth, originalImageHeight));
+        return new Rect(Math.max(left, 0), Math.max(top, 0), Math.min(right, imageW),
+                Math.min(bottom, imageH));
+    }
+
+    private Bitmap scaleBitmapIfNeeded(Bitmap cropped) {
+        int width = cropped.getWidth();
+        int height = cropped.getHeight();
+        int outWidth = 0;
+        int outHeight = 0;
+        float imageRatio = getRatioX() / getRatioY();
+
+        if (mOutputWidth > 0) {
+            outWidth = mOutputWidth;
+            outHeight = Math.round(mOutputWidth / imageRatio);
+        } else if (mOutputHeight > 0) {
+            outHeight = mOutputHeight;
+            outWidth = Math.round(mOutputHeight * imageRatio);
+        } else {
+            if (mOutputMaxWidth > 0 && mOutputMaxHeight > 0
+                    && (width > mOutputMaxWidth || height > mOutputMaxHeight)) {
+                float maxRatio = (float) mOutputMaxWidth / (float) mOutputMaxHeight;
+                if (maxRatio >= imageRatio) {
+                    outHeight = mOutputMaxHeight;
+                    outWidth = Math.round((float) mOutputMaxHeight * imageRatio);
+                } else {
+                    outWidth = mOutputMaxWidth;
+                    outHeight = Math.round((float) mOutputMaxWidth / imageRatio);
+                }
+            }
+        }
+
+        if (outWidth > 0 && outHeight > 0) {
+            Bitmap scaled = Utils.getScaledBitmap(cropped, outWidth, outHeight);
+            cropped.recycle();
+            cropped = scaled;
+        }
+        return cropped;
+    }
+
+    // File save ///////////////////////////////////////////////////////////////////////////////////
+
+    private void saveToFile(Bitmap bitmap, final Uri uri) {
+        OutputStream outputStream = null;
+        try {
+            outputStream = getContext().getContentResolver()
+                    .openOutputStream(uri);
+            if (outputStream != null) {
+                bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
+            }
+        } catch (IOException e) {
+            Logger.e("An error occurred while saving the image: " + uri, e);
+            postErrorOnMainThread(mSaveCallback);
+        } finally {
+            Utils.closeQuietly(outputStream);
+        }
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mSaveCallback != null) mSaveCallback.onSuccess(uri);
+            }
+        });
     }
 
     // Public methods //////////////////////////////////////////////////////////////////////////////
@@ -1133,7 +1303,7 @@ public class CropImageView extends ImageView {
     }
 
     /**
-     * Load image
+     * Load image from Uri.
      *
      * @param sourceUri Image Uri
      * @param callback  Callback
@@ -1143,7 +1313,7 @@ public class CropImageView extends ImageView {
         mSourceUri = sourceUri;
         if (sourceUri == null) {
             postErrorOnMainThread(mLoadCallback);
-            throw new IllegalStateException("Source Uri must not be null");
+            throw new IllegalStateException("Source Uri must not be null.");
         }
         mExecutor.submit(new Runnable() {
             @Override
@@ -1154,8 +1324,8 @@ public class CropImageView extends ImageView {
                 if (requestSize == 0) requestSize = maxSize;
                 try {
                     final Bitmap sampledBitmap = Utils.decodeSampledBitmapFromUri(getContext(),
-                                                                                  mSourceUri,
-                                                                                  requestSize);
+                            mSourceUri,
+                            requestSize);
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
@@ -1167,25 +1337,11 @@ public class CropImageView extends ImageView {
                     Logger.e("OOM Error: " + e.getMessage(), e);
                     postErrorOnMainThread(mLoadCallback);
                 } catch (Exception e) {
-                    Logger.e("Something went wrong: " + e.getMessage(), e);
+                    Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
                     postErrorOnMainThread(mLoadCallback);
                 }
             }
         });
-    }
-
-    private void postErrorOnMainThread(final Callback callback) {
-        if (callback == null) return;
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            callback.onError();
-        } else {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    callback.onError();
-                }
-            });
-        }
     }
 
     /**
@@ -1245,22 +1401,6 @@ public class CropImageView extends ImageView {
         rotateImage(degrees, mAnimationDurationMillis);
     }
 
-    private SimpleValueAnimator getAnimator() {
-        setupAnimatorIfNeeded();
-        return mAnimator;
-    }
-
-    private void setupAnimatorIfNeeded() {
-        if (mAnimator == null) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                mAnimator = new ValueAnimatorV8(mInterpolator);
-            } else {
-                mAnimator = new ValueAnimatorV14(mInterpolator);
-            }
-        }
-    }
-
-
     /**
      * Get cropped image bitmap
      *
@@ -1272,33 +1412,19 @@ public class CropImageView extends ImageView {
 
         Bitmap rotated = getRotatedBitmap(source);
         Rect cropRect = calcCropRect(source.getWidth(), source.getHeight());
-        Bitmap cropped = Bitmap.createBitmap(rotated, cropRect.left, cropRect.top, cropRect.width(),
-                                             cropRect.height(), null, false);
+        Bitmap cropped = Bitmap.createBitmap(
+                rotated,
+                cropRect.left,
+                cropRect.top,
+                cropRect.width(),
+                cropRect.height(),
+                null,
+                false
+        );
         if (mCropMode == CropMode.CIRCLE) {
             cropped = getCircularBitmap(cropped);
         }
         return cropped;
-    }
-
-    private Rect calcCropRect(int originalImageWidth, int originalImageHeight) {
-        float scaleToOriginal = getRotatedWidth(mAngle, originalImageWidth, originalImageHeight) / mImageRect.width();
-        float offsetX = mImageRect.left * scaleToOriginal;
-        float offsetY = mImageRect.top * scaleToOriginal;
-        int left = Math.round(mFrameRect.left * scaleToOriginal - offsetX);
-        int top = Math.round(mFrameRect.top * scaleToOriginal - offsetY);
-        int right = Math.round(mFrameRect.right * scaleToOriginal - offsetX);
-        int bottom = Math.round(mFrameRect.bottom * scaleToOriginal - offsetY);
-        int imageW = Math.round(getRotatedWidth(mAngle, originalImageWidth, originalImageHeight));
-        int imageH = Math.round(getRotatedHeight(mAngle, originalImageWidth, originalImageHeight));
-        return new Rect(Math.max(left, 0), Math.max(top, 0), Math.min(right, imageW),
-                                 Math.min(bottom, imageH));
-    }
-
-    public Bitmap getRotatedBitmap(Bitmap bitmap) {
-        Matrix rotateMatrix = new Matrix();
-        rotateMatrix.setRotate(mAngle, bitmap.getWidth() / 2, bitmap.getHeight() / 2);
-        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
-                                   rotateMatrix, true);
     }
 
     /**
@@ -1310,7 +1436,7 @@ public class CropImageView extends ImageView {
     public Bitmap getCircularBitmap(Bitmap square) {
         if (square == null) return null;
         Bitmap output = Bitmap.createBitmap(square.getWidth(), square.getHeight(),
-                                            Bitmap.Config.ARGB_8888);
+                Bitmap.Config.ARGB_8888);
 
         final Rect rect = new Rect(0, 0, square.getWidth(), square.getHeight());
         Canvas canvas = new Canvas(output);
@@ -1329,6 +1455,13 @@ public class CropImageView extends ImageView {
         return output;
     }
 
+    /**
+     * Crop image from Uri
+     *
+     * @param saveUri      Uri for saving the cropped image
+     * @param cropCallback Callback for cropping the image
+     * @param saveCallback Callback for saving the image
+     */
     public void startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback) {
         mSaveUri = saveUri;
         mCropCallback = cropCallback;
@@ -1380,106 +1513,6 @@ public class CropImageView extends ImageView {
                 mIsCropping = false;
             }
         });
-    }
-
-    private Bitmap decodeRegion() {
-        Bitmap cropped = null;
-        InputStream is = null;
-        try {
-            is = getContext().getContentResolver()
-                    .openInputStream(mSourceUri);
-            BitmapRegionDecoder decoder = BitmapRegionDecoder.newInstance(is, false);
-            final int originalImageWidth = decoder.getWidth();
-            final int originalImageHeight = decoder.getHeight();
-            Rect cropRect = calcCropRect(originalImageWidth, originalImageHeight);
-            if (mAngle != 0) {
-                Matrix matrix = new Matrix();
-                matrix.setRotate(-mAngle);
-                RectF rotated = new RectF();
-                matrix.mapRect(rotated, new RectF(cropRect));
-                rotated.offset(rotated.left < 0 ? originalImageWidth : 0,
-                               rotated.top < 0 ? originalImageHeight : 0);
-                cropRect = new Rect((int) rotated.left, (int) rotated.top, (int) rotated.right,
-                                    (int) rotated.bottom);
-            }
-            cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
-            if (mAngle != 0) {
-                cropped = getRotatedBitmap(cropped);
-            }
-        } catch (IOException e) {
-            Logger.e("Image Crop Error:" + e.getMessage(), e);
-        } catch (OutOfMemoryError e) {
-            Logger.e("OOM Error: " + e.getMessage(), e);
-        } catch (Exception e) {
-            Logger.e("Something went wrong: " + e.getMessage(), e);
-        } finally {
-            Utils.closeQuietly(is);
-        }
-        return cropped;
-    }
-
-    private Bitmap scaleBitmapIfNeeded(Bitmap cropped) {
-        int width = cropped.getWidth();
-        int height = cropped.getHeight();
-        int outWidth = 0;
-        int outHeight = 0;
-        float imageRatio = getRatioX() / getRatioY();
-
-        if (mOutputWidth > 0) {
-            outWidth = mOutputWidth;
-            outHeight = Math.round(mOutputWidth / imageRatio);
-        } else if (mOutputHeight > 0) {
-            outHeight = mOutputHeight;
-            outWidth = Math.round(mOutputHeight * imageRatio);
-        } else {
-            if (mOutputMaxWidth > 0 && mOutputMaxHeight > 0 && (width > mOutputMaxWidth || height > mOutputMaxHeight)) {
-                float maxRatio = (float) mOutputMaxWidth / (float) mOutputMaxHeight;
-                if (maxRatio >= imageRatio) {
-                    outHeight = mOutputMaxHeight;
-                    outWidth = Math.round((float) mOutputMaxHeight * imageRatio);
-                } else {
-                    outWidth = mOutputMaxWidth;
-                    outHeight = Math.round((float) mOutputMaxWidth / imageRatio);
-                }
-            }
-        }
-
-        if (outWidth > 0 && outHeight > 0) {
-            Bitmap scaled = Utils.getScaledBitmap(cropped, outWidth, outHeight);
-            cropped.recycle();
-            cropped = scaled;
-        }
-        return cropped;
-    }
-
-    private void saveToFile(Bitmap bitmap, final Uri uri) {
-        OutputStream outputStream = null;
-        try {
-            outputStream = getContext().getContentResolver()
-                    .openOutputStream(uri);
-            if (outputStream != null) {
-                bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
-            }
-        } catch (IOException e) {
-            Logger.e("Cannot open file: " + uri, e);
-            postErrorOnMainThread(mSaveCallback);
-        } finally {
-            Utils.closeQuietly(outputStream);
-        }
-
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (mSaveCallback != null) mSaveCallback.onSuccess(uri);
-            }
-        });
-    }
-
-    private Bitmap getBitmap() {
-        Bitmap bm = null;
-        Drawable d = getDrawable();
-        if (d != null && d instanceof BitmapDrawable) bm = ((BitmapDrawable) d).getBitmap();
-        return bm;
     }
 
     /**
@@ -1865,8 +1898,8 @@ public class CropImageView extends ImageView {
     }
 
     public enum CropMode {
-        FIT_IMAGE(0), RATIO_4_3(1), RATIO_3_4(2), SQUARE(3), RATIO_16_9(4), RATIO_9_16(
-                5), FREE(6), CUSTOM(7), CIRCLE(8), CIRCLE_SQUARE(9);
+        FIT_IMAGE(0), RATIO_4_3(1), RATIO_3_4(2), SQUARE(3), RATIO_16_9(4), RATIO_9_16(5), FREE(
+                6), CUSTOM(7), CIRCLE(8), CIRCLE_SQUARE(9);
         private final int ID;
 
         CropMode(final int id) {

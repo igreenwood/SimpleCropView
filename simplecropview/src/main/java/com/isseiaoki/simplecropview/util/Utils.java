@@ -35,9 +35,14 @@ public class Utils {
         if (file == null) return 0;
         try {
             ExifInterface exif = new ExifInterface(file.getAbsolutePath());
-            return getRotateDegreeFromOrientation(exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED));
+            return getRotateDegreeFromOrientation(
+                    exif.getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION,
+                            ExifInterface.ORIENTATION_UNDEFINED
+                    )
+            );
         } catch (IOException e) {
-            Logger.e("Cannot get exif data : " + e.getMessage(), e);
+            Logger.e("An error occurred while getting the exif data: " + e.getMessage(), e);
         }
         return 0;
     }
@@ -216,9 +221,10 @@ public class Utils {
             cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
                     null);
             if (cursor != null && cursor.moveToFirst()) {
-                final int columnIndex = (uri.toString().startsWith("content://com.google.android.gallery3d")) ?
-                        cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME) :
-                        cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
+                final int columnIndex =
+                        (uri.toString().startsWith("content://com.google.android.gallery3d")) ?
+                                cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME) :
+                                cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
                 if (columnIndex != -1) {
                     return cursor.getString(columnIndex);
                 }
@@ -326,7 +332,8 @@ public class Utils {
             closeQuietly(is);
         }
         int inSampleSize = 1;
-        while (options.outWidth / inSampleSize > requestSize || options.outHeight / inSampleSize > requestSize) {
+        while (options.outWidth / inSampleSize > requestSize
+                || options.outHeight / inSampleSize > requestSize) {
             inSampleSize *= 2;
         }
         return inSampleSize;
@@ -352,7 +359,10 @@ public class Utils {
         int currentWidth = bitmap.getWidth();
         int currentHeight = bitmap.getHeight();
         Matrix scaleMatrix = new Matrix();
-        scaleMatrix.postScale((float) outWidth / (float) currentWidth, (float) outHeight / (float) currentHeight);
+        scaleMatrix.postScale(
+                (float) outWidth / (float) currentWidth,
+                (float) outHeight / (float) currentHeight
+        );
         return Bitmap.createBitmap(bitmap, 0, 0, currentWidth, currentHeight, scaleMatrix, true);
     }
 

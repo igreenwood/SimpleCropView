@@ -7,7 +7,9 @@ import android.os.Build;
 import android.view.animation.Interpolator;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorListener, ValueAnimator.AnimatorUpdateListener {
+public class ValueAnimatorV14 implements SimpleValueAnimator,
+        Animator.AnimatorListener,
+        ValueAnimator.AnimatorUpdateListener {
     private static final int DEFAULT_ANIMATION_DURATION = 150;
     private ValueAnimator animator;
     private SimpleValueAnimatorListener animatorListener = new SimpleValueAnimatorListener() {
@@ -27,7 +29,7 @@ public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorL
         }
     };
 
-    public ValueAnimatorV14(Interpolator interpolator){
+    public ValueAnimatorV14(Interpolator interpolator) {
         animator = ValueAnimator.ofFloat(0.0f, 1.0f);
         animator.addListener(this);
         animator.addUpdateListener(this);
@@ -56,7 +58,7 @@ public class ValueAnimatorV14 implements SimpleValueAnimator, Animator.AnimatorL
 
     @Override
     public void addAnimatorListener(SimpleValueAnimatorListener animatorListener) {
-        if(animatorListener != null)this.animatorListener = animatorListener;
+        if (animatorListener != null) this.animatorListener = animatorListener;
     }
 
     @Override
