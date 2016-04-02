@@ -1,7 +1,6 @@
 package com.example.simplecropviewsample;
 
 import android.app.Application;
-import android.graphics.Bitmap;
 @SuppressWarnings("unused")
 public class AppController extends Application{
     private static final String TAG = AppController.class.getSimpleName();
