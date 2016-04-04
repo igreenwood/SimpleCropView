@@ -97,7 +97,8 @@ public class MainFragment extends Fragment {
         view.findViewById(R.id.button16_9).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonFree).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonPickImage).setOnClickListener(btnListener);
-        view.findViewById(R.id.buttonRotateImage).setOnClickListener(btnListener);
+        view.findViewById(R.id.buttonRotateLeft).setOnClickListener(btnListener);
+        view.findViewById(R.id.buttonRotateRight).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
@@ -136,8 +137,7 @@ public class MainFragment extends Fragment {
                 case R.id.buttonDone:
                     // Get cropped bitmap and pass it to Application
                     showProgress();
-                    mCropView.startCrop(
-                            createSaveUri(), mCropCallback, mSaveCallback);
+                    mCropView.startCrop(createSaveUri(), mCropCallback, mSaveCallback);
                     break;
                 case R.id.buttonFitImage:
                     mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
@@ -169,7 +169,10 @@ public class MainFragment extends Fragment {
                 case R.id.buttonShowCircleButCropAsSquare:
                     mCropView.setCropMode(CropImageView.CropMode.CIRCLE_SQUARE);
                     break;
-                case R.id.buttonRotateImage:
+                case R.id.buttonRotateLeft:
+                    mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_M90D);
+                    break;
+                case R.id.buttonRotateRight:
                     mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
                     break;
                 case R.id.buttonPickImage:
