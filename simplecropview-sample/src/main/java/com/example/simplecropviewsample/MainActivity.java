@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if(savedInstanceState == null){
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction().add(R.id.container, MainFragment.getInstance()).commit();
         }
     }
@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        Log.i(TAG, "onConfigurationChanged");
     }
 
     @Override
@@ -36,7 +35,8 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public void startResultActivity(Uri uri){
+    public void startResultActivity(Uri uri) {
+        if (isFinishing()) return;
         // Start ResultActivity
         startActivity(ResultActivity.createIntent(this, uri));
     }

@@ -14,18 +14,17 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
+import android.widget.LinearLayout;
 
 import java.io.File;
 
 public class MainFragment extends Fragment {
-    public static final String TAG = MainFragment.class.getSimpleName();
     private static final int REQUEST_PICK_IMAGE = 10011;
     private static final String PROGRESS_DIALOG = "ProgressDialog";
 
     // Views ///////////////////////////////////////////////////////////////////////////////////////
     private CropImageView mCropView;
-    private RelativeLayout mRootLayout;
+    private LinearLayout mRootLayout;
 
     // Note: only the system can call this constructor by reflection. 
     public MainFragment() {
@@ -89,7 +88,7 @@ public class MainFragment extends Fragment {
         view.findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
-        mRootLayout = (RelativeLayout) view.findViewById(R.id.layout_root);
+        mRootLayout = (LinearLayout) view.findViewById(R.id.layout_root);
     }
 
     public void pickImage() {
@@ -105,7 +104,10 @@ public class MainFragment extends Fragment {
     }
 
     public void dismissProgress() {
-        ProgressDialogFragment f = (ProgressDialogFragment) getFragmentManager().findFragmentByTag(PROGRESS_DIALOG);
+        if (!isAdded()) return;
+        android.support.v4.app.FragmentManager manager = getFragmentManager();
+        if (manager == null) return;
+        ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
         if (f != null) {
             getFragmentManager().beginTransaction().remove(f).commit();
         }
