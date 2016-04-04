@@ -14,7 +14,7 @@
         <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:minHeight">@dimen/button_height</item>
         <item name="android:textSize">@dimen/text_size_s</item>
-        <item name="android:gravity">center</item>
+        <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
 
     <style name="TextAppearance.Small" parent="Base.TextAppearance.AppCompat.Small">

@@ -19,15 +19,16 @@
                     android:layout_centerVertical="true"
                     android:layout_alignParentLeft="true"
                     />
-            <Button
+            <ImageButton
                     android:id="@+id/buttonDone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_alignParentRight="true"
-                    android:layout_marginRight="16dp"
-                    android:layout_marginLeft="16dp"
-                    android:text="CROP"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
+                    android:padding="16dp"
+                    android:src="@drawable/ic_done_black_36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    />
 
         </RelativeLayout>
 
@@ -137,70 +138,82 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <com.isseiaoki.simplecropview.CropImageView
-            android:id="@+id/cropImageView"
-            android:layout_below="@id/toolbar"
-            android:layout_above="@id/tab_bar"
-            android:paddingTop="32dp"
-            android:paddingBottom="64dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            custom:scv_crop_mode="fit_image"
-            custom:scv_background_color="@color/colorPrimary"
-            custom:scv_handle_color="@color/colorAccent"
-            custom:scv_guide_color="@color/colorAccent"
-            custom:scv_overlay_color="@color/overlay"
-            custom:scv_frame_color="@color/colorAccent"
-            custom:scv_handle_size="14dp"
-            custom:scv_touch_padding="8dp"
-            custom:scv_handle_show_mode="show_always"
-            custom:scv_guide_show_mode="show_always"
-            custom:scv_min_frame_size="50dp"
-            custom:scv_frame_stroke_weight="1dp"
-            custom:scv_guide_stroke_weight="1dp"
-            />
-    <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_alignBottom="@id/cropImageView"
-            android:layout_centerHorizontal="true"
-            >
-
-        <Button
-                android:id="@+id/buttonPickImage"
-                android:layout_width="wrap_content"
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical"
+                  android:layout_below="@id/toolbar"
+                  android:layout_above="@id/tab_bar">
+        <com.isseiaoki.simplecropview.CropImageView
+                android:id="@+id/cropImageView"
+                android:layout_weight="1"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:padding="8dp"
-                android:text="PICK IMAGE"
+                custom:scv_crop_mode="fit_image"
+                custom:scv_background_color="@color/colorPrimary"
+                custom:scv_handle_color="@color/colorAccent"
+                custom:scv_guide_color="@color/colorAccent"
+                custom:scv_overlay_color="@color/overlay"
+                custom:scv_frame_color="@color/colorAccent"
+                custom:scv_handle_size="14dp"
+                custom:scv_touch_padding="8dp"
+                custom:scv_handle_show_mode="show_always"
+                custom:scv_guide_show_mode="show_always"
+                custom:scv_min_frame_size="50dp"
+                custom:scv_frame_stroke_weight="1dp"
+                custom:scv_guide_stroke_weight="1dp"
                 />
-
-        <Button
-                android:id="@+id/buttonRotateLeft"
-                android:layout_width="wrap_content"
+        <RelativeLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="ROTATE LEFT"
-                />
+                android:orientation="horizontal"
+                android:layout_alignBottom="@id/cropImageView"
+                android:layout_centerHorizontal="true"
+                >
 
-        <Button
-                android:id="@+id/buttonRotateRight"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:text="ROTATE RIGHT"
+            <ImageButton
+                    android:id="@+id/buttonPickImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="16dp"
+                    android:layout_alignParentLeft="true"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_photo_library_black_36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    />
+
+            <ImageButton
+                    android:id="@+id/buttonRotateRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_rotate_right_black_36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    />
+
+            <ImageButton
+                    android:id="@+id/buttonRotateLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@id/buttonRotateRight"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_rotate_left_black_36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    />
+        </RelativeLayout>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_alignBottom="@id/cropImageView"
+                android:background="@color/colorAccent"
                 />
 
     </LinearLayout>
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_alignBottom="@id/cropImageView"
-            android:background="@color/colorAccent"
-            />
 
 </RelativeLayout>

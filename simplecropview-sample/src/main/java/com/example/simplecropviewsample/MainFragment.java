@@ -11,7 +11,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -68,19 +67,7 @@ public class MainFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, result);
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
-            mCropView.startLoad(result.getData(), new LoadCallback() {
-                @Override
-                public void onSuccess() {
-                    Log.d(TAG, "onSuccess");
-                    dismissProgress();
-                }
-
-                @Override
-                public void onError() {
-                    Log.d(TAG, "onError");
-                    dismissProgress();
-                }
-            });
+            mCropView.startLoad(result.getData(), mLoadCallback);
         }
     }
 
@@ -182,29 +169,39 @@ public class MainFragment extends Fragment {
         }
     };
 
-    private final CropCallback mCropCallback = new CropCallback() {
+    // Callbacks ///////////////////////////////////////////////////////////////////////////////////
+
+    private final LoadCallback mLoadCallback = new LoadCallback() {
         @Override
-        public void onSuccess(Bitmap cropped, int rotationAngle) {
-            Log.d(TAG, "crop success");
+        public void onSuccess() {
+            dismissProgress();
         }
 
         @Override
         public void onError() {
-            Log.d(TAG, "crop error");
+            dismissProgress();
+        }
+    };
+
+    private final CropCallback mCropCallback = new CropCallback() {
+        @Override
+        public void onSuccess(Bitmap cropped, int rotationAngle) {
+        }
+
+        @Override
+        public void onError() {
         }
     };
 
     private final SaveCallback mSaveCallback = new SaveCallback() {
         @Override
         public void onSuccess(Uri outputUri) {
-            Log.d(TAG, "save success");
             dismissProgress();
             ((MainActivity) getActivity()).startResultActivity(outputUri);
         }
 
         @Override
         public void onError() {
-            Log.d(TAG, "save error");
             dismissProgress();
         }
     };
