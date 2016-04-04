@@ -414,12 +414,24 @@ public class CropImageView extends ImageView {
     }
 
     private void drawHandles(Canvas canvas) {
+        drawHandleShadows(canvas);
         mPaintFrame.setStyle(Paint.Style.FILL);
         mPaintFrame.setColor(mHandleColor);
         canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
         canvas.drawCircle(mFrameRect.right, mFrameRect.top, mHandleSize, mPaintFrame);
         canvas.drawCircle(mFrameRect.left, mFrameRect.bottom, mHandleSize, mPaintFrame);
         canvas.drawCircle(mFrameRect.right, mFrameRect.bottom, mHandleSize, mPaintFrame);
+    }
+
+    private void drawHandleShadows(Canvas canvas) {
+        mPaintFrame.setStyle(Paint.Style.FILL);
+        mPaintFrame.setColor(TRANSLUCENT_BLACK);
+        RectF rect = new RectF(mFrameRect);
+        rect.offset(0, 1);
+        canvas.drawCircle(rect.left, rect.top, mHandleSize, mPaintFrame);
+        canvas.drawCircle(rect.right, rect.top, mHandleSize, mPaintFrame);
+        canvas.drawCircle(rect.left, rect.bottom, mHandleSize, mPaintFrame);
+        canvas.drawCircle(rect.right, rect.bottom, mHandleSize, mPaintFrame);
     }
 
     private void setMatrix() {
