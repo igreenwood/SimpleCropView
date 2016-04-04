@@ -37,7 +37,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.WindowManager;
-import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
@@ -53,12 +53,12 @@ public class CropImageView extends ImageView {
 
     // Constants ///////////////////////////////////////////////////////////////////////////////////
 
-    private static final int HANDLE_SIZE_IN_DP = 16;
+    private static final int HANDLE_SIZE_IN_DP = 14;
     private static final int MIN_FRAME_SIZE_IN_DP = 50;
     private static final int FRAME_STROKE_WEIGHT_IN_DP = 1;
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 1;
-    private static final float DEFAULT_INITIAL_FRAME_SCALE = 0.75f;
-    private static final int DEFAULT_ANIMATION_DURATION_MILLIS = 150;
+    private static final float DEFAULT_INITIAL_FRAME_SCALE = 1f;
+    private static final int DEFAULT_ANIMATION_DURATION_MILLIS = 100;
     private static final int DEBUG_TEXT_SIZE_IN_DP = 10;
 
     private static final int TRANSPARENT = 0x00000000;
@@ -88,7 +88,7 @@ public class CropImageView extends ImageView {
     private boolean mIsRotating = false;
     private boolean mIsAnimating = false;
     private SimpleValueAnimator mAnimator = null;
-    private final Interpolator DEFAULT_INTERPOLATOR = new AccelerateDecelerateInterpolator();
+    private final Interpolator DEFAULT_INTERPOLATOR = new DecelerateInterpolator();
     private Interpolator mInterpolator = DEFAULT_INTERPOLATOR;
     private LoadCallback mLoadCallback = null;
     private CropCallback mCropCallback = null;
@@ -121,8 +121,8 @@ public class CropImageView extends ImageView {
     private boolean mIsCropEnabled = true;
     private boolean mIsEnabled = true;
     private PointF mCustomRatio = new PointF(1.0f, 1.0f);
-    private float mFrameStrokeWeight = 3.0f;
-    private float mGuideStrokeWeight = 3.0f;
+    private float mFrameStrokeWeight = 2.0f;
+    private float mGuideStrokeWeight = 2.0f;
     private int mBackgroundColor;
     private int mOverlayColor;
     private int mFrameColor;
@@ -1776,7 +1776,7 @@ public class CropImageView extends ImageView {
 
     /**
      * Set interpolator of animation
-     * (Default interpolator is AccelerateDecelerateInterpolator)
+     * (Default interpolator is DecelerateInterpolator)
      *
      * @param interpolator interpolator used for animation
      */

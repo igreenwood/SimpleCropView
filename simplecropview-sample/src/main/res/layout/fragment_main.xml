@@ -1,15 +1,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout_root"
-    android:background="@color/base"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="@null">
+        android:layout_height="64dp">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -17,9 +15,7 @@
                 android:id="@+id/textTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_s"
-                android:text="SimpleCropViewSample"
-                android:textColor="@color/text"
+                android:text="SimpleCropView"
                 android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
                 />
@@ -30,11 +26,8 @@
                 android:layout_marginRight="16dp"
                 android:layout_marginLeft="16dp"
                 android:text="CROP"
-                android:textSize="@dimen/text_size_s"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
         </RelativeLayout>
 
@@ -44,131 +37,102 @@
         android:id="@+id/tab_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:background="@color/menu_bg">
+        android:layout_alignParentBottom="true">
 
         <LinearLayout
             android:id="@+id/tab_layout"
             android:layout_width="wrap_content"
             android:layout_height="64dp"
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp"
             android:orientation="horizontal">
 
             <Button
                 android:id="@+id/buttonFitImage"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="FIT IMAGE"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/button1_1"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="1:1"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/button3_4"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="3:4"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/button4_3"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="4:3"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/button9_16"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="9:16"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
             <Button
                 android:id="@+id/button16_9"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="16:9"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/buttonCustom"
                 android:layout_gravity="center_vertical"
                 android:layout_margin="8dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="7:5"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/buttonFree"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="FREE"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/buttonCircle"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
                 android:text="CIRCLE"
-                android:textColor="@color/base"
-                android:background="@color/text"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
             <Button
                 android:id="@+id/buttonShowCircleButCropAsSquare"
                 android:layout_gravity="center_vertical"
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:padding="8dp"
-                android:textSize="@dimen/text_size_s"
-                android:text="CIRCLE_BUT_SQUARE"
-                android:textColor="@color/base"
-                android:background="@color/text"
+                android:text="CIRCLE_SQUARE"
                 android:layout_width="wrap_content"
-                android:layout_height="@dimen/button_height"/>
+                android:layout_height="wrap_content"/>
 
         </LinearLayout>
     </HorizontalScrollView>
@@ -184,15 +148,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         custom:scv_crop_mode="fit_image"
-        custom:scv_background_color="@color/base"
-        custom:scv_handle_color="@color/handle"
-        custom:scv_guide_color="@color/guide"
+        custom:scv_background_color="@color/colorPrimary"
+        custom:scv_handle_color="@color/colorAccent"
+        custom:scv_guide_color="@color/colorAccent"
         custom:scv_overlay_color="@color/overlay"
-        custom:scv_frame_color="@color/frame"
-        custom:scv_handle_size="16dp"
+        custom:scv_frame_color="@color/colorAccent"
+        custom:scv_handle_size="14dp"
         custom:scv_touch_padding="8dp"
         custom:scv_handle_show_mode="show_always"
-        custom:scv_guide_show_mode="show_on_touch"
+        custom:scv_guide_show_mode="show_always"
         custom:scv_min_frame_size="50dp"
         custom:scv_frame_stroke_weight="1dp"
         custom:scv_guide_stroke_weight="1dp"
@@ -201,7 +165,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="16dp"
         android:layout_alignBottom="@id/cropImageView"
         android:layout_centerHorizontal="true"
         >
@@ -209,35 +172,27 @@
         <Button
             android:id="@+id/buttonPickImage"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/button_height"
+            android:layout_height="wrap_content"
             android:layout_marginRight="8dp"
             android:padding="8dp"
             android:text="PICK IMAGE"
-            android:textSize="@dimen/text_size_s"
-            android:textColor="@color/base"
-            android:background="@color/text"
             />
 
         <Button
             android:id="@+id/buttonRotateImage"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/button_height"
+            android:layout_height="wrap_content"
             android:padding="8dp"
             android:text="ROTATE IMAGE"
-            android:textSize="@dimen/text_size_s"
-            android:textColor="@color/base"
-            android:background="@color/text"
             />
 
     </LinearLayout>
-
-
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_alignBottom="@id/cropImageView"
-        android:background="@color/handle"
+        android:background="@color/colorAccent"
         />
 
 </RelativeLayout>

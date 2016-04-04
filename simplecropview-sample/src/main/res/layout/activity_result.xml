@@ -1,23 +1,19 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@color/base"
                 android:id="@+id/layout_root">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:background="@android:color/white">
+        android:layout_height="64dp">
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="@dimen/text_size_s"
                 android:text="Cropped Image"
-                android:textColor="@android:color/black"
                 android:layout_centerVertical="true"
                 android:layout_alignParentLeft="true"
                 />
