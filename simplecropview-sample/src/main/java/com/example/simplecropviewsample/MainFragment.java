@@ -187,7 +187,7 @@ public class MainFragment extends Fragment {
 
     private final CropCallback mCropCallback = new CropCallback() {
         @Override
-        public void onSuccess(Bitmap cropped, int rotationAngle) {
+        public void onSuccess(Bitmap cropped) {
         }
 
         @Override

@@ -1160,7 +1160,9 @@ public class CropImageView extends ImageView {
             }
             cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
             if (mAngle != 0) {
-                cropped = getRotatedBitmap(cropped);
+                Bitmap rotated = getRotatedBitmap(cropped);
+                cropped.recycle();
+                cropped = rotated;
             }
         } catch (IOException e) {
             Logger.e("An error occurred while cropping the image: " + e.getMessage(), e);
@@ -1218,7 +1220,9 @@ public class CropImageView extends ImageView {
 
         if (outWidth > 0 && outHeight > 0) {
             Bitmap scaled = Utils.getScaledBitmap(cropped, outWidth, outHeight);
-            cropped.recycle();
+            if(cropped != scaled){
+                cropped.recycle();
+            }
             cropped = scaled;
         }
         return cropped;
@@ -1433,6 +1437,10 @@ public class CropImageView extends ImageView {
                 null,
                 false
         );
+        if(rotated != source){
+            rotated.recycle();
+        }
+
         if (mCropMode == CropMode.CIRCLE) {
             cropped = getCircularBitmap(cropped);
         }
@@ -1462,8 +1470,9 @@ public class CropImageView extends ImageView {
 
         canvas.drawCircle(halfWidth, halfHeight, Math.min(halfWidth, halfHeight), paint);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
-
         canvas.drawBitmap(square, rect, rect, paint);
+
+        square.recycle();
         return output;
     }
 
@@ -1508,7 +1517,7 @@ public class CropImageView extends ImageView {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            if (mCropCallback != null) mCropCallback.onSuccess(tmp, (int) mAngle);
+                            if (mCropCallback != null) mCropCallback.onSuccess(tmp);
                         }
                     });
                 }
