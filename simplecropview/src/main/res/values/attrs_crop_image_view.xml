@@ -38,5 +38,6 @@
         <attr name="scv_initial_frame_scale" format="float"/>
         <attr name="scv_animation_enabled" format="boolean"/>
         <attr name="scv_animation_duration" format="integer"/>
+        <attr name="scv_handle_shadow_enabled" format="boolean"/>
     </declare-styleable>
 </resources>

@@ -106,10 +106,10 @@ public class CropImageView extends ImageView {
     private boolean mIsCropping = false;
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.PNG;
     private int mCompressQuality = 100;
-
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
     private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
+
     private CropMode mCropMode = CropMode.SQUARE;
     private ShowMode mGuideShowMode = ShowMode.SHOW_ALWAYS;
     private ShowMode mHandleShowMode = ShowMode.SHOW_ALWAYS;
@@ -131,6 +131,7 @@ public class CropImageView extends ImageView {
     private float mInitialFrameScale; // 0.01 ~ 1.0, 0.75 is default value
     private boolean mIsAnimationEnabled = true;
     private int mAnimationDurationMillis = DEFAULT_ANIMATION_DURATION_MILLIS;
+    private boolean mIsHandleShadowEnabled = true;
 
     // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -208,6 +209,7 @@ public class CropImageView extends ImageView {
         ss.outputMaxHeight = this.mOutputMaxHeight;
         ss.outputWidth = this.mOutputWidth;
         ss.outputHeight = this.mOutputHeight;
+        ss.isHandleShadowEnabled = this.mIsHandleShadowEnabled;
         return ss;
     }
 
@@ -246,6 +248,7 @@ public class CropImageView extends ImageView {
         this.mOutputMaxHeight = ss.outputMaxHeight;
         this.mOutputWidth = ss.outputWidth;
         this.mOutputHeight = ss.outputHeight;
+        this.mIsHandleShadowEnabled = ss.isHandleShadowEnabled;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -352,6 +355,7 @@ public class CropImageView extends ImageView {
             mAnimationDurationMillis = ta.getInt(
                     R.styleable.scv_CropImageView_scv_animation_duration,
                     DEFAULT_ANIMATION_DURATION_MILLIS);
+            mIsHandleShadowEnabled = ta.getBoolean(R.styleable.scv_CropImageView_scv_handle_shadow_enabled, true);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -414,7 +418,7 @@ public class CropImageView extends ImageView {
     }
 
     private void drawHandles(Canvas canvas) {
-        drawHandleShadows(canvas);
+        if (mIsHandleShadowEnabled) drawHandleShadows(canvas);
         mPaintFrame.setStyle(Paint.Style.FILL);
         mPaintFrame.setColor(mHandleColor);
         canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
@@ -1220,7 +1224,7 @@ public class CropImageView extends ImageView {
 
         if (outWidth > 0 && outHeight > 0) {
             Bitmap scaled = Utils.getScaledBitmap(cropped, outWidth, outHeight);
-            if(cropped != scaled){
+            if (cropped != scaled) {
                 cropped.recycle();
             }
             cropped = scaled;
@@ -1437,7 +1441,7 @@ public class CropImageView extends ImageView {
                 null,
                 false
         );
-        if(rotated != source){
+        if (rotated != source) {
             rotated.recycle();
         }
 
@@ -1780,7 +1784,7 @@ public class CropImageView extends ImageView {
     /**
      * Set whether to animate
      *
-     * @param enabled is animation enabled
+     * @param enabled is animation enabled?
      */
     public void setAnimationEnabled(boolean enabled) {
         mIsAnimationEnabled = enabled;
@@ -1896,6 +1900,15 @@ public class CropImageView extends ImageView {
         mCompressQuality = quality;
     }
 
+    /**
+     * Set whether to show handle shadows
+     *
+     * @param handleShadowEnabled should show handle shadows?
+     */
+    public void setHandleShadowEnabled(boolean handleShadowEnabled) {
+        mIsHandleShadowEnabled = handleShadowEnabled;
+    }
+
     private void setScale(float mScale) {
         this.mScale = mScale;
     }
@@ -1996,6 +2009,7 @@ public class CropImageView extends ImageView {
         int outputMaxHeight;
         int outputWidth;
         int outputHeight;
+        boolean isHandleShadowEnabled;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -2036,6 +2050,7 @@ public class CropImageView extends ImageView {
             outputMaxHeight = in.readInt();
             outputWidth = in.readInt();
             outputHeight = in.readInt();
+            isHandleShadowEnabled = (in.readInt() != 0);
         }
 
         @Override
@@ -2074,6 +2089,7 @@ public class CropImageView extends ImageView {
             out.writeInt(outputMaxHeight);
             out.writeInt(outputWidth);
             out.writeInt(outputHeight);
+            out.writeInt(isHandleShadowEnabled ? 1 : 0);
         }
 
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
