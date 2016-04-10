@@ -30,6 +30,8 @@ public class Utils {
     private static final String TAG = Utils.class.getSimpleName();
     private static final int SIZE_DEFAULT = 2048;
     private static final int SIZE_LIMIT = 4096;
+    public static int sInputImageWidth = 0;
+    public  static int sInputImageHeight = 0;
 
     public static int getExifRotation(File file) {
         if (file == null) return 0;
@@ -332,6 +334,8 @@ public class Utils {
             closeQuietly(is);
         }
         int inSampleSize = 1;
+        sInputImageWidth = options.outWidth;
+        sInputImageHeight = options.outHeight;
         while (options.outWidth / inSampleSize > requestSize
                 || options.outHeight / inSampleSize > requestSize) {
             inSampleSize *= 2;

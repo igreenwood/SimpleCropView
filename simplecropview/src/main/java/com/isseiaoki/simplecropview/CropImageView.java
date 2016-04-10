@@ -59,13 +59,12 @@ public class CropImageView extends ImageView {
     private static final int GUIDE_STROKE_WEIGHT_IN_DP = 1;
     private static final float DEFAULT_INITIAL_FRAME_SCALE = 1f;
     private static final int DEFAULT_ANIMATION_DURATION_MILLIS = 100;
-    private static final int DEBUG_TEXT_SIZE_IN_DP = 10;
+    private static final int DEBUG_TEXT_SIZE_IN_DP = 15;
 
     private static final int TRANSPARENT = 0x00000000;
     private static final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int TRANSLUCENT_BLACK = 0xBB000000;
-    private static final int VERMILION = 0xEF454A;
 
     // Member variables ////////////////////////////////////////////////////////////////////////////
 
@@ -81,6 +80,7 @@ public class CropImageView extends ImageView {
     private Paint mPaintTranslucent;
     private Paint mPaintFrame;
     private Paint mPaintBitmap;
+    private Paint mPaintDebug;
     private RectF mFrameRect;
     private RectF mImageRect;
     private PointF mCenter = new PointF();
@@ -102,10 +102,15 @@ public class CropImageView extends ImageView {
     private int mOutputMaxHeight;
     private int mOutputWidth = 0;
     private int mOutputHeight = 0;
-    private boolean mIsLoggingEnabled = false;
+    private boolean mIsDebug = false;
     private boolean mIsCropping = false;
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.PNG;
     private int mCompressQuality = 100;
+    private int mInputImageWidth = 0;
+    private int mInputImageHeight = 0;
+    private int mOutputImageWidth = 0;
+    private int mOutputImageHeight = 0;
+    private boolean mIsLoading = false;
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
     private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
@@ -147,16 +152,21 @@ public class CropImageView extends ImageView {
         super(context, attrs, defStyle);
 
         mExecutor = Executors.newSingleThreadExecutor();
-        float mDensity = getDensity();
-        mHandleSize = (int) (mDensity * HANDLE_SIZE_IN_DP);
-        mMinFrameSize = mDensity * MIN_FRAME_SIZE_IN_DP;
-        mFrameStrokeWeight = mDensity * FRAME_STROKE_WEIGHT_IN_DP;
-        mGuideStrokeWeight = mDensity * GUIDE_STROKE_WEIGHT_IN_DP;
+        float density = getDensity();
+        mHandleSize = (int) (density * HANDLE_SIZE_IN_DP);
+        mMinFrameSize = density * MIN_FRAME_SIZE_IN_DP;
+        mFrameStrokeWeight = density * FRAME_STROKE_WEIGHT_IN_DP;
+        mGuideStrokeWeight = density * GUIDE_STROKE_WEIGHT_IN_DP;
 
         mPaintFrame = new Paint();
         mPaintTranslucent = new Paint();
         mPaintBitmap = new Paint();
         mPaintBitmap.setFilterBitmap(true);
+        mPaintDebug = new Paint();
+        mPaintDebug.setAntiAlias(true);
+        mPaintDebug.setStyle(Paint.Style.STROKE);
+        mPaintDebug.setColor(WHITE);
+        mPaintDebug.setTextSize((float) DEBUG_TEXT_SIZE_IN_DP * density);
 
         mMatrix = new Matrix();
         mScale = 1.0f;
@@ -167,7 +177,7 @@ public class CropImageView extends ImageView {
         mGuideColor = TRANSLUCENT_WHITE;
 
         // handle Styleable
-        handleStyleable(context, attrs, defStyle, mDensity);
+        handleStyleable(context, attrs, defStyle, density);
     }
 
     // Lifecycle methods ///////////////////////////////////////////////////////////////////////////
@@ -204,12 +214,16 @@ public class CropImageView extends ImageView {
         ss.saveUri = this.mSaveUri;
         ss.compressFormat = this.mCompressFormat;
         ss.compressQuality = this.mCompressQuality;
-        ss.isLoggingEnabled = this.mIsLoggingEnabled;
+        ss.isDebug = this.mIsDebug;
         ss.outputMaxWidth = this.mOutputMaxWidth;
         ss.outputMaxHeight = this.mOutputMaxHeight;
         ss.outputWidth = this.mOutputWidth;
         ss.outputHeight = this.mOutputHeight;
         ss.isHandleShadowEnabled = this.mIsHandleShadowEnabled;
+        ss.inputImageWidth = this.mInputImageWidth;
+        ss.inputImageHeight = this.mInputImageHeight;
+        ss.outputImageWidth = this.mOutputImageWidth;
+        ss.outputImageHeight = this.mOutputImageHeight;
         return ss;
     }
 
@@ -243,12 +257,16 @@ public class CropImageView extends ImageView {
         this.mSaveUri = ss.saveUri;
         this.mCompressFormat = ss.compressFormat;
         this.mCompressQuality = ss.compressQuality;
-        this.mIsLoggingEnabled = ss.isLoggingEnabled;
+        this.mIsDebug = ss.isDebug;
         this.mOutputMaxWidth = ss.outputMaxWidth;
         this.mOutputMaxHeight = ss.outputMaxHeight;
         this.mOutputWidth = ss.outputWidth;
         this.mOutputHeight = ss.outputHeight;
         this.mIsHandleShadowEnabled = ss.isHandleShadowEnabled;
+        this.mInputImageWidth = ss.inputImageWidth;
+        this.mInputImageHeight = ss.inputImageHeight;
+        this.mOutputImageWidth = ss.outputImageWidth;
+        this.mOutputImageHeight = ss.outputImageHeight;
         setImageBitmap(ss.image);
         requestLayout();
     }
@@ -280,6 +298,9 @@ public class CropImageView extends ImageView {
                 canvas.drawBitmap(bm, mMatrix, mPaintBitmap);
                 // draw edit frame
                 drawCropFrame(canvas);
+            }
+            if (mIsDebug) {
+                drawDebugInfo(canvas);
             }
         }
     }
@@ -364,6 +385,63 @@ public class CropImageView extends ImageView {
     }
 
     // Drawing method //////////////////////////////////////////////////////////////////////////////
+
+    private void drawDebugInfo(Canvas canvas) {
+        Paint.FontMetrics fontMetrics = mPaintDebug.getFontMetrics();
+        mPaintDebug.measureText("W");
+        int textHeight = (int) (fontMetrics.descent - fontMetrics.ascent);
+        int x = (int) (mImageRect.left + (float) mHandleSize * 0.5f * getDensity());
+        int y = (int) (mImageRect.top + textHeight + (float) mHandleSize * 0.5f * getDensity());
+        StringBuilder builder = new StringBuilder();
+        builder.append("LOADED FROM: ")
+                .append(mSourceUri != null ? "Uri" : "Bitmap");
+        canvas.drawText(builder.toString(), x, y, mPaintDebug);
+        builder = new StringBuilder();
+
+        if (mSourceUri == null) {
+            builder.append("INPUT_IMAGE_SIZE: ")
+                    .append((int) mImgWidth)
+                    .append("x")
+                    .append((int) mImgHeight);
+            y += textHeight;
+            canvas.drawText(builder.toString(), x, y, mPaintDebug);
+            builder = new StringBuilder();
+        } else {
+            builder = new StringBuilder()
+                    .append("INPUT_IMAGE_SIZE: ")
+                    .append(mInputImageWidth)
+                    .append("x")
+                    .append(mInputImageHeight);
+            y += textHeight;
+            canvas.drawText(builder.toString(), x, y, mPaintDebug);
+            builder = new StringBuilder();
+        }
+        builder.append("LOADED_IMAGE_SIZE: ")
+                .append(getBitmap().getWidth())
+                .append("x")
+                .append(getBitmap().getHeight());
+        y += textHeight;
+        canvas.drawText(builder.toString(), x, y, mPaintDebug);
+        builder = new StringBuilder();
+        if (mOutputImageWidth > 0 && mOutputImageHeight > 0) {
+            builder.append("OUTPUT_IMAGE_SIZE: ")
+                    .append(mOutputImageWidth)
+                    .append("x")
+                    .append(mOutputImageHeight);
+            y += textHeight;
+            canvas.drawText(builder.toString(), x, y, mPaintDebug);
+            builder = new StringBuilder()
+                    .append("EXIF ROTATION: ")
+                    .append(mExifRotation);
+            y += textHeight;
+            canvas.drawText(builder.toString(), x, y, mPaintDebug);
+            builder = new StringBuilder()
+                    .append("CURRENT_ROTATION: ")
+                    .append((int) mAngle);
+            y += textHeight;
+            canvas.drawText(builder.toString(), x, y, mPaintDebug);
+        }
+    }
 
     private void drawCropFrame(Canvas canvas) {
         if (!mIsCropEnabled) return;
@@ -519,6 +597,7 @@ public class CropImageView extends ImageView {
         if (!mIsEnabled) return false;
         if (mIsRotating) return false;
         if (mIsAnimating) return false;
+        if (mIsLoading) return false;
         if (mIsCropping) return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -1287,7 +1366,7 @@ public class CropImageView extends ImageView {
     public void setImageResource(int resId) {
         mIsInitialized = false;
         super.setImageResource(resId);
-        updateDrawableInfo();
+        updateLayout();
     }
 
     /**
@@ -1299,7 +1378,7 @@ public class CropImageView extends ImageView {
     public void setImageDrawable(Drawable drawable) {
         mIsInitialized = false;
         super.setImageDrawable(drawable);
-        updateDrawableInfo();
+        updateLayout();
     }
 
     /**
@@ -1311,15 +1390,26 @@ public class CropImageView extends ImageView {
     public void setImageURI(Uri uri) {
         mIsInitialized = false;
         super.setImageURI(uri);
-        updateDrawableInfo();
+        updateLayout();
     }
 
-    private void updateDrawableInfo() {
+    private void updateLayout() {
+        resetImageInfo();
         Drawable d = getDrawable();
-        mAngle = mExifRotation;
         if (d != null) {
             setupLayout(mViewWidth, mViewHeight);
         }
+    }
+
+    private void resetImageInfo() {
+        if (mIsLoading) return;
+        mSourceUri = null;
+        mSaveUri = null;
+        mInputImageWidth = 0;
+        mInputImageHeight = 0;
+        mOutputImageWidth = 0;
+        mOutputImageHeight = 0;
+        mAngle = mExifRotation;
     }
 
     /**
@@ -1338,6 +1428,7 @@ public class CropImageView extends ImageView {
         mExecutor.submit(new Runnable() {
             @Override
             public void run() {
+                mIsLoading = true;
                 mExifRotation = Utils.getExifOrientation(getContext(), mSourceUri);
                 int maxSize = Utils.getMaxSize();
                 int requestSize = Math.max(mViewWidth, mViewHeight);
@@ -1346,19 +1437,24 @@ public class CropImageView extends ImageView {
                     final Bitmap sampledBitmap = Utils.decodeSampledBitmapFromUri(getContext(),
                             mSourceUri,
                             requestSize);
+                    mInputImageWidth = Utils.sInputImageWidth;
+                    mInputImageHeight = Utils.sInputImageHeight;
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             setImageBitmap(sampledBitmap);
                             if (mLoadCallback != null) mLoadCallback.onSuccess();
+                            mIsLoading = false;
                         }
                     });
                 } catch (OutOfMemoryError e) {
                     Logger.e("OOM Error: " + e.getMessage(), e);
                     postErrorOnMainThread(mLoadCallback);
+                    mIsLoading = false;
                 } catch (Exception e) {
                     Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
                     postErrorOnMainThread(mLoadCallback);
+                    mIsLoading = false;
                 }
             }
         });
@@ -1518,10 +1614,13 @@ public class CropImageView extends ImageView {
                 if (cropped != null) {
                     cropped = scaleBitmapIfNeeded(cropped);
                     final Bitmap tmp = cropped;
+                    mOutputImageWidth = tmp.getWidth();
+                    mOutputImageHeight = tmp.getHeight();
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             if (mCropCallback != null) mCropCallback.onSuccess(tmp);
+                            if (mIsDebug) invalidate();
                         }
                     });
                 }
@@ -1812,6 +1911,15 @@ public class CropImageView extends ImageView {
     }
 
     /**
+     * Set whether to show debug display
+     *
+     * @param debug is logging enabled
+     */
+    public void setDebug(boolean debug) {
+        mIsDebug = debug;
+    }
+
+    /**
      * Set whether to log exception
      *
      * @param enabled is logging enabled
@@ -2004,12 +2112,16 @@ public class CropImageView extends ImageView {
         Uri saveUri;
         Bitmap.CompressFormat compressFormat;
         int compressQuality;
-        boolean isLoggingEnabled;
+        boolean isDebug;
         int outputMaxWidth;
         int outputMaxHeight;
         int outputWidth;
         int outputHeight;
         boolean isHandleShadowEnabled;
+        int inputImageWidth;
+        int inputImageHeight;
+        int outputImageWidth;
+        int outputImageHeight;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -2045,12 +2157,16 @@ public class CropImageView extends ImageView {
             saveUri = in.readParcelable(Uri.class.getClassLoader());
             compressFormat = (Bitmap.CompressFormat) in.readSerializable();
             compressQuality = in.readInt();
-            isLoggingEnabled = (in.readInt() != 0);
+            isDebug = (in.readInt() != 0);
             outputMaxWidth = in.readInt();
             outputMaxHeight = in.readInt();
             outputWidth = in.readInt();
             outputHeight = in.readInt();
             isHandleShadowEnabled = (in.readInt() != 0);
+            inputImageWidth = in.readInt();
+            inputImageHeight = in.readInt();
+            outputImageWidth = in.readInt();
+            outputImageHeight = in.readInt();
         }
 
         @Override
@@ -2084,12 +2200,16 @@ public class CropImageView extends ImageView {
             out.writeParcelable(saveUri, flag);
             out.writeSerializable(compressFormat);
             out.writeInt(compressQuality);
-            out.writeInt(isLoggingEnabled ? 1 : 0);
+            out.writeInt(isDebug ? 1 : 0);
             out.writeInt(outputMaxWidth);
             out.writeInt(outputMaxHeight);
             out.writeInt(outputWidth);
             out.writeInt(outputHeight);
             out.writeInt(isHandleShadowEnabled ? 1 : 0);
+            out.writeInt(inputImageWidth);
+            out.writeInt(inputImageHeight);
+            out.writeInt(outputImageWidth);
+            out.writeInt(outputImageHeight);
         }
 
         public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
