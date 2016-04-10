@@ -8,7 +8,8 @@
     <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize">
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary">
         <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
@@ -23,10 +24,6 @@
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 
-    <View android:layout_width="match_parent"
-          android:layout_height="1dp"
-          android:background="@color/colorAccent"/>
-
     <com.isseiaoki.simplecropview.CropImageView
             android:id="@+id/cropImageView"
             android:layout_weight="1"
@@ -37,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             custom:scv_crop_mode="fit_image"
-            custom:scv_background_color="@color/colorPrimary"
+            custom:scv_background_color="@color/windowBackground"
             custom:scv_handle_color="@color/colorAccent"
             custom:scv_guide_color="@color/colorAccent"
             custom:scv_overlay_color="@color/overlay"
@@ -55,13 +52,13 @@
           android:layout_height="1dp"
           android:layout_marginLeft="8dp"
           android:layout_marginRight="8dp"
-          android:background="@color/colorAccent"/>
+          android:background="@color/divider"/>
 
     <HorizontalScrollView
             android:id="@+id/tab_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
+            android:background="@color/windowBackground"
             android:scrollbars="none">
 
         <LinearLayout
@@ -176,7 +173,7 @@
           android:layout_height="1dp"
           android:layout_marginLeft="8dp"
           android:layout_marginRight="8dp"
-          android:background="@color/colorAccent"/>
+          android:background="@color/divider"/>
 
     <RelativeLayout
             android:layout_width="match_parent"
@@ -184,7 +181,7 @@
             android:orientation="horizontal"
             android:layout_alignBottom="@id/cropImageView"
             android:layout_centerHorizontal="true"
-            android:background="@color/colorPrimary"
+            android:background="@color/windowBackground"
             >
 
         <ImageButton

@@ -1,27 +1,28 @@
 <resources>
 
-    <style name="AppTheme.Light.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+    <style name="AppTheme.Light.NoActionBar" parent="Theme.AppCompat.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="android:textColorSecondary">@color/colorPrimaryDark</item>
         <item name="android:colorBackground">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorButtonNormal">@color/colorButtonNormal</item>
+        <item name="android:windowBackground">@color/windowBackground</item>
         <item name="android:textAppearanceButton">@style/AppTheme.Button.Borderless</item>
         <item name="android:textAppearanceSmall">@style/TextAppearance.Small</item>
     </style>
 
     <style name="AppTheme.Button.Borderless" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
-        <item name="android:textColor">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/textColorPrimary</item>
         <item name="android:minHeight">@dimen/button_height</item>
         <item name="android:textSize">@dimen/text_size_s</item>
         <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
 
     <style name="TextAppearance.Small" parent="TextAppearance.AppCompat.Small">
-        <item name="android:textColor">@color/colorPrimaryDark</item>
-        <item name="android:textSize">@dimen/text_size_s</item>
+        <item name="android:textColor">@color/textColorPrimary</item>
+        <item name="android:textSize">@dimen/text_size_m</item>
         <item name="android:gravity">center_horizontal|center_vertical</item>
     </style>
 
