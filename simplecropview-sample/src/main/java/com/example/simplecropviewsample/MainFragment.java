@@ -55,9 +55,10 @@ public class MainFragment extends Fragment {
         bindViews(view);
         // apply custom font
         FontUtils.setFont(mRootLayout);
+
+//            mCropView.setDebug(true);
         // set bitmap to CropImageView
         if (mCropView.getImageBitmap() == null) {
-            mCropView.setDebug(true);
             mCropView.setImageResource(R.drawable.sample5);
         }
     }

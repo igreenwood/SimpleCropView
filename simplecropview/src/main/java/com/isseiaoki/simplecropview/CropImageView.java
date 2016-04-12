@@ -1917,6 +1917,7 @@ public class CropImageView extends ImageView {
      */
     public void setDebug(boolean debug) {
         mIsDebug = debug;
+        invalidate();
     }
 
     /**
