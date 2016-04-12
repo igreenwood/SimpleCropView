@@ -33,7 +33,7 @@ Supported on API Level 10 and above.
   * [Handle Touch Padding](#handle-touch-padding)
   * [Handle and Guide ShowMode](#handle-and-guide-showmode)
   * [Animation](#animation)
-* [Picasso and Glide Compatibility](#picasso-glide-compatibility)
+* [Picasso and Glide Compatibility](#picasso-and-glide-compatibility)
 * [Debug](#debug)
 * [XML Attributes](#xml-attributes) 
 * [Developed By](#developed-by)
