@@ -1,5 +1,18 @@
 Change Log
 =========
+## Version 1.1.0
+* Support large size image(load/crop)
+* Improve rotation algorithm
+* Drop support for SDK level 9
+* Add CropMode 'CIRCLE_SQUARE'
+* Remove getRectBitmap() (Use 'CIRCLE_SQUARE' mode instead)
+* Shorten CropMode name(ex. RATIO_FIT_IMAGE -> FIT_IMAGE)
+* Add prefix to attrs(ex. cropMode -> scv_crop_mode)
+* Add animation
+* Support maximum output size
+* Support fixed output size(width/height)
+* Add debug display
+
 ## Version 1.0.16
 * Fixed bug x + width must be <= bitmap.width() (#40)
 

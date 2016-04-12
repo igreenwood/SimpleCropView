@@ -7,28 +7,37 @@
 
 The SimpleCropView is an image cropping library for Android.<br>
 It simplifies your code for cropping image and provides an easily customizable UI.<br><br>
-Supported on API Level 9 and above.
+Supported on API Level 10 and above.
 
 
-![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_basic_usage.gif)
+![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_basic_usage.gif)
 
 
 ##Table of Contents
 * [Download](#download) 
-* [Image Cropping](#image-cropping) 
-* [Image Rotation](#image-rotation)
+* [Example](#example)
+  * [Image Cropping](#image-cropping) 
+  * [Image Rotation](#image-rotation)
+* [Load Image](#load-image)
+* [Crop and Save Image](#crop-and-save-image)
+  * [Compress Format](#compress-format)
+  * [Compress Quality](#compress-quality)
 * [Customization](#customization) 
+  * [Maximum Output Size](#maximum-output-size)
+  * [Fixed Output Size](#fixed-output-size)
   * [CropMode](#cropmode)
-  * [Circle Crop](#circle-crop)
   * [MinimumFrameSize](#minimumframesize)
   * [InitialFrameScale](#initialframescale)
   * [Color](#color)
   * [Stroke Weight and Handle Size](#stroke-weight-and-handle-size)
   * [Handle Touch Padding](#handle-touch-padding)
   * [Handle and Guide ShowMode](#handle-and-guide-showmode)
-* [Picasso and Glide Compatibility](#picasso-glide-compatibility)
+  * [Animation](#animation)
+* [Picasso and Glide Compatibility](#picasso-and-glide-compatibility)
+* [Debug](#debug)
 * [XML Attributes](#xml-attributes) 
-* [Developed By](#developed-by) 
+* [Developed By](#developed-by)
+* [Users](#users) 
 * [License](#license) 
 
 ##Download
@@ -39,96 +48,157 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.isseiaoki:simplecropview:1.0.16'
+    compile 'com.isseiaoki:simplecropview:1.1.0'
 }
 ```
 
-##Image Cropping
+##Example
+
+###Image Cropping
+
+Add permission in `AndroidManifest.xml` file.
+
+```xml
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+```
 
 Add the `com.isseiaoki.simplecropview.CropImageView` to your layout XML file.
 
 >**NOTE:** The image is scaled to fit the size of the view by maintaining the aspect ratio. `WRAP_CONTENT` will be ignored.
 
-```xml
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+```xml       
 
-    <com.isseiaoki.simplecropview.CropImageView
-        android:id="@+id/cropImageView"
-        xmlns:custom="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:padding="16dp"
-        custom:cropMode="ratio_1_1"
-        />
+<com.isseiaoki.simplecropview.CropImageView
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cropImageView"
+    android:layout_weight="1"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    custom:scv_crop_mode="fit_image"
+    custom:scv_background_color="@color/windowBackground"
+    custom:scv_handle_color="@color/colorAccent"
+    custom:scv_guide_color="@color/colorAccent"
+    custom:scv_overlay_color="@color/overlay"
+    custom:scv_frame_color="@color/colorAccent"
+    custom:scv_handle_size="14dp"
+    custom:scv_touch_padding="8dp"
+    custom:scv_handle_show_mode="show_always"
+    custom:scv_guide_show_mode="show_always"
+    custom:scv_min_frame_size="50dp"
+    custom:scv_frame_stroke_weight="1dp"
+    custom:scv_guide_stroke_weight="1dp"/>
 
-    <Button
-        android:id="@+id/crop_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="16dp"
-        android:text="CROP"
-        />
-
-    <ImageView
-        android:id="@+id/croppedImageView"
-        android:layout_margin="16dp"
-        android:layout_gravity="center"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        />
-
-</LinearLayout>
 ```
 
 
-Set image, and get cropped image.
+Load image from sourceUri.
 
 
 ```java
-public class MainActivity extends Activity {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+mCropView = (CropImageView) findViewById(R.id.cropImageView);
 
-        final CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
-        final ImageView croppedImageView = (ImageView)findViewById(R.id.croppedImageView);
+mCropView.startLoad(
 
-        // Set image for cropping
-        cropImageView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.mipmap.sample5));
-        
-        Button cropButton = (Button)findViewById(R.id.crop_button);
-        cropButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Get cropped image, and show result.
-                croppedImageView.setImageBitmap(cropImageView.getCroppedBitmap());
-            }
-        });
+    sourceUri,
+    
+    new LoadCallback() {
+        @Override
+        public void onSuccess() {}
+
+        @Override
+        public void onError() {}
+});
+
+```
+
+Crop image and save cropped bitmap in saveUri.
+
+```java
+
+mCropView.startCrop(
+
+    saveUri,
+    
+    new CropCallback() {
+        @Override
+        public void onSuccess(Bitmap cropped) {}
+
+        @Override
+        public void onError() {}
+    },
+    
+    new SaveCallback() {
+        @Override
+        public void onSuccess(Uri outputUri) {}
+
+        @Override
+        public void onError() {}
     }
+);
 
-}
 ```
 
-For a working implementation of this project see the `simplecropview-sample` folder.
+###Image Rotation
 
-##Image Rotation
+![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_rotation.gif)
 
-![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/demo_rotate_image.gif)
-
-Code for rotating the image 90 degrees clockwise:
+SimpleCropView supports rotation by 90 degrees.
 
 ```java
-CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
-cropImageView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
+
+cropImageView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D); // rotate clockwise by 90 degrees
+cropImageView.rotateImage(CropImageView.RotateDegrees.ROTATE_M90D); // rotate counter-clockwise by 90 degrees
+
 ```
 
-You can also use `ROTATE_180D` and `ROTATE_270D`.
+**For a working implementation of this project, see [sample project](https://github.com/IsseiAoki/SimpleCropView/tree/master/simplecropview-sample).**
+
+##Load Image
+
+* `setImageXXX()`(Sync method)
+
+This method loads the given Bitmap. If the bitmap size is too large, Exception occurs.
+
+* `startLoad(Uri sourceUri, LoadCallback callback)`(Async method, **RECOMMENDED**)
+
+This method loads Bitmap in efficient size from sourceUri. 
+You don't have to care for filePath and image size.
+
+**REMEMBER** : `sourceUri` parameter will be used in `startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback)`.
+
+##Crop and Save Image
+
+* `getCroppedBitmap()`(Sync method)
+
+This method always use thumbnail bitmap set by `setImageXXX()` for cropping.
+It does not save cropped bitmap.
+
+* `startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback)`(Async Method, **RECOMMENDED**)
+
+This method uses full size bitmap taken from `sourceUri` for cropping. 
+If `sourceUri` is not set, it uses thumbnail bitmap. 
+After cropping, it saves cropped image in `saveUri`.
+
+###Compress Format
+
+You can use 3 compress format, `PNG`(default),`JPEG`, and `WEBP`.
+
+```java
+setCompressFormat(Bitmap.CompressFormat.JPEG);
+```
+
+###Compress Quality
+You can also set compress quality. `0`~`100`(default)
+
+```java
+setCompressQuality(90);
+```
 
 ##Customization
 
@@ -139,6 +209,24 @@ You can also use `ROTATE_180D` and `ROTATE_270D`.
 [![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/thumbnails/thumb6.jpg)](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/showcase6.jpg)
 [![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/thumbnails/thumb7.jpg)](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/showcase7.jpg)
 
+###Maximum Output Size
+You can set max size for output image. The output image will be scaled within given rect.
+
+```java
+setOutputMaxSize(300, 300);
+```
+
+###Fixed Output Size
+You can also set fixed output width/height. 
+
+```java
+setOutputWidth(100); // If cropped image size is 400x200, output size is 100x50
+``` 
+
+```java
+setOutputHeight(100); // If cropped image size is 400x200, output size is 200x100
+``` 
+
 ###CropMode
 
 The option for the aspect ratio of the image cropping frame.
@@ -148,61 +236,52 @@ CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setCropMode(CropImageView.CropMode.RATIO_16_9);
 ```
 
->**CropMode Values:**
->```
-RATIO_4_3, RATIO_3_4, RATIO_1_1, RATIO_16_9, RATIO_9_16, RATIO_FIT_IMAGE, RATIO_FREE, CIRCLE(1.0.8~)
+####Values
 ```
-
->`RATIO_FREE`:  *Non-Fixed aspect ratio mode*<br>
-`RATIO_X_Y`:  *Fixed aspect ratio mode*<br>
-`RATIO_FIT_IMAGE`:  *Fixed aspect ratio mode. The same aspect ratio as the original photo.*
-`CIRCLE`: *Fixed aspect ratio mode. RATIO_1_1 + circle overlay. See [Circle Crop](#circle-crop) section for more details.*
-
->If you need other aspect ratio, use `setCustomRatio(int ratioX, int ratioY);`
-
-![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_crop_mode.gif)
-
-
-###Circle Crop
-
-```java
-CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
-cropImageView.setCropMode(CropImageView.CropMode.CIRCLE);
+FIT_IMAGE, RATIO_4_3, RATIO_3_4, SQUARE(default), RATIO_16_9, RATIO_9_16, FREE, CUSTOM, CIRCLE, CIRCLE_SQUARE
 ```
+####Rect Crop
+`FREE`:  *Non-Fixed aspect ratio mode*
+`RATIO_X_Y`, `SQUARE`:  *Fixed aspect ratio mode*
+`FIT_IMAGE`:  *Fixed aspect ratio mode. The same aspect ratio as the original photo.*
 
-![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/demo_circle_crop.gif)
+If you need other aspect ratio, use `setCustomRatio(int ratioX, int ratioY);`
 
-You can also use `custom:cropMode="circle"` in your layout XML.
+![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_crop_mode_rect.gif)
 
->If you need to show circle overlay but save as a square, your can use `getRectBitmap()`.(1.0.9~)
+
+####Circle Crop
+
+`CIRCLE`: *Fixed aspect ratio mode. Crop image as circle.*
+`CIRCLE_SQUARE`: *Fixed aspect ratio mode. Show guide circle, but save as square.(`getRectBitmap()` is removed.)*
+
+
+![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_crop_mode_circle.gif)
+
 
 ###MinimumFrameSize
-The minimum size of the image cropping frame in dp.
+The minimum size of the image cropping frame in dp.(default:50)
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setMinFrameSizeInDp(100);
 ```
-You can also use `custom:minFrameSize="100dp"` in your layout XML.
 
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_minimum_frame_size.gif)
 
 ###InitialFrameScale
-The initial frame size of the image cropping frame. (scale: 0.01 ~ 1.0. The default value is 0.75.)
+The initial frame size of the image cropping frame. `0.01`~`1.0`(default)
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setInitialFrameScale(1.0f);
 ```
-You can also use `custom:initialFrameScale="1.0"` in your layout XML.
 
 | scale | Appearance |
 |:-------------:|:-----:|
 | 0.5 | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.5.jpg" width="100%"> |
-| 0.75 (default) | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.75.jpg" width="100%"> |
-| 1.0 | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_1.0.jpg" width="100%"> |
-
-You can also use `custom:initialFrameScale="1.0"` in your layout XML.
+| 0.75| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.75.jpg" width="100%"> |
+| 1.0 (default)| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_1.0.jpg" width="100%"> |
 
 ###Color
 
@@ -214,13 +293,6 @@ cropImageView.setFrameColor(getResources().getColor(R.color.frame));
 cropImageView.setHandleColor(getResources().getColor(R.color.handle));
 cropImageView.setGuideColor(getResources().getColor(R.color.guide));
 ```
-You can also use 
-`custom:backgroundColor="#FFFFFFFB`
-`custom:overlayColor="#AA1C1C1C"`
-`custom:frameColor="@color/frame"`
-`custom:handleColor="@color/handle"`
-`custom:guideColor="@color/guide"`
-in your layout XML.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/color-attributes.png)
 
@@ -232,11 +304,6 @@ cropImageView.setFrameStrokeWeightInDp(1);
 cropImageView.setGuideStrokeWeightInDp(1);
 cropImageView.setHandleSizeInDp(getResources().getDimension(R.dimen.handle_size));
 ```
-You can also use 
-`custom:frameStrokeWeight="1dp"`
-`custom:guideStrokeWeight="1dp"`
-`custom:handleSize="8dp"`
-in your layout XML.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/size-attributes.png)
 
@@ -248,7 +315,6 @@ Additional touch area for the image cropping frame handle.
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setTouchPadding(16);
 ```
-You can also use `custom:touchPadding="16dp"` in your layout XML.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/handle-touch-padding.png)
 
@@ -260,9 +326,9 @@ cropImageView.setHandleShowMode(CropImageView.ShowMode.SHOW_ALWAYS);
 cropImageView.setGuideShowMode(CropImageView.ShowMode.SHOW_ON_TOUCH);
 ```
 
->**ShowMode Values:**
->```
-SHOW_ALWAYS, NOT_SHOW, SHOW_ON_TOUCH
+####Values
+```
+SHOW_ALWAYS(default), NOT_SHOW, SHOW_ON_TOUCH
 ```
 
 | Handle ShowMode | Guide ShowMode | Appearance |
@@ -273,6 +339,31 @@ SHOW_ALWAYS, NOT_SHOW, SHOW_ON_TOUCH
 | SHOW_ALWAYS | SHOW_ON_TOUCH | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_guide_show_on_touch.gif" width="100%"> |
 | SHOW_ON_TOUCH | NOT_SHOW | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_handle_show_on_touch.gif" width="100%"> |
 
+###Animation
+SimpleCropView supports rotate animation and frame change animation.
+
+####Enabled
+Toggle whether to animate. `true` is default.
+
+```java
+setAnimationEnabled(true);
+```
+
+####Duration
+Set animation duration in milliseconds. `100` is default.
+
+```java
+setAnimationDuration(200);
+```
+
+####Interpolator
+Set interpolator of animation. `DecelerateInterpolator` is default.
+You can also use your custom interpolator.
+
+```java
+setInterpolator(new AccelerateDecelerateInterpolator());
+```
+
 ##Picasso and Glide Compatibility
 `com.isseiaoki.simplecropview.CropImageView` is a kind of `ImageView`.
 You can use it with Picasso or Glide as follows:
@@ -282,6 +373,7 @@ CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 Picasso.with(context).load(imageUrl).into(cropImageView);
 ```
 or
+
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 Glide.with(context).load(imageUrl).into(cropImageView);
@@ -289,53 +381,77 @@ Glide.with(context).load(imageUrl).into(cropImageView);
 
 >Some option does not work correctly because CropImageView does not support ImageView.ScaleType.
 
+##Debug
+You can use debug display.
+
+![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_debug.gif)
+
+```java
+setDebug(true);
+```
+
 ##XML Attributes
 XML sample here.
 
 ```xml
-    <com.isseiaoki.simplecropview.CropImageView
-        android:id="@+id/cropImageView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="32dp"
-        custom:imgSrc="@mipmap/ic_launcher"
-        custom:cropMode="ratio_fit_image"
-        custom:minFrameSize="50dp"
-        custom:backgroundColor="@color/background_material_dark"
-        custom:overlayColor="#66000000"
-        custom:frameColor="@android:color/white"
-        custom:handleColor="@android:color/white"
-        custom:guideColor="#BBFFFFFF"
-        custom:frameStrokeWeight="3dp"
-        custom:guideStrokeWeight="1dp"
-        custom:handleSize="32dp"
-        custom:touchPadding="0dp"
-        custom:guideShowMode="not_show"
-        custom:handleShowMode="show_always"
-        custom:cropEnabled="true"
-        />
+<com.isseiaoki.simplecropview.CropImageView
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cropImageView"
+    android:layout_weight="1"
+    android:paddingTop="16dp"
+    android:paddingBottom="16dp"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    custom:scv_img_src="@drawable/sample5"
+    custom:scv_crop_mode="fit_image"
+    custom:scv_background_color="@color/windowBackground"
+    custom:scv_overlay_color="@color/overlay"
+    custom:scv_frame_color="@color/colorAccent"
+    custom:scv_handle_color="@color/colorAccent"
+    custom:scv_guide_color="@color/colorAccent"
+    custom:scv_guide_show_mode="show_always"
+    custom:scv_handle_show_mode="show_always"
+    custom:scv_handle_size="14dp"
+    custom:scv_touch_padding="8dp"
+    custom:scv_min_frame_size="50dp"
+    custom:scv_frame_stroke_weight="1dp"
+    custom:scv_guide_stroke_weight="1dp"
+    custom:scv_crop_enabled="true"
+    custom:scv_initial_frame_scale="1.0"
+    custom:scv_animation_enabled="true"
+    custom:scv_animation_duration="200"
+    custom:scv_handle_shadow_enabled="true"/>
 ```
 
 | XML Attribute<br>(custom:) | Related Method | Description |
 |:---|:---|:---|
-| imgSrc | setImageResource(int resId) | Set source image. |
-| cropMode | setCropMode(CropImageView.CropMode mode) | Set crop mode. |
-| minFrameSize | setMinFrameSizeInDp(int minDp) | Set the image cropping frame minimum size in density-independent pixels. |
-| backgroundColor | setBackgroundColor(int bgColor) | Set view background color. |
-| overlayColor | setOverlayColor(int overlayColor) | Set image overlay color. |
-| frameColor | setFrameColor(int frameColor) | Set the image cropping frame color. |
-| handleColor | setHandleColor(int frameColor) | Set the handle color. |
-| guideColor | setGuideColor(int frameColor) | Set the guide color. |
-| handleSize | setHandleSizeInDp(int handleDp) | Set handle radius in density-independent pixels. |
-| touchPadding | setTouchPaddingInDp(int paddingDp) | Set the image cropping frame handle touch padding(touch area) in density-independent pixels. |
-| frameStrokeWeight | setFrameStrokeWeightInDp(int weightDp) | Set frame stroke weight in density-independent pixels. |
-| guideStrokeWeight | setGuideStrokeWeightInDp(int weightDp) | Set guideline stroke weight in density-independent pixels. |
-| guideShowMode | setGuideShowMode(CropImageView.ShowMode mode) | Set guideline show mode. |
-| handleShowMode | setHandleShowMode(CropImageView.ShowMode mode) | Set handle show mode. |
-| cropEnabled | setCropEnabled(boolean enabled) | Set whether to show the image cropping frame. |
+| scv_img_src | setImageResource(int resId) | Set source image. |
+| scv_crop_mode | setCropMode(CropImageView.CropMode mode) | Set crop mode. |
+| scv_background_color | setBackgroundColor(int bgColor) | Set view background color. |
+| scv_overlay_color | setOverlayColor(int overlayColor) | Set image overlay color. |
+| scv_frame_color | setFrameColor(int frameColor) | Set the image cropping frame color. |
+| scv_handle_color | setHandleColor(int frameColor) | Set the handle color. |
+| scv_guide_color | setGuideColor(int frameColor) | Set the guide color. |
+| scv_guide_show_mode | setGuideShowMode(CropImageView.ShowMode mode) | Set guideline show mode. |
+| scv_handle_show_mode | setHandleShowMode(CropImageView.ShowMode mode) | Set handle show mode. |
+| scv_handle_size | setHandleSizeInDp(int handleDp) | Set handle radius in density-independent pixels. |
+| scv_touch_padding | setTouchPaddingInDp(int paddingDp) | Set the image cropping frame handle touch padding(touch area) in density-independent pixels. |
+| scv_min_frame_size | setMinFrameSizeInDp(int minDp) | Set the image cropping frame minimum size in density-independent pixels. |
+| scv_frame_stroke_weight | setFrameStrokeWeightInDp(int weightDp) | Set frame stroke weight in density-independent pixels. |
+| scv_guide_stroke_weight | setGuideStrokeWeightInDp(int weightDp) | Set guideline stroke weight in density-independent pixels. |
+| scv_cropEnabled | setCropEnabled(boolean enabled) | Set whether to show the image cropping frame. |
+| scv_initial_frame_scale | setInitialFrameScale(float initialScale) | Set Set initial scale of the frame.(0.01 ~ 1.0) |
+| scv_animation_enabled | setAnimationEnabled(boolean enabled) | Set whether to animate. |
+| scv_animation_duration | setAnimationDuration(int durationMillis) | Set animation duration. |
+| scv_handle_shadow_enabled | setHandleShadowEnabled(boolean handleShadowEnabled) | Set whether to show handle shadows. |
 
 ##Developed By
- * Issei Aoki - <i.greenwood.dev@gmail.com>
+Issei Aoki - <i.greenwood.dev@gmail.com>
+ 
+##Users
+If you are using my library, please let me know your app name :)
 
 ##License
 ```

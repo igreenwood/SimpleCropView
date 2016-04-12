@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="base">#FFFFFB</color>
+    <color name="colorPrimary">#5DAC81</color>
+    <color name="colorPrimaryDark">#4F916D</color>
+    <color name="colorAccent">#5DAC81</color>
+    <color name="windowBackground">#1C1C1C</color>
+    <color name="colorButtonNormal">#FFFFFB</color>
+    <color name="textColorPrimary">#FFFFFB</color>
+    <color name="textColorPrimaryInverse">#1C1C1C</color>
     <color name="overlay">#AA1C1C1C</color>
-    <color name="text">#1C1C1C</color>
-    <color name="handle">#86C166</color>
-    <color name="frame">#86C166</color>
-    <color name="guide">#AA86C166</color>
-    <color name="menu_bg">#FFFFFB</color>
+    <color name="divider">#333333</color>
 </resources>

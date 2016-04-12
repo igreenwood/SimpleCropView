@@ -1,12 +1,9 @@
 package com.example.simplecropviewsample;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Typeface;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.io.BufferedOutputStream;
@@ -17,18 +14,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+@SuppressWarnings("unused")
 public class FontUtils {
     public static Typeface sTypeface = null;
 
     /**
      * Load font from filePath
      *
-     * @param context
-     * @param fileName
-     * @return
+     * @param context context
+     * @param fileName font file name
+     * @return typeface
      */
     public static Typeface loadFont(Context context, String fileName) {
-        sTypeface = Typeface.createFromAsset(context.getAssets(), fileName);;
+        sTypeface = Typeface.createFromAsset(context.getAssets(), fileName);
         return sTypeface;
     }
 
@@ -42,7 +40,7 @@ public class FontUtils {
         View v;
         for (int i = 0; i < count; i++) {
             v = group.getChildAt(i);
-            if (v instanceof TextView || v instanceof EditText || v instanceof Button) {
+            if (v instanceof TextView) {
                 ((TextView) v).setTypeface(sTypeface);
             } else if (v instanceof ViewGroup)
                 setFont((ViewGroup) v);
@@ -53,7 +51,7 @@ public class FontUtils {
      * Sets the font on TextView
      */
     public static void setFont(View v) {
-        if (v instanceof TextView || v instanceof EditText || v instanceof Button) {
+        if (v instanceof TextView) {
             ((TextView) v).setTypeface(sTypeface);
         }
     }
@@ -68,6 +66,7 @@ public class FontUtils {
      * @param resourceId resourceId
      * @return Typeface or null
      */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static Typeface getTypefaceFromRaw(Context context, int resourceId) {
         InputStream inputStream = null;
         BufferedOutputStream bos = null;
@@ -84,7 +83,7 @@ public class FontUtils {
             bos = new BufferedOutputStream(os);
 
             byte[] buffer = new byte[inputStream.available()];
-            int length = 0;
+            int length;
             while ((length = inputStream.read(buffer)) > 0) {
                 bos.write(buffer, 0, length);
             }
@@ -92,8 +91,6 @@ public class FontUtils {
             // When loading completed, delete temporary files
             typeface = Typeface.createFromFile(fontFilePath);
             new File(fontFilePath).delete();
-        } catch (Resources.NotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

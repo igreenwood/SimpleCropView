@@ -1,0 +1,232 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:custom="http://schemas.android.com/apk/res-auto"
+              android:id="@+id/layout_root"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
+
+    <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary">
+        <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+            <TextView
+                    android:id="@+id/textTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SimpleCropView"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentLeft="true"
+                    />
+        </RelativeLayout>
+    </android.support.v7.widget.Toolbar>
+
+    <com.isseiaoki.simplecropview.CropImageView
+            android:id="@+id/cropImageView"
+            android:layout_weight="1"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            custom:scv_crop_mode="fit_image"
+            custom:scv_background_color="@color/windowBackground"
+            custom:scv_handle_color="@color/colorAccent"
+            custom:scv_guide_color="@color/colorAccent"
+            custom:scv_overlay_color="@color/overlay"
+            custom:scv_frame_color="@color/colorAccent"
+            custom:scv_handle_size="14dp"
+            custom:scv_touch_padding="8dp"
+            custom:scv_handle_show_mode="show_always"
+            custom:scv_guide_show_mode="show_always"
+            custom:scv_min_frame_size="50dp"
+            custom:scv_frame_stroke_weight="1dp"
+            custom:scv_guide_stroke_weight="1dp"
+            />
+
+    <View android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginLeft="8dp"
+          android:layout_marginRight="8dp"
+          android:background="@color/divider"/>
+
+    <HorizontalScrollView
+            android:id="@+id/tab_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/windowBackground"
+            android:scrollbars="none">
+
+        <LinearLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:orientation="horizontal">
+
+            <Button
+                    android:id="@+id/buttonFitImage"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="FIT IMAGE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+            <Button
+                    android:id="@+id/button1_1"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="SQUARE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+            <Button
+                    android:id="@+id/button3_4"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="3:4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+            <Button
+                    android:id="@+id/button4_3"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="4:3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+            <Button
+                    android:id="@+id/button9_16"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="9:16"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+            <Button
+                    android:id="@+id/button16_9"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="16:9"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+            <Button
+                    android:id="@+id/buttonCustom"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="8dp"
+                    android:padding="4dp"
+                    android:text="7:5"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+            <Button
+                    android:id="@+id/buttonFree"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="FREE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+            <Button
+                    android:id="@+id/buttonCircle"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="CIRCLE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+            <Button
+                    android:id="@+id/buttonShowCircleButCropAsSquare"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:padding="4dp"
+                    android:text="CIRCLE_SQUARE"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/AppTheme.Button.Borderless"/>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <View android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginLeft="8dp"
+          android:layout_marginRight="8dp"
+          android:background="@color/divider"/>
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_alignBottom="@id/cropImageView"
+            android:layout_centerHorizontal="true"
+            android:background="@color/windowBackground"
+            >
+
+        <ImageButton
+                android:id="@+id/buttonPickImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="16dp"
+                android:layout_alignParentLeft="true"
+                android:padding="16dp"
+                android:src="@drawable/ic_photo_library_black_24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                />
+
+        <LinearLayout android:layout_width="wrap_content"
+                      android:layout_height="wrap_content"
+                      android:orientation="horizontal"
+                      android:layout_centerHorizontal="true">
+            <ImageButton
+                    android:id="@+id/buttonRotateLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_rotate_left_black_24dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    />
+            <ImageButton
+                    android:id="@+id/buttonRotateRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp"
+                    android:src="@drawable/ic_rotate_right_black_24dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    />
+
+        </LinearLayout>
+
+        <ImageButton
+                android:id="@+id/buttonDone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentRight="true"
+                android:padding="16dp"
+                android:src="@drawable/ic_done_black_24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                />
+    </RelativeLayout>
+</LinearLayout>

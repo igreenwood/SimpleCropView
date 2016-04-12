@@ -1,39 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="CropImageView">
-        <attr name="imgSrc" format="reference" />
-        <attr name="cropMode">
-            <enum name="ratio_fit_image" value="0"/>
+    <declare-styleable name="scv_CropImageView">
+        <attr name="scv_img_src" format="reference" />
+        <attr name="scv_crop_mode">
+            <enum name="fit_image" value="0"/>
             <enum name="ratio_4_3" value="1"/>
             <enum name="ratio_3_4" value="2"/>
-            <enum name="ratio_1_1" value="3"/>
+            <enum name="square" value="3"/>
             <enum name="ratio_16_9" value="4"/>
             <enum name="ratio_9_16" value="5"/>
-            <enum name="ratio_free" value="6"/>
-            <enum name="ratio_custom" value="7"/>
+            <enum name="free" value="6"/>
+            <enum name="custom" value="7"/>
             <enum name="circle" value="8"/>
+            <enum name="circle_square" value="9"/>
         </attr>
-        <attr name="backgroundColor" format="color"/>
-        <attr name="overlayColor" format="color"/>
-        <attr name="frameColor" format="color"/>
-        <attr name="handleColor" format="color"/>
-        <attr name="guideColor" format="color"/>
-        <attr name="guideShowMode">
+        <attr name="scv_background_color" format="reference|color"/>
+        <attr name="scv_overlay_color" format="reference|color"/>
+        <attr name="scv_frame_color" format="reference|color"/>
+        <attr name="scv_handle_color" format="reference|color"/>
+        <attr name="scv_guide_color" format="reference|color"/>
+        <attr name="scv_guide_show_mode">
             <enum name="show_always" value="1"/>
             <enum name="show_on_touch" value="2"/>
             <enum name="not_show" value="3"/>
         </attr>
-        <attr name="handleShowMode">
+        <attr name="scv_handle_show_mode">
             <enum name="show_always" value="1"/>
             <enum name="show_on_touch" value="2"/>
             <enum name="not_show" value="3"/>
         </attr>
-        <attr name="handleSize" format="dimension"/>
-        <attr name="touchPadding" format="dimension"/>
-        <attr name="minFrameSize" format="dimension"/>
-        <attr name="frameStrokeWeight" format="dimension"/>
-        <attr name="guideStrokeWeight" format="dimension"/>
-        <attr name="cropEnabled" format="boolean"/>
-        <attr name="initialFrameScale" format="float"/>
+        <attr name="scv_handle_size" format="dimension"/>
+        <attr name="scv_touch_padding" format="dimension"/>
+        <attr name="scv_min_frame_size" format="dimension"/>
+        <attr name="scv_frame_stroke_weight" format="dimension"/>
+        <attr name="scv_guide_stroke_weight" format="dimension"/>
+        <attr name="scv_crop_enabled" format="boolean"/>
+        <attr name="scv_initial_frame_scale" format="float"/>
+        <attr name="scv_animation_enabled" format="boolean"/>
+        <attr name="scv_animation_duration" format="integer"/>
+        <attr name="scv_handle_shadow_enabled" format="boolean"/>
     </declare-styleable>
 </resources>
