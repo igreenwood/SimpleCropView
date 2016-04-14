@@ -4,11 +4,13 @@ import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Utils;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -68,7 +70,7 @@ public class MainFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, result);
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
-            mCropView.startLoad(result.getData(), mLoadCallback);
+            mCropView.startLoad(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
         }
     }
 
@@ -94,7 +96,14 @@ public class MainFragment extends Fragment {
     }
 
     public void pickImage() {
-        startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), REQUEST_PICK_IMAGE);
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), REQUEST_PICK_IMAGE);
+        } else {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("image/*");
+            startActivityForResult(intent, REQUEST_PICK_IMAGE);
+        }
     }
 
     public void showProgress() {
