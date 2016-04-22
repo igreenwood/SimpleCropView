@@ -6,13 +6,18 @@ import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
 import com.isseiaoki.simplecropview.util.Utils;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +25,12 @@ import android.widget.LinearLayout;
 
 import java.io.File;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
+
+@RuntimePermissions
 public class MainFragment extends Fragment {
     private static final int REQUEST_PICK_IMAGE = 10011;
     private static final String PROGRESS_DIALOG = "ProgressDialog";
@@ -74,6 +85,12 @@ public class MainFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        MainFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    }
+
     // Bind views //////////////////////////////////////////////////////////////////////////////////
 
     private void bindViews(View view) {
@@ -95,6 +112,7 @@ public class MainFragment extends Fragment {
         mRootLayout = (LinearLayout) view.findViewById(R.id.layout_root);
     }
 
+    @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
     public void pickImage() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"), REQUEST_PICK_IMAGE);
@@ -104,6 +122,22 @@ public class MainFragment extends Fragment {
             intent.setType("image/*");
             startActivityForResult(intent, REQUEST_PICK_IMAGE);
         }
+    }
+
+    @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public void cropImage() {
+        showProgress();
+        mCropView.startCrop(createSaveUri(), mCropCallback, mSaveCallback);
+    }
+
+    @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
+    public void showRationaleForPick(PermissionRequest request){
+        showRationaleDialog(R.string.permission_pick_rationale, request);
+    }
+
+    @OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    public void showRationaleForCrop(PermissionRequest request){
+        showRationaleDialog(R.string.permission_crop_rationale, request);
     }
 
     public void showProgress() {
@@ -128,6 +162,25 @@ public class MainFragment extends Fragment {
         return Uri.fromFile(new File(getActivity().getCacheDir(), "cropped"));
     }
 
+    private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
+        new AlertDialog.Builder(getActivity())
+                .setPositiveButton(R.string.button_allow, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.proceed();
+                    }
+                })
+                .setNegativeButton(R.string.button_deny, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(@NonNull DialogInterface dialog, int which) {
+                        request.cancel();
+                    }
+                })
+                .setCancelable(false)
+                .setMessage(messageResId)
+                .show();
+    }
+
     // Handle button event /////////////////////////////////////////////////////////////////////////
 
     private final View.OnClickListener btnListener = new View.OnClickListener() {
@@ -135,9 +188,7 @@ public class MainFragment extends Fragment {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.buttonDone:
-                    // Get cropped bitmap and pass it to Application
-                    showProgress();
-                    mCropView.startCrop(createSaveUri(), mCropCallback, mSaveCallback);
+                    MainFragmentPermissionsDispatcher.cropImageWithCheck(MainFragment.this);
                     break;
                 case R.id.buttonFitImage:
                     mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
@@ -176,7 +227,7 @@ public class MainFragment extends Fragment {
                     mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
                     break;
                 case R.id.buttonPickImage:
-                    pickImage();
+                    MainFragmentPermissionsDispatcher.pickImageWithCheck(MainFragment.this);
                     break;
             }
         }
