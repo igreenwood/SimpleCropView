@@ -28,6 +28,9 @@ android {
             assets.srcDirs = ['src/main/assets', 'src/main/assets/']
         }
     }
+    lintOptions {
+        abortOnError false
+    }
 }
 
 ext {
