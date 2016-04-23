@@ -63,7 +63,9 @@ public class Utils {
         } catch (RuntimeException ignored) {
             return 0;
         } finally {
-            closeQuietly(cursor);
+            if (cursor != null) {
+                cursor.close();
+            }
         }
     }
 
@@ -245,7 +247,9 @@ public class Utils {
                 }
             }
         } finally {
-            closeQuietly(cursor);
+            if (cursor != null) {
+                cursor.close();
+            }
         }
         return null;
     }
