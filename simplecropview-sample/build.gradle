@@ -34,7 +34,7 @@ android {
 }
 
 ext {
-    supportLibraryVersion = '23.1.1'
+    supportLibraryVersion = '23.0.1'
     permissionsDispatcherVersion = '2.1.2'
 }
 
