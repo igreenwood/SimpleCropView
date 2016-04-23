@@ -10,4 +10,4 @@ android:
     - extra-android-m2repository
 
 script:
-   - ./gradlew clean build
+   - ./gradlew clean build --stacktrace
