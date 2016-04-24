@@ -1782,7 +1782,7 @@ public class CropImageView extends ImageView {
 
     /**
      * Set crop frame handle touch padding(touch area) in density-independent pixels.
-     * <p/>
+     * 
      * handle touch area : a circle of radius R.(R = handle size + touch padding)
      *
      * @param paddingDp crop frame handle touch padding(touch area) in density-independent pixels
