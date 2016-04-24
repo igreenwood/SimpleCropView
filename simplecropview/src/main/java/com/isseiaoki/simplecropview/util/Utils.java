@@ -1,7 +1,6 @@
 package com.isseiaoki.simplecropview.util;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
@@ -51,7 +50,7 @@ public class Utils {
         return 0;
     }
 
-    public static int getExifOrientation(Context context, Uri uri) {
+    public static int getExifRotation(Context context, Uri uri){
         Cursor cursor = null;
         String[] projection = {MediaStore.Images.ImageColumns.ORIENTATION};
         try {
@@ -67,6 +66,17 @@ public class Utils {
                 cursor.close();
             }
         }
+    }
+
+    public static int getExifOrientation(Context context, Uri uri) {
+        String authority = uri.getAuthority().toLowerCase();
+        int orientation;
+        if (authority.endsWith("media")) {
+            orientation = getExifRotation(context, uri);
+        } else {
+            orientation = getExifRotation(getFileFromUri(context, uri));
+        }
+        return orientation;
     }
 
     public static int getRotateDegreeFromOrientation(int orientation) {
