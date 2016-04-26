@@ -1,5 +1,9 @@
 Change Log
 =========
+## Version 1.1.2
+* Fix bug image ratio collapse
+* Fix bug can't parcel a recycled bitmap
+
 ## Version 1.1.1
 * Fix bug EXIF orientation not applied
 
