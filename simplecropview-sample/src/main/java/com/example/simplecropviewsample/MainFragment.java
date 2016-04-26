@@ -33,6 +33,7 @@ import permissions.dispatcher.RuntimePermissions;
 @RuntimePermissions
 public class MainFragment extends Fragment {
     private static final int REQUEST_PICK_IMAGE = 10011;
+    private static final int REQUEST_SAF_PICK_IMAGE = 10012;
     private static final String PROGRESS_DIALOG = "ProgressDialog";
 
     // Views ///////////////////////////////////////////////////////////////////////////////////////
@@ -81,6 +82,9 @@ public class MainFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, result);
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
+            mCropView.startLoad(result.getData(), mLoadCallback);
+        }else if(requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK){
+            showProgress();
             mCropView.startLoad(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
         }
     }
@@ -120,7 +124,7 @@ public class MainFragment extends Fragment {
             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             intent.setType("image/*");
-            startActivityForResult(intent, REQUEST_PICK_IMAGE);
+            startActivityForResult(intent, REQUEST_SAF_PICK_IMAGE);
         }
     }
 
