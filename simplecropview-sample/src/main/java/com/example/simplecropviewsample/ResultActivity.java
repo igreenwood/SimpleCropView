@@ -81,7 +81,6 @@ public class ResultActivity extends FragmentActivity {
         @Override
         public void run() {
             final int exifRotation = Utils.getExifOrientation(context, uri);
-            Log.d(TAG, "exifRotation = "+exifRotation);
             int maxSize = Utils.getMaxSize();
             int requestSize = Math.min(width, maxSize);
             try {

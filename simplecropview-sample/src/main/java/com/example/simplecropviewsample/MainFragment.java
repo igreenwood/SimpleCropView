@@ -69,8 +69,7 @@ public class MainFragment extends Fragment {
         bindViews(view);
         // apply custom font
         FontUtils.setFont(mRootLayout);
-
-//            mCropView.setDebug(true);
+//        mCropView.setDebug(true);
         // set bitmap to CropImageView
         if (mCropView.getImageBitmap() == null) {
             mCropView.setImageResource(R.drawable.sample5);
@@ -83,7 +82,7 @@ public class MainFragment extends Fragment {
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
             mCropView.startLoad(result.getData(), mLoadCallback);
-        }else if(requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK){
+        } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
             mCropView.startLoad(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
         }
@@ -135,12 +134,12 @@ public class MainFragment extends Fragment {
     }
 
     @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-    public void showRationaleForPick(PermissionRequest request){
+    public void showRationaleForPick(PermissionRequest request) {
         showRationaleDialog(R.string.permission_pick_rationale, request);
     }
 
     @OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-    public void showRationaleForCrop(PermissionRequest request){
+    public void showRationaleForCrop(PermissionRequest request) {
         showRationaleDialog(R.string.permission_crop_rationale, request);
     }
 
@@ -149,7 +148,7 @@ public class MainFragment extends Fragment {
         getFragmentManager()
                 .beginTransaction()
                 .add(f, PROGRESS_DIALOG)
-                .commit();
+                .commitAllowingStateLoss();
     }
 
     public void dismissProgress() {
@@ -158,7 +157,7 @@ public class MainFragment extends Fragment {
         if (manager == null) return;
         ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
         if (f != null) {
-            getFragmentManager().beginTransaction().remove(f).commit();
+            getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
         }
     }
 
