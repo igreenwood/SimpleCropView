@@ -1244,7 +1244,9 @@ public class CropImageView extends ImageView {
             cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
             if (mAngle != 0) {
                 Bitmap rotated = getRotatedBitmap(cropped);
-                cropped.recycle();
+                if(cropped != getBitmap() && cropped != rotated){
+                    cropped.recycle();
+                }
                 cropped = rotated;
             }
         } catch (IOException e) {
@@ -1303,7 +1305,7 @@ public class CropImageView extends ImageView {
 
         if (outWidth > 0 && outHeight > 0) {
             Bitmap scaled = Utils.getScaledBitmap(cropped, outWidth, outHeight);
-            if (cropped != scaled) {
+            if (cropped != getBitmap() && cropped != scaled) {
                 cropped.recycle();
             }
             cropped = scaled;
@@ -1538,12 +1540,16 @@ public class CropImageView extends ImageView {
                 null,
                 false
         );
-        if (rotated != source) {
+        if (cropped != source && cropped != rotated) {
             rotated.recycle();
         }
 
         if (mCropMode == CropMode.CIRCLE) {
-            cropped = getCircularBitmap(cropped);
+            Bitmap circle = getCircularBitmap(cropped);
+            if(cropped != getBitmap()){
+                cropped.recycle();
+            }
+            cropped = circle;
         }
         return cropped;
     }
@@ -1572,8 +1578,6 @@ public class CropImageView extends ImageView {
         canvas.drawCircle(halfWidth, halfHeight, Math.min(halfWidth, halfHeight), paint);
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         canvas.drawBitmap(square, rect, rect, paint);
-
-        square.recycle();
         return output;
     }
 
@@ -1607,7 +1611,11 @@ public class CropImageView extends ImageView {
                 else {
                     cropped = decodeRegion();
                     if (mCropMode == CropMode.CIRCLE) {
-                        cropped = getCircularBitmap(cropped);
+                        Bitmap circle = getCircularBitmap(cropped);
+                        if(cropped != getBitmap()){
+                            cropped.recycle();
+                        }
+                        cropped = circle;
                     }
                 }
 
