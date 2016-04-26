@@ -1279,7 +1279,7 @@ public class CropImageView extends ImageView {
         int height = cropped.getHeight();
         int outWidth = 0;
         int outHeight = 0;
-        float imageRatio = getRatioX() / getRatioY();
+        float imageRatio = getRatioX(mFrameRect.width()) / getRatioY(mFrameRect.height());
 
         if (mOutputWidth > 0) {
             outWidth = mOutputWidth;
