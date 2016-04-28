@@ -1540,7 +1540,7 @@ public class CropImageView extends ImageView {
                 null,
                 false
         );
-        if (cropped != source && cropped != rotated) {
+        if (rotated != cropped && rotated != source) {
             rotated.recycle();
         }
 
