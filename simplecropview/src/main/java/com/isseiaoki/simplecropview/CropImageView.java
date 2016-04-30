@@ -467,7 +467,13 @@ public class CropImageView extends ImageView {
             path.addCircle(circleCenter.x, circleCenter.y, circleRadius, Path.Direction.CCW);
             canvas.drawPath(path, mPaintTranslucent);
         } else {
-            path.addRect(mImageRect, Path.Direction.CW);
+            path.addRect(
+                    new RectF((float) Math.floor(mImageRect.left),
+                            (float) Math.floor(mImageRect.top),
+                            (float) Math.ceil(mImageRect.right),
+                            (float) Math.ceil(mImageRect.bottom)),
+                    Path.Direction.CW
+            );
             path.addRect(mFrameRect, Path.Direction.CCW);
             canvas.drawPath(path, mPaintTranslucent);
         }
@@ -1244,7 +1250,7 @@ public class CropImageView extends ImageView {
             cropped = decoder.decodeRegion(cropRect, new BitmapFactory.Options());
             if (mAngle != 0) {
                 Bitmap rotated = getRotatedBitmap(cropped);
-                if(cropped != getBitmap() && cropped != rotated){
+                if (cropped != getBitmap() && cropped != rotated) {
                     cropped.recycle();
                 }
                 cropped = rotated;
@@ -1540,13 +1546,13 @@ public class CropImageView extends ImageView {
                 null,
                 false
         );
-        if (cropped != source && cropped != rotated) {
+        if (rotated != cropped && rotated != source) {
             rotated.recycle();
         }
 
         if (mCropMode == CropMode.CIRCLE) {
             Bitmap circle = getCircularBitmap(cropped);
-            if(cropped != getBitmap()){
+            if (cropped != getBitmap()) {
                 cropped.recycle();
             }
             cropped = circle;
@@ -1612,7 +1618,7 @@ public class CropImageView extends ImageView {
                     cropped = decodeRegion();
                     if (mCropMode == CropMode.CIRCLE) {
                         Bitmap circle = getCircularBitmap(cropped);
-                        if(cropped != getBitmap()){
+                        if (cropped != getBitmap()) {
                             cropped.recycle();
                         }
                         cropped = circle;
@@ -1790,7 +1796,7 @@ public class CropImageView extends ImageView {
 
     /**
      * Set crop frame handle touch padding(touch area) in density-independent pixels.
-     * 
+     *
      * handle touch area : a circle of radius R.(R = handle size + touch padding)
      *
      * @param paddingDp crop frame handle touch padding(touch area) in density-independent pixels
