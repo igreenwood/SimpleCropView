@@ -41,14 +41,14 @@ Supported on API Level 10 and above.
 * [License](#license) 
 
 ##Download
-Include the following dependency in your `build.gradle` file.
+Include the following dependency in your `build.gradle` file. **Please use the latest version available.**
 
 ```groovy
 repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.isseiaoki:simplecropview:1.1.2'
+    compile 'com.isseiaoki:simplecropview:1.1.3'
 }
 ```
 
