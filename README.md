@@ -41,7 +41,7 @@ Supported on API Level 10 and above.
 * [License](#license) 
 
 ##Download
-Include the following dependency in your `build.gradle` file. *Please use the latest version available.*
+Include the following dependency in your `build.gradle` file. **Please use the latest version available.**
 
 ```groovy
 repositories {
