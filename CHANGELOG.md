@@ -1,5 +1,9 @@
 Change Log
 =========
+## Version 1.1.3
+* Fix bug can't parcel a recycled bitmap
+* Fix Overlay drawing is lacking when selecting certain photos
+
 ## Version 1.1.2
 * Fix bug image ratio collapse with FREE as cropMode
 * Fix bug can't parcel a recycled bitmap
