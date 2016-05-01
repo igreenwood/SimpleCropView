@@ -1,5 +1,8 @@
 Change Log
 =========
+## Version 1.1.4
+* Fix Overlay drawing is lacking when CropMode.CIRCLE
+
 ## Version 1.1.3
 * Fix bug can't parcel a recycled bitmap
 * Fix Overlay drawing is lacking when selecting certain photos
