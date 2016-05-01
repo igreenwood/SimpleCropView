@@ -458,9 +458,16 @@ public class CropImageView extends ImageView {
         mPaintTranslucent.setColor(mOverlayColor);
         mPaintTranslucent.setStyle(Paint.Style.FILL);
         Path path = new Path();
+        RectF overlayRect = new RectF((float) Math.floor(mImageRect.left),
+                (float) Math.floor(mImageRect.top),
+                (float) Math.ceil(mImageRect.right),
+                (float) Math.ceil(mImageRect.bottom));
         if (!mIsAnimating
                 && (mCropMode == CropMode.CIRCLE || mCropMode == CropMode.CIRCLE_SQUARE)) {
-            path.addRect(mImageRect, Path.Direction.CW);
+            path.addRect(
+                    overlayRect,
+                    Path.Direction.CW
+            );
             PointF circleCenter = new PointF((mFrameRect.left + mFrameRect.right) / 2,
                     (mFrameRect.top + mFrameRect.bottom) / 2);
             float circleRadius = (mFrameRect.right - mFrameRect.left) / 2;
@@ -468,10 +475,7 @@ public class CropImageView extends ImageView {
             canvas.drawPath(path, mPaintTranslucent);
         } else {
             path.addRect(
-                    new RectF((float) Math.floor(mImageRect.left),
-                            (float) Math.floor(mImageRect.top),
-                            (float) Math.ceil(mImageRect.right),
-                            (float) Math.ceil(mImageRect.bottom)),
+                    overlayRect,
                     Path.Direction.CW
             );
             path.addRect(mFrameRect, Path.Direction.CCW);
