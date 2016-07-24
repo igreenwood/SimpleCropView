@@ -1,20 +1,18 @@
 package com.example.simplecropviewsample;
 
-import com.isseiaoki.simplecropview.CropImageView;
-import com.isseiaoki.simplecropview.callback.CropCallback;
-import com.isseiaoki.simplecropview.callback.LoadCallback;
-import com.isseiaoki.simplecropview.callback.SaveCallback;
-import com.isseiaoki.simplecropview.util.Logger;
-import com.isseiaoki.simplecropview.util.Utils;
-
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
@@ -24,7 +22,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
+import com.isseiaoki.simplecropview.CropImageView;
+import com.isseiaoki.simplecropview.callback.CropCallback;
+import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Logger;
+import com.isseiaoki.simplecropview.util.Utils;
+
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import permissions.dispatcher.NeedsPermission;
 import permissions.dispatcher.OnShowRationale;
@@ -167,7 +174,65 @@ public class MainFragment extends Fragment {
     }
 
     public Uri createSaveUri() {
-        return Utils.createNewUri(getContext(), mCompressFormat);
+        return createNewUri(getContext(), mCompressFormat);
+    }
+
+    public static String getDirPath(Context context) {
+        String dirPath = "";
+        File imageDir = null;
+        File extStorageDir = Environment.getExternalStorageDirectory();
+        if (extStorageDir.canWrite()) {
+            imageDir = new File(extStorageDir.getPath() + "/simplecropview");
+        }
+        if (imageDir != null) {
+            if (!imageDir.exists()) {
+                imageDir.mkdirs();
+            }
+            if (imageDir.canWrite()) {
+                dirPath = imageDir.getPath();
+            }
+        }
+        return dirPath;
+    }
+
+    public static Uri createNewUri(Context context, Bitmap.CompressFormat format) {
+        long currentTimeMillis = System.currentTimeMillis();
+        Date today = new Date(currentTimeMillis);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String title = dateFormat.format(today);
+        String dirPath = getDirPath(context);
+        String fileName = "scv" + title + "."+ getMimeType(format);
+        String path = dirPath + "/" + fileName;
+        File file = new File(path);
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/"+getMimeType(format));
+        values.put(MediaStore.Images.Media.DATA, path);
+        long time = currentTimeMillis / 1000;
+        values.put(MediaStore.MediaColumns.DATE_ADDED, time);
+        values.put(MediaStore.MediaColumns.DATE_MODIFIED, time);
+        if (file.exists()) {
+            values.put(MediaStore.Images.Media.SIZE, file.length());
+        }
+
+        ContentResolver resolver = context.getContentResolver();
+        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Logger.i("SaveUri = "+uri);
+        return uri;
+    }
+
+    public static String getMimeType(Bitmap.CompressFormat format){
+        Logger.i("getMimeType CompressFormat = "+format);
+        switch (format){
+            case JPEG: return "jpeg";
+            case PNG: return "png";
+        }
+        return "png";
+    }
+
+    public static Uri createTempUri(Context context){
+        return Uri.fromFile(new File(context.getCacheDir(), "cropped"));
     }
 
     private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {

@@ -31,8 +31,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static android.graphics.Bitmap.*;
-import static android.graphics.Bitmap.CompressFormat.JPEG;
+import static android.graphics.Bitmap.createBitmap;
 
 @SuppressWarnings("unused")
 public class Utils {
@@ -505,60 +504,13 @@ public class Utils {
         }
     }
 
-    public static String getDirPath(Context context) {
-        String dirPath = "";
-        File imageDir = null;
-        File extStorageDir = Environment.getExternalStorageDirectory();
-        if (extStorageDir.canWrite()) {
-            imageDir = new File(extStorageDir.getPath() + "/simplecropview");
-        }
-        if (imageDir != null) {
-            if (!imageDir.exists()) {
-                imageDir.mkdirs();
-            }
-            if (imageDir.canWrite()) {
-                dirPath = imageDir.getPath();
-            }
-        }
-        return dirPath;
-    }
-
-    public static Uri createNewUri(Context context, CompressFormat format) {
-        long currentTimeMillis = System.currentTimeMillis();
-        Date today = new Date(currentTimeMillis);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        String title = dateFormat.format(today);
-        String dirPath = getDirPath(context);
-        String fileName = "scv" + title + "."+ getMimeType(format);
-        String path = dirPath + "/" + fileName;
-        File file = new File(path);
+    public static void updateGalleryInfo(Context context, Uri uri) {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, title);
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/"+getMimeType(format));
-        Logger.i("MIME_TYPE = "+getMimeType(format));
-        values.put(MediaStore.Images.Media.DATA, path);
-        values.put(MediaStore.Images.Media.DATE_TAKEN, currentTimeMillis);
+        File file = getFileFromUri(context, uri);
         if (file.exists()) {
             values.put(MediaStore.Images.Media.SIZE, file.length());
         }
-
         ContentResolver resolver = context.getContentResolver();
-        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        Logger.i("SaveUri = "+uri);
-        return uri;
-    }
-
-    public static String getMimeType(CompressFormat format){
-        Logger.i("getMimeType CompressFormat = "+format);
-        switch (format){
-            case JPEG: return "jpeg";
-            case PNG: return "png";
-        }
-        return "png";
-    }
-
-    public static Uri createTempUri(Context context){
-        return Uri.fromFile(new File(context.getCacheDir(), "cropped"));
+        resolver.update(uri, values, null, null);
     }
 }
