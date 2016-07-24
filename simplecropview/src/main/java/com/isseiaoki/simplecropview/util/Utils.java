@@ -1,7 +1,9 @@
 package com.isseiaoki.simplecropview.util;
 
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -16,6 +18,7 @@ import android.os.Environment;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 
 import java.io.Closeable;
 import java.io.File;
@@ -25,6 +28,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static android.graphics.Bitmap.*;
+import static android.graphics.Bitmap.CompressFormat.JPEG;
 
 @SuppressWarnings("unused")
 public class Utils {
@@ -33,6 +41,88 @@ public class Utils {
     private static final int SIZE_LIMIT = 4096;
     public static int sInputImageWidth = 0;
     public static int sInputImageHeight = 0;
+
+    /**
+     * Copy EXIF info to new file
+     *
+     * =========================================
+     *
+     * NOTE: PNG cannot not have EXIF info.
+     *
+     *  source: JPEG, save: JPEG
+     *  > copies all EXIF data
+     *
+     *  source: JPEG, save: PNG
+     *  > saves no EXIF data
+     *
+     *  source: PNG, save: JPEG
+     *  > saves only width and height EXIF data
+     *
+     *  source: PNG, save: PNG
+     *  > saves no EXIF data
+     *
+     * =========================================
+     *
+     * @param context
+     * @param sourceUri
+     * @param saveUri
+     * @param outputWidth
+     * @param outputHeight
+     */
+    public static void copyExifInfo(Context context, Uri sourceUri, Uri saveUri, int outputWidth, int outputHeight){
+        if(sourceUri == null || saveUri == null) return;
+        try {
+            File sourceFile = Utils.getFileFromUri(context, sourceUri);
+            File saveFile = Utils.getFileFromUri(context, saveUri);
+            if (sourceFile == null || saveFile == null){
+                return;
+            }
+            String sourcePath = sourceFile.getAbsolutePath();
+            String savePath = saveFile.getAbsolutePath();
+
+            ExifInterface sourceExif = new ExifInterface(sourcePath);
+            String[] tags = new String[]{
+                    ExifInterface.TAG_APERTURE,
+                    ExifInterface.TAG_DATETIME,
+                    ExifInterface.TAG_DATETIME_DIGITIZED,
+                    ExifInterface.TAG_EXPOSURE_TIME,
+                    ExifInterface.TAG_FLASH,
+                    ExifInterface.TAG_FOCAL_LENGTH,
+                    ExifInterface.TAG_GPS_ALTITUDE,
+                    ExifInterface.TAG_GPS_ALTITUDE_REF,
+                    ExifInterface.TAG_GPS_DATESTAMP,
+                    ExifInterface.TAG_GPS_LATITUDE,
+                    ExifInterface.TAG_GPS_LATITUDE_REF,
+                    ExifInterface.TAG_GPS_LONGITUDE,
+                    ExifInterface.TAG_GPS_LONGITUDE_REF,
+                    ExifInterface.TAG_GPS_PROCESSING_METHOD,
+                    ExifInterface.TAG_GPS_TIMESTAMP,
+                    ExifInterface.TAG_ISO,
+                    ExifInterface.TAG_MAKE,
+                    ExifInterface.TAG_MODEL,
+                    ExifInterface.TAG_SUBSEC_TIME,
+                    ExifInterface.TAG_SUBSEC_TIME_DIG,
+                    ExifInterface.TAG_SUBSEC_TIME_ORIG,
+                    ExifInterface.TAG_WHITE_BALANCE
+            };
+
+            ExifInterface saveExif = new ExifInterface(savePath);
+            String value;
+            for (String tag : tags) {
+                value = sourceExif.getAttribute(tag);
+                if (!TextUtils.isEmpty(value)) {
+                    saveExif.setAttribute(tag, value);
+                }
+            }
+            saveExif.setAttribute(ExifInterface.TAG_IMAGE_WIDTH, String.valueOf(outputWidth));
+            saveExif.setAttribute(ExifInterface.TAG_IMAGE_LENGTH, String.valueOf(outputHeight));
+            saveExif.setAttribute(ExifInterface.TAG_ORIENTATION, "0");
+
+            saveExif.saveAttributes();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     public static int getExifRotation(File file) {
         if (file == null) return 0;
@@ -394,7 +484,7 @@ public class Utils {
                 (float) outWidth / (float) currentWidth,
                 (float) outHeight / (float) currentHeight
         );
-        return Bitmap.createBitmap(bitmap, 0, 0, currentWidth, currentHeight, scaleMatrix, true);
+        return createBitmap(bitmap, 0, 0, currentWidth, currentHeight, scaleMatrix, true);
     }
 
     public static int getMaxSize() {
@@ -413,5 +503,62 @@ public class Utils {
             closeable.close();
         } catch (Throwable ignored) {
         }
+    }
+
+    public static String getDirPath(Context context) {
+        String dirPath = "";
+        File imageDir = null;
+        File extStorageDir = Environment.getExternalStorageDirectory();
+        if (extStorageDir.canWrite()) {
+            imageDir = new File(extStorageDir.getPath() + "/simplecropview");
+        }
+        if (imageDir != null) {
+            if (!imageDir.exists()) {
+                imageDir.mkdirs();
+            }
+            if (imageDir.canWrite()) {
+                dirPath = imageDir.getPath();
+            }
+        }
+        return dirPath;
+    }
+
+    public static Uri createNewUri(Context context, CompressFormat format) {
+        long currentTimeMillis = System.currentTimeMillis();
+        Date today = new Date(currentTimeMillis);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        String title = dateFormat.format(today);
+        String dirPath = getDirPath(context);
+        String fileName = "scv" + title + "."+ getMimeType(format);
+        String path = dirPath + "/" + fileName;
+        File file = new File(path);
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, title);
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/"+getMimeType(format));
+        Logger.i("MIME_TYPE = "+getMimeType(format));
+        values.put(MediaStore.Images.Media.DATA, path);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, currentTimeMillis);
+        if (file.exists()) {
+            values.put(MediaStore.Images.Media.SIZE, file.length());
+        }
+
+        ContentResolver resolver = context.getContentResolver();
+        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        Logger.i("SaveUri = "+uri);
+        return uri;
+    }
+
+    public static String getMimeType(CompressFormat format){
+        Logger.i("getMimeType CompressFormat = "+format);
+        switch (format){
+            case JPEG: return "jpeg";
+            case PNG: return "png";
+        }
+        return "png";
+    }
+
+    public static Uri createTempUri(Context context){
+        return Uri.fromFile(new File(context.getCacheDir(), "cropped"));
     }
 }

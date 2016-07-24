@@ -14,4 +14,14 @@ public class Logger {
         if (!enabled) return;
         android.util.Log.e(TAG, msg, e);
     }
+
+    public static void i(String msg) {
+        if (!enabled) return;
+        android.util.Log.i(TAG, msg);
+    }
+
+    public static void i(String msg, Throwable e) {
+        if (!enabled) return;
+        android.util.Log.i(TAG, msg, e);
+    }
 }

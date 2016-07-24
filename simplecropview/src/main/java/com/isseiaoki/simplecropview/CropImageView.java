@@ -41,6 +41,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1332,6 +1333,7 @@ public class CropImageView extends ImageView {
                     .openOutputStream(uri);
             if (outputStream != null) {
                 bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
+                Utils.copyExifInfo(getContext(), mSourceUri, uri, bitmap.getWidth(), bitmap.getHeight());
             }
         } catch (IOException e) {
             Logger.e("An error occurred while saving the image: " + uri, e);
@@ -1936,6 +1938,7 @@ public class CropImageView extends ImageView {
      */
     public void setDebug(boolean debug) {
         mIsDebug = debug;
+        Logger.enabled = true;
         invalidate();
     }
 

@@ -4,6 +4,7 @@ import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
 
 import android.Manifest;
@@ -40,6 +41,8 @@ public class MainFragment extends Fragment {
     private CropImageView mCropView;
     private LinearLayout mRootLayout;
 
+    private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
+
     // Note: only the system can call this constructor by reflection. 
     public MainFragment() {
     }
@@ -69,7 +72,8 @@ public class MainFragment extends Fragment {
         bindViews(view);
         // apply custom font
         FontUtils.setFont(mRootLayout);
-//        mCropView.setDebug(true);
+        mCropView.setDebug(true);
+
         // set bitmap to CropImageView
         if (mCropView.getImageBitmap() == null) {
             mCropView.setImageResource(R.drawable.sample5);
@@ -130,6 +134,7 @@ public class MainFragment extends Fragment {
     @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     public void cropImage() {
         showProgress();
+        mCropView.setCompressFormat(mCompressFormat);
         mCropView.startCrop(createSaveUri(), mCropCallback, mSaveCallback);
     }
 
@@ -162,7 +167,7 @@ public class MainFragment extends Fragment {
     }
 
     public Uri createSaveUri() {
-        return Uri.fromFile(new File(getActivity().getCacheDir(), "cropped"));
+        return Utils.createNewUri(getContext(), mCompressFormat);
     }
 
     private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
