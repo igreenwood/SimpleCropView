@@ -1,4 +1,4 @@
-Fork of SimpleCropView https://raw.github.com/wiki/IsseiAoki/SimpleCropView
+Fork of SimpleCropView https://github.com/IsseiAoki/SimpleCropView
 
 [![](https://jitpack.io/v/ZacWolf/SimpleCropView.svg)](https://jitpack.io/#ZacWolf/SimpleCropView)
 
