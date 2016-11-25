@@ -1,11 +1,4 @@
 package com.example.simplecropviewsample;
-
-import com.isseiaoki.simplecropview.CropImageView;
-import com.isseiaoki.simplecropview.callback.CropCallback;
-import com.isseiaoki.simplecropview.callback.LoadCallback;
-import com.isseiaoki.simplecropview.callback.SaveCallback;
-import com.isseiaoki.simplecropview.util.Utils;
-
 import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -21,7 +14,14 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import com.isseiaoki.simplecropview.CropImageView;
+import com.isseiaoki.simplecropview.callback.CropCallback;
+import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Utils;
 
 import java.io.File;
 
@@ -38,6 +38,7 @@ public class MainFragment extends Fragment {
 
     // Views ///////////////////////////////////////////////////////////////////////////////////////
     private CropImageView mCropView;
+    private ImageView mPreView;
     private LinearLayout mRootLayout;
 
     // Note: only the system can call this constructor by reflection. 
@@ -71,9 +72,6 @@ public class MainFragment extends Fragment {
         FontUtils.setFont(mRootLayout);
 //        mCropView.setDebug(true);
         // set bitmap to CropImageView
-        if (mCropView.getImageBitmap() == null) {
-            mCropView.setImageResource(R.drawable.sample5);
-        }
     }
 
     @Override
@@ -81,10 +79,10 @@ public class MainFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, result);
         if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
-            mCropView.startLoad(result.getData(), mLoadCallback);
+            mCropView.startLoad(result.getData(), mLoadCallback,mPreView);
         } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
             showProgress();
-            mCropView.startLoad(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
+            mCropView.startLoad(Utils.ensureUriPermission(getContext(), result), mLoadCallback,mPreView);
         }
     }
 
@@ -98,6 +96,8 @@ public class MainFragment extends Fragment {
 
     private void bindViews(View view) {
         mCropView = (CropImageView) view.findViewById(R.id.cropImageView);
+        mPreView = (ImageView) view.findViewById(R.id.previewImageView);
+        
         view.findViewById(R.id.buttonDone).setOnClickListener(btnListener);
         view.findViewById(R.id.buttonFitImage).setOnClickListener(btnListener);
         view.findViewById(R.id.button1_1).setOnClickListener(btnListener);
@@ -245,7 +245,7 @@ public class MainFragment extends Fragment {
         }
 
         @Override
-        public void onError() {
+        public void onError(Throwable e) {
             dismissProgress();
         }
     };
@@ -256,7 +256,7 @@ public class MainFragment extends Fragment {
         }
 
         @Override
-        public void onError() {
+        public void onError(Throwable e) {
         }
     };
 
@@ -268,7 +268,7 @@ public class MainFragment extends Fragment {
         }
 
         @Override
-        public void onError() {
+        public void onError(Throwable e) {
             dismissProgress();
         }
     };
