@@ -1,16 +1,4 @@
 package com.isseiaoki.simplecropview;
-
-import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
-import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
-import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
-import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
-import com.isseiaoki.simplecropview.callback.Callback;
-import com.isseiaoki.simplecropview.callback.CropCallback;
-import com.isseiaoki.simplecropview.callback.LoadCallback;
-import com.isseiaoki.simplecropview.callback.SaveCallback;
-import com.isseiaoki.simplecropview.util.Logger;
-import com.isseiaoki.simplecropview.util.Utils;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -40,6 +28,17 @@ import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
+
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
+import com.isseiaoki.simplecropview.callback.Callback;
+import com.isseiaoki.simplecropview.callback.CropCallback;
+import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Logger;
+import com.isseiaoki.simplecropview.util.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -111,6 +110,7 @@ public class CropImageView extends ImageView {
     private int mOutputImageWidth = 0;
     private int mOutputImageHeight = 0;
     private boolean mIsLoading = false;
+    private ImageView mPreviewImageView = null;
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
     private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
@@ -284,7 +284,8 @@ public class CropImageView extends ImageView {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        if (getDrawable() != null) setupLayout(mViewWidth, mViewHeight);
+        if (getDrawable() != null && !mIsInitialized) 
+     		setupLayout(mViewWidth, mViewHeight);
     }
 
     @Override
@@ -302,6 +303,7 @@ public class CropImageView extends ImageView {
             if (mIsDebug) {
                 drawDebugInfo(canvas);
             }
+
         }
     }
 
@@ -544,6 +546,7 @@ public class CropImageView extends ImageView {
         mFrameRect = calcFrameRect(mImageRect);
         mIsInitialized = true;
         invalidate();
+        int s=1;
     }
 
     private float calcScale(int viewW, int viewH, float angle) {
@@ -671,6 +674,8 @@ public class CropImageView extends ImageView {
         if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = false;
         mTouchArea = TouchArea.OUT_OF_BOUNDS;
         invalidate();
+        updatePreview();
+
     }
 
     private void onCancel() {
@@ -1043,6 +1048,7 @@ public class CropImageView extends ImageView {
                 @Override
                 public void onAnimationFinished() {
                     mFrameRect = newRect;
+                    updatePreview();
                     invalidate();
                     mIsAnimating = false;
                 }
@@ -1168,15 +1174,15 @@ public class CropImageView extends ImageView {
         return val;
     }
 
-    private void postErrorOnMainThread(final Callback callback) {
+    private void postErrorOnMainThread(final Callback callback,final Throwable exception) {
         if (callback == null) return;
         if (Looper.myLooper() == Looper.getMainLooper()) {
-            callback.onError();
+            callback.onError(exception);
         } else {
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    callback.onError();
+                    callback.onError(exception);
                 }
             });
         }
@@ -1334,8 +1340,9 @@ public class CropImageView extends ImageView {
                 bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
             }
         } catch (IOException e) {
-            Logger.e("An error occurred while saving the image: " + uri, e);
-            postErrorOnMainThread(mSaveCallback);
+			final String	msg	=	"An error occurred while saving the image: " + uri;
+            Logger.e(msg, e);
+            postErrorOnMainThread(mSaveCallback,new IOException(msg,e));
         } finally {
             Utils.closeQuietly(outputStream);
         }
@@ -1408,7 +1415,7 @@ public class CropImageView extends ImageView {
     private void updateLayout() {
         resetImageInfo();
         Drawable d = getDrawable();
-        if (d != null) {
+        if (d != null && !mIsInitialized) {
             setupLayout(mViewWidth, mViewHeight);
         }
     }
@@ -1430,11 +1437,24 @@ public class CropImageView extends ImageView {
      * @param sourceUri Image Uri
      * @param callback  Callback
      */
-    public void startLoad(Uri sourceUri, LoadCallback callback) {
+    public void startLoad(Uri sourceUri, LoadCallback callback){
+    	startLoad(sourceUri,callback,null);
+	}
+	
+	 /**
+     * Load image from Uri.
+     *
+     * @param sourceUri Image Uri
+     * @param callback  Callback
+	 * @param preview  ImageView to be populated with the cropped area on event onUp
+     */
+    public void startLoad(Uri sourceUri, LoadCallback callback, ImageView preview) {
         mLoadCallback = callback;
         mSourceUri = sourceUri;
+        mPreviewImageView = preview;
+        mPreviewImageView.setScaleType(ScaleType.FIT_XY);
         if (sourceUri == null) {
-            postErrorOnMainThread(mLoadCallback);
+            postErrorOnMainThread(mLoadCallback,new IllegalStateException("Source Uri must not be null."));
             throw new IllegalStateException("Source Uri must not be null.");
         }
         mExecutor.submit(new Runnable() {
@@ -1456,23 +1476,43 @@ public class CropImageView extends ImageView {
                         public void run() {
                             mAngle = mExifRotation;
                             setImageBitmap(sampledBitmap);
+                            updatePreview();
                             if (mLoadCallback != null) mLoadCallback.onSuccess();
                             mIsLoading = false;
                         }
                     });
                 } catch (OutOfMemoryError e) {
-                    Logger.e("OOM Error: " + e.getMessage(), e);
-                    postErrorOnMainThread(mLoadCallback);
+                	final String	msg	=	"Oot of Memory Error: " + e.getMessage();
+                    Logger.e(msg, e);
+                    postErrorOnMainThread(mLoadCallback,new OutOfMemoryError(msg));
                     mIsLoading = false;
                 } catch (Exception e) {
-                    Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
-                    postErrorOnMainThread(mLoadCallback);
+                	final String	msg	=	"An unexpected error has occurred: " + e.getMessage();
+                    Logger.e(msg, e);
+                    postErrorOnMainThread(mLoadCallback,new Exception(msg,e));
                     mIsLoading = false;
                 }
             }
         });
     }
 
+	private void updatePreview(){
+		mHandler.post(new Runnable(){
+									@Override public void run(){
+										float h=mPreviewImageView.getHeight();
+										float w=mPreviewImageView.getWidth();
+										float hr=getRatioY(h);
+										float wr=getRatioX(w);
+										try{
+											mPreviewImageView.getLayoutParams().width=Math.round(h*(wr/hr));
+											mPreviewImageView.setImageBitmap(getCroppedBitmap());
+										}catch(Exception e){
+											e.printStackTrace();
+										}
+									}
+								}
+		);
+	}
     /**
      * Rotate image
      *
@@ -1510,6 +1550,7 @@ public class CropImageView extends ImageView {
                     mAngle = newAngle % 360;
                     mScale = newScale;
                     setupLayout(mViewWidth, mViewHeight);
+                    updatePreview();
                     mIsRotating = false;
                 }
             });
@@ -1561,6 +1602,7 @@ public class CropImageView extends ImageView {
             }
             cropped = circle;
         }
+        //mIsInitialized=false;
         return cropped;
     }
 
@@ -1603,8 +1645,9 @@ public class CropImageView extends ImageView {
         mCropCallback = cropCallback;
         mSaveCallback = saveCallback;
         if (mIsCropping) {
-            postErrorOnMainThread(mCropCallback);
-            postErrorOnMainThread(mSaveCallback);
+        	final String msg = "Another cropping operation is already active.";
+            postErrorOnMainThread(mCropCallback,new RuntimeException(msg));
+            postErrorOnMainThread(mSaveCallback,new RuntimeException(msg));
             return;
         }
         mIsCropping = true;
@@ -1645,11 +1688,11 @@ public class CropImageView extends ImageView {
                 }
                 // Error
                 else {
-                    postErrorOnMainThread(mCropCallback);
+                    postErrorOnMainThread(mCropCallback,new NullPointerException("Resulting crop generated a null value"));
                 }
 
                 if (mSaveUri == null) {
-                    postErrorOnMainThread(mSaveCallback);
+                    postErrorOnMainThread(mSaveCallback,new NullPointerException("The save location for the crop was null or invalid"));
                     return;
                 }
                 saveToFile(cropped, mSaveUri);
