@@ -1,16 +1,12 @@
-![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/cover-art.png)
+Fork of SimpleCropView https://raw.github.com/wiki/IsseiAoki/SimpleCropView
 
-#SimpleCropView
-[![build status](https://travis-ci.org/IsseiAoki/SimpleCropView.svg)](https://travis-ci.org/IsseiAoki/SimpleCropView)
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-SimpleCropView-green.svg?style=flat)](https://android-arsenal.com/details/1/2366)
-[![Android Gems](http://www.android-gems.com/badge/IsseiAoki/SimpleCropView.svg?branch=master)](http://www.android-gems.com/lib/IsseiAoki/SimpleCropView)
+[![](https://jitpack.io/v/ZacWolf/SimpleCropView.svg)](https://jitpack.io/#ZacWolf/SimpleCropView)
+
+![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/cover-art.png)
 
 The SimpleCropView is an image cropping library for Android.<br>
 It simplifies your code for cropping image and provides an easily customizable UI.<br><br>
 Supported on API Level 10 and above.
-
-
-![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_basic_usage.gif)
 
 
 ##Table of Contents
