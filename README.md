@@ -441,7 +441,7 @@ XML sample here.
 | scv_min_frame_size | setMinFrameSizeInDp(int minDp) | Set the image cropping frame minimum size in density-independent pixels. |
 | scv_frame_stroke_weight | setFrameStrokeWeightInDp(int weightDp) | Set frame stroke weight in density-independent pixels. |
 | scv_guide_stroke_weight | setGuideStrokeWeightInDp(int weightDp) | Set guideline stroke weight in density-independent pixels. |
-| scv_cropEnabled | setCropEnabled(boolean enabled) | Set whether to show the image cropping frame. |
+| scv_crop_enabled | setCropEnabled(boolean enabled) | Set whether to show the image cropping frame. |
 | scv_initial_frame_scale | setInitialFrameScale(float initialScale) | Set Set initial scale of the frame.(0.01 ~ 1.0) |
 | scv_animation_enabled | setAnimationEnabled(boolean enabled) | Set whether to animate. |
 | scv_animation_duration | setAnimationDuration(int durationMillis) | Set animation duration. |
