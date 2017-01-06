@@ -36,6 +36,7 @@ Supported on API Level 10 and above.
 * [Picasso and Glide Compatibility](#picasso-and-glide-compatibility)
 * [Debug](#debug)
 * [XML Attributes](#xml-attributes) 
+* [For Xamarin](#for-xamarin)
 * [Developed By](#developed-by)
 * [Users](#users) 
 * [License](#license) 
@@ -454,6 +455,11 @@ Issei Aoki - <i.greenwood.dev@gmail.com>
 * [Snipping Tool - Screen Capture](https://play.google.com/store/apps/details?id=com.anhlt.sniptool)
 
 If you are using my library, please let me know your app name : )
+
+##For Xamarin
+[https://bitbucket.org/markjackmilian/xam.droid.simplecropview](https://bitbucket.org/markjackmilian/xam.droid.simplecropview)
+
+Thanks a million to Marco!!!
 
 ##License
 ```
