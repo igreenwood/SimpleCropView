@@ -451,7 +451,9 @@ XML sample here.
 Issei Aoki - <i.greenwood.dev@gmail.com>
  
 ##Users
-If you are using my library, please let me know your app name :)
+* [Snipping Tool - Screen Capture](https://play.google.com/store/apps/details?id=com.anhlt.sniptool)
+
+If you are using my library, please let me know your app name : )
 
 ##License
 ```
