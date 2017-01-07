@@ -9,4 +9,7 @@
     <color name="textColorPrimaryInverse">#1C1C1C</color>
     <color name="overlay">#AA1C1C1C</color>
     <color name="divider">#333333</color>
+    
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>
