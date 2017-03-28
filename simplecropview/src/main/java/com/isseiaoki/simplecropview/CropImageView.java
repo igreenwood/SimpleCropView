@@ -1,16 +1,5 @@
 package com.isseiaoki.simplecropview;
 
-import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
-import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
-import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
-import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
-import com.isseiaoki.simplecropview.callback.Callback;
-import com.isseiaoki.simplecropview.callback.CropCallback;
-import com.isseiaoki.simplecropview.callback.LoadCallback;
-import com.isseiaoki.simplecropview.callback.SaveCallback;
-import com.isseiaoki.simplecropview.util.Logger;
-import com.isseiaoki.simplecropview.util.Utils;
-
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -41,6 +30,19 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
 import android.widget.ImageView;
 
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimator;
+import com.isseiaoki.simplecropview.animation.SimpleValueAnimatorListener;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV14;
+import com.isseiaoki.simplecropview.animation.ValueAnimatorV8;
+import com.isseiaoki.simplecropview.callback.Callback;
+import com.isseiaoki.simplecropview.callback.CropCallback;
+import com.isseiaoki.simplecropview.callback.LoadCallback;
+import com.isseiaoki.simplecropview.callback.SaveCallback;
+import com.isseiaoki.simplecropview.util.Logger;
+import com.isseiaoki.simplecropview.util.Utils;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,6 +67,8 @@ public class CropImageView extends ImageView {
     private static final int TRANSLUCENT_WHITE = 0xBBFFFFFF;
     private static final int WHITE = 0xFFFFFFFF;
     private static final int TRANSLUCENT_BLACK = 0xBB000000;
+    private static final String TEMP_FILE_PREFIX = "bitmap";
+    private static final String TEMP_FILE_SUFFIX = "tmp";
 
     // Member variables ////////////////////////////////////////////////////////////////////////////
 
@@ -186,7 +190,7 @@ public class CropImageView extends ImageView {
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
-        ss.image = getBitmap();
+        saveToTempFile(getBitmap());
         ss.mode = this.mCropMode;
         ss.backgroundColor = this.mBackgroundColor;
         ss.overlayColor = this.mOverlayColor;
@@ -267,7 +271,7 @@ public class CropImageView extends ImageView {
         this.mInputImageHeight = ss.inputImageHeight;
         this.mOutputImageWidth = ss.outputImageWidth;
         this.mOutputImageHeight = ss.outputImageHeight;
-        setImageBitmap(ss.image);
+        readFromTempFile();
         requestLayout();
     }
 
@@ -1348,6 +1352,28 @@ public class CropImageView extends ImageView {
         });
     }
 
+    private void saveToTempFile(final Bitmap bitmap) {
+        OutputStream outputStream = null;
+        try {
+            File tempFile = File.createTempFile(TEMP_FILE_PREFIX, TEMP_FILE_SUFFIX, getContext().getExternalCacheDir());
+            outputStream = new FileOutputStream(tempFile);
+            bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
+        } catch (IOException e) {
+            Logger.e("An error occurred while temporarily saving the image: " + e);
+        } finally {
+            Utils.closeQuietly(outputStream);
+        }
+    }
+
+    private void readFromTempFile() {
+        File tempFile = new File(getContext().getExternalCacheDir(), TEMP_FILE_PREFIX + TEMP_FILE_SUFFIX);
+        setImageURI(Uri.fromFile(tempFile));
+        if (!tempFile.delete()){
+            Logger.e("An error occured while deleting them temp image");
+        }
+
+    }
+
     // Public methods //////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -2104,7 +2130,6 @@ public class CropImageView extends ImageView {
     // Save/Restore support ////////////////////////////////////////////////////////////////////////
 
     public static class SavedState extends BaseSavedState {
-        Bitmap image;
         CropMode mode;
         int backgroundColor;
         int overlayColor;
@@ -2149,7 +2174,6 @@ public class CropImageView extends ImageView {
 
         private SavedState(Parcel in) {
             super(in);
-            image = in.readParcelable(Bitmap.class.getClassLoader());
             mode = (CropMode) in.readSerializable();
             backgroundColor = in.readInt();
             overlayColor = in.readInt();
@@ -2192,7 +2216,6 @@ public class CropImageView extends ImageView {
         @Override
         public void writeToParcel(Parcel out, int flag) {
             super.writeToParcel(out, flag);
-            out.writeParcelable(image, flag);
             out.writeSerializable(mode);
             out.writeInt(backgroundColor);
             out.writeInt(overlayColor);
