@@ -1,6 +1,6 @@
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/cover-art.png)
 
-#SimpleCropView
+# SimpleCropView
 [![build status](https://travis-ci.org/IsseiAoki/SimpleCropView.svg)](https://travis-ci.org/IsseiAoki/SimpleCropView)
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-SimpleCropView-green.svg?style=flat)](https://android-arsenal.com/details/1/2366)
 [![Android Gems](http://www.android-gems.com/badge/IsseiAoki/SimpleCropView.svg?branch=master)](http://www.android-gems.com/lib/IsseiAoki/SimpleCropView)
@@ -13,7 +13,7 @@ Supported on API Level 10 and above.
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_basic_usage.gif)
 
 
-##Table of Contents
+## Table of Contents
 * [Download](#download) 
 * [Example](#example)
   * [Image Cropping](#image-cropping) 
@@ -41,7 +41,7 @@ Supported on API Level 10 and above.
 * [Users](#users) 
 * [License](#license) 
 
-##Download
+## Download
 Include the following dependency in your `build.gradle` file. **Please use the latest version available.**
 
 ```groovy
@@ -53,9 +53,9 @@ dependencies {
 }
 ```
 
-##Example
+## Example
 
-###Image Cropping
+### Image Cropping
 
 Add permission in `AndroidManifest.xml` file.
 
@@ -145,7 +145,7 @@ mCropView.startCrop(
 
 ```
 
-###Image Rotation
+### Image Rotation
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_rotation.gif)
 
@@ -160,7 +160,7 @@ cropImageView.rotateImage(CropImageView.RotateDegrees.ROTATE_M90D); // rotate co
 
 **For a working implementation of this project, see [sample project](https://github.com/IsseiAoki/SimpleCropView/tree/master/simplecropview-sample).**
 
-##Load Image
+## Load Image
 
 * `setImageXXX()`(Sync method)
 
@@ -173,7 +173,7 @@ You don't have to care for filePath and image size.
 
 **REMEMBER** : `sourceUri` parameter will be used in `startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback)`.
 
-##Crop and Save Image
+## Crop and Save Image
 
 * `getCroppedBitmap()`(Sync method)
 
@@ -186,7 +186,7 @@ This method uses full size bitmap taken from `sourceUri` for cropping.
 If `sourceUri` is not set, it uses thumbnail bitmap. 
 After cropping, it saves cropped image in `saveUri`.
 
-###Compress Format
+### Compress Format
 
 You can use 3 compress format, `PNG`(default),`JPEG`, and `WEBP`.
 
@@ -194,14 +194,14 @@ You can use 3 compress format, `PNG`(default),`JPEG`, and `WEBP`.
 setCompressFormat(Bitmap.CompressFormat.JPEG);
 ```
 
-###Compress Quality
+### Compress Quality
 You can also set compress quality. `0`~`100`(default)
 
 ```java
 setCompressQuality(90);
 ```
 
-##Customization
+## Customization
 
 [![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/thumbnails/thumb1.jpg)](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/showcase1.jpg)
 [![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/thumbnails/thumb3.jpg)](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/showcase3.jpg)
@@ -210,14 +210,14 @@ setCompressQuality(90);
 [![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/thumbnails/thumb6.jpg)](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/showcase6.jpg)
 [![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/thumbnails/thumb7.jpg)](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/showcase7.jpg)
 
-###Maximum Output Size
+### Maximum Output Size
 You can set max size for output image. The output image will be scaled within given rect.
 
 ```java
 setOutputMaxSize(300, 300);
 ```
 
-###Fixed Output Size
+### Fixed Output Size
 You can also set fixed output width/height. 
 
 ```java
@@ -228,7 +228,7 @@ setOutputWidth(100); // If cropped image size is 400x200, output size is 100x50
 setOutputHeight(100); // If cropped image size is 400x200, output size is 200x100
 ``` 
 
-###CropMode
+### CropMode
 
 The option for the aspect ratio of the image cropping frame.
 
@@ -237,11 +237,11 @@ CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
 cropImageView.setCropMode(CropImageView.CropMode.RATIO_16_9);
 ```
 
-####Values
+#### Values
 ```
 FIT_IMAGE, RATIO_4_3, RATIO_3_4, SQUARE(default), RATIO_16_9, RATIO_9_16, FREE, CUSTOM, CIRCLE, CIRCLE_SQUARE
 ```
-####Rect Crop
+#### Rect Crop
 `FREE`:  *Non-Fixed aspect ratio mode*
 `RATIO_X_Y`, `SQUARE`:  *Fixed aspect ratio mode*
 `FIT_IMAGE`:  *Fixed aspect ratio mode. The same aspect ratio as the original photo.*
@@ -251,7 +251,7 @@ If you need other aspect ratio, use `setCustomRatio(int ratioX, int ratioY);`
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_crop_mode_rect.gif)
 
 
-####Circle Crop
+#### Circle Crop
 
 `CIRCLE`: *Fixed aspect ratio mode. Crop image as circle.*
 `CIRCLE_SQUARE`: *Fixed aspect ratio mode. Show guide circle, but save as square.(`getRectBitmap()` is removed.)*
@@ -260,7 +260,7 @@ If you need other aspect ratio, use `setCustomRatio(int ratioX, int ratioY);`
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_crop_mode_circle.gif)
 
 
-###MinimumFrameSize
+### MinimumFrameSize
 The minimum size of the image cropping frame in dp.(default:50)
 
 ```java
@@ -270,7 +270,7 @@ cropImageView.setMinFrameSizeInDp(100);
 
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_minimum_frame_size.gif)
 
-###InitialFrameScale
+### InitialFrameScale
 The initial frame size of the image cropping frame. `0.01`~`1.0`(default)
 
 ```java
@@ -284,7 +284,7 @@ cropImageView.setInitialFrameScale(1.0f);
 | 0.75| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.75.jpg" width="100%"> |
 | 1.0 (default)| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_1.0.jpg" width="100%"> |
 
-###Color
+### Color
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
@@ -297,7 +297,7 @@ cropImageView.setGuideColor(getResources().getColor(R.color.guide));
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/color-attributes.png)
 
-###Stroke Weight and Handle Size
+### Stroke Weight and Handle Size
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
@@ -308,7 +308,7 @@ cropImageView.setHandleSizeInDp(getResources().getDimension(R.dimen.handle_size)
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/size-attributes.png)
 
-###Handle Touch Padding
+### Handle Touch Padding
 
 Additional touch area for the image cropping frame handle.
 
@@ -319,7 +319,7 @@ cropImageView.setTouchPadding(16);
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/graphic/handle-touch-padding.png)
 
-###Handle and Guide ShowMode
+### Handle and Guide ShowMode
 
 ```java
 CropImageView cropImageView = (CropImageView)findViewById(R.id.cropImageView);
@@ -327,7 +327,7 @@ cropImageView.setHandleShowMode(CropImageView.ShowMode.SHOW_ALWAYS);
 cropImageView.setGuideShowMode(CropImageView.ShowMode.SHOW_ON_TOUCH);
 ```
 
-####Values
+#### Values
 ```
 SHOW_ALWAYS(default), NOT_SHOW, SHOW_ON_TOUCH
 ```
@@ -340,24 +340,24 @@ SHOW_ALWAYS(default), NOT_SHOW, SHOW_ON_TOUCH
 | SHOW_ALWAYS | SHOW_ON_TOUCH | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_guide_show_on_touch.gif" width="100%"> |
 | SHOW_ON_TOUCH | NOT_SHOW | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/gif/demo_handle_show_on_touch.gif" width="100%"> |
 
-###Animation
+### Animation
 SimpleCropView supports rotate animation and frame change animation.
 
-####Enabled
+#### Enabled
 Toggle whether to animate. `true` is default.
 
 ```java
 setAnimationEnabled(true);
 ```
 
-####Duration
+#### Duration
 Set animation duration in milliseconds. `100` is default.
 
 ```java
 setAnimationDuration(200);
 ```
 
-####Interpolator
+#### Interpolator
 Set interpolator of animation. `DecelerateInterpolator` is default.
 You can also use your custom interpolator.
 
@@ -365,7 +365,7 @@ You can also use your custom interpolator.
 setInterpolator(new AccelerateDecelerateInterpolator());
 ```
 
-##Picasso and Glide Compatibility
+## Picasso and Glide Compatibility
 `com.isseiaoki.simplecropview.CropImageView` is a kind of `ImageView`.
 You can use it with Picasso or Glide as follows:
 
@@ -382,7 +382,7 @@ Glide.with(context).load(imageUrl).into(cropImageView);
 
 >Some option does not work correctly because CropImageView does not support ImageView.ScaleType.
 
-##Debug
+## Debug
 You can use debug display.
 
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_debug.gif)
@@ -391,7 +391,7 @@ You can use debug display.
 setDebug(true);
 ```
 
-##XML Attributes
+## XML Attributes
 XML sample here.
 
 ```xml
@@ -448,20 +448,20 @@ XML sample here.
 | scv_animation_duration | setAnimationDuration(int durationMillis) | Set animation duration. |
 | scv_handle_shadow_enabled | setHandleShadowEnabled(boolean handleShadowEnabled) | Set whether to show handle shadows. |
 
-##Developed By
+## Developed By
 Issei Aoki - <i.greenwood.dev@gmail.com>
  
-##Users
+## Users
 * [Snipping Tool - Screen Capture](https://play.google.com/store/apps/details?id=com.anhlt.sniptool)
 
 If you are using my library, please let me know your app name : )
 
-##For Xamarin
+## For Xamarin
 [https://bitbucket.org/markjackmilian/xam.droid.simplecropview](https://bitbucket.org/markjackmilian/xam.droid.simplecropview)
 
 Thanks a million to Marco!!!
 
-##License
+## License
 ```
 The MIT License (MIT)
 
