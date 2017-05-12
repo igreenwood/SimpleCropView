@@ -425,16 +425,28 @@ public class Utils {
     }
 
     public static Bitmap decodeSampledBitmapFromUri(Context context, Uri sourceUri, int requestSize) {
-        InputStream is = null;
+        InputStream stream = null;
+        Bitmap bitmap =  null;
         try {
-            is = context.getContentResolver().openInputStream(sourceUri);
+            stream = context.getContentResolver().openInputStream(sourceUri);
+            if (stream != null) {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = Utils.calculateInSampleSize(context, sourceUri, requestSize);
+                options.inJustDecodeBounds = false;
+                bitmap = BitmapFactory.decodeStream(stream, null, options);
+            }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.e(TAG, e.getMessage());
+        } finally {
+            try {
+                if (stream != null) {
+                    stream.close();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage());
+            }
         }
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = Utils.calculateInSampleSize(context, sourceUri, requestSize);
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeStream(is, null, options);
+        return bitmap;
     }
 
     public static int calculateInSampleSize(Context context, Uri sourceUri, int requestSize) {
