@@ -1,7 +1,7 @@
 package com.isseiaoki.simplecropview.callback;
 
+public interface LoadCallback extends Callback {
+  void onSuccess();
 
-public interface LoadCallback extends Callback{
-    void onSuccess();
-    void onError();
+  void onError();
 }
