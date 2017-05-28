@@ -83,7 +83,7 @@ public class MainFragment extends Fragment {
 
         // set bitmap to CropImageView
         if (mCropView.getImageBitmap() == null) {
-            mCropView.setImageResource(R.drawable.sample5);
+            mCropView.startLoad(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback);
         }
     }
 
@@ -193,6 +193,18 @@ public class MainFragment extends Fragment {
             }
         }
         return dirPath;
+    }
+
+    public static Uri getUriFromDrawableResId(Context context, int drawableResId) {
+        StringBuilder builder = new StringBuilder()
+            .append(ContentResolver.SCHEME_ANDROID_RESOURCE)
+            .append("://")
+            .append(context.getResources().getResourcePackageName(drawableResId))
+            .append("/")
+            .append(context.getResources().getResourceTypeName(drawableResId))
+            .append("/")
+            .append(context.getResources().getResourceEntryName(drawableResId));
+        return Uri.parse(builder.toString());
     }
 
     public static Uri createNewUri(Context context, Bitmap.CompressFormat format) {

@@ -46,6 +46,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @SuppressWarnings("unused")
 public class CropImageView extends ImageView {
@@ -110,7 +112,7 @@ public class CropImageView extends ImageView {
     private int mInputImageHeight = 0;
     private int mOutputImageWidth = 0;
     private int mOutputImageHeight = 0;
-    private boolean mIsLoading = false;
+    private AtomicBoolean mIsLoading = new AtomicBoolean(false);
     // Instance variables for customizable attributes //////////////////////////////////////////////
 
     private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
@@ -186,7 +188,6 @@ public class CropImageView extends ImageView {
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState ss = new SavedState(superState);
-        ss.image = getBitmap();
         ss.mode = this.mCropMode;
         ss.backgroundColor = this.mBackgroundColor;
         ss.overlayColor = this.mOverlayColor;
@@ -267,8 +268,18 @@ public class CropImageView extends ImageView {
         this.mInputImageHeight = ss.inputImageHeight;
         this.mOutputImageWidth = ss.outputImageWidth;
         this.mOutputImageHeight = ss.outputImageHeight;
-        setImageBitmap(ss.image);
-        requestLayout();
+
+        if(mSourceUri != null){
+            startLoad(mSourceUri, new LoadCallback() {
+                @Override public void onSuccess() {
+
+                }
+
+                @Override public void onError() {
+
+                }
+            });
+        }
     }
 
     @Override
@@ -607,7 +618,7 @@ public class CropImageView extends ImageView {
         if (!mIsEnabled) return false;
         if (mIsRotating) return false;
         if (mIsAnimating) return false;
-        if (mIsLoading) return false;
+        if (mIsLoading.get()) return false;
         if (mIsCropping) return false;
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
@@ -1368,7 +1379,7 @@ public class CropImageView extends ImageView {
      */
     @Override
     public void setImageBitmap(Bitmap bitmap) {
-        super.setImageBitmap(bitmap); // calles setImageDrawable internally
+        super.setImageBitmap(bitmap); // calls setImageDrawable internally
     }
 
     /**
@@ -1379,6 +1390,7 @@ public class CropImageView extends ImageView {
     @Override
     public void setImageResource(int resId) {
         mIsInitialized = false;
+        resetImageInfo();
         super.setImageResource(resId);
         updateLayout();
     }
@@ -1391,6 +1403,11 @@ public class CropImageView extends ImageView {
     @Override
     public void setImageDrawable(Drawable drawable) {
         mIsInitialized = false;
+        resetImageInfo();
+        setImageDrawableInternal(drawable);
+    }
+
+    private void setImageDrawableInternal(Drawable drawable){
         super.setImageDrawable(drawable);
         updateLayout();
     }
@@ -1408,7 +1425,6 @@ public class CropImageView extends ImageView {
     }
 
     private void updateLayout() {
-        resetImageInfo();
         Drawable d = getDrawable();
         if (d != null) {
             setupLayout(mViewWidth, mViewHeight);
@@ -1416,7 +1432,7 @@ public class CropImageView extends ImageView {
     }
 
     private void resetImageInfo() {
-        if (mIsLoading) return;
+        if (mIsLoading.get()) return;
         mSourceUri = null;
         mSaveUri = null;
         mInputImageWidth = 0;
@@ -1442,7 +1458,7 @@ public class CropImageView extends ImageView {
         mExecutor.submit(new Runnable() {
             @Override
             public void run() {
-                mIsLoading = true;
+                mIsLoading.set(true);
                 mExifRotation = Utils.getExifOrientation(getContext(), mSourceUri);
                 int maxSize = Utils.getMaxSize();
                 int requestSize = Math.max(mViewWidth, mViewHeight);
@@ -1457,19 +1473,21 @@ public class CropImageView extends ImageView {
                         @Override
                         public void run() {
                             mAngle = mExifRotation;
-                            setImageBitmap(sampledBitmap);
+                            setImageDrawableInternal(new BitmapDrawable(getResources(), sampledBitmap));
+                            mIsLoading.set(false);
                             if (mLoadCallback != null) mLoadCallback.onSuccess();
-                            mIsLoading = false;
                         }
                     });
                 } catch (OutOfMemoryError e) {
                     Logger.e("OOM Error: " + e.getMessage(), e);
                     postErrorOnMainThread(mLoadCallback);
-                    mIsLoading = false;
+                    mIsLoading.set(false);
+                    Logger.e("startLoad end: mIsLoading = "+mIsLoading.get());
                 } catch (Exception e) {
                     Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
                     postErrorOnMainThread(mLoadCallback);
-                    mIsLoading = false;
+                    mIsLoading.set(false);
+                    Logger.e("startLoad end: mIsLoading = "+mIsLoading.get());
                 }
             }
         });
@@ -2107,7 +2125,6 @@ public class CropImageView extends ImageView {
     // Save/Restore support ////////////////////////////////////////////////////////////////////////
 
     public static class SavedState extends BaseSavedState {
-        Bitmap image;
         CropMode mode;
         int backgroundColor;
         int overlayColor;
@@ -2152,7 +2169,6 @@ public class CropImageView extends ImageView {
 
         private SavedState(Parcel in) {
             super(in);
-            image = in.readParcelable(Bitmap.class.getClassLoader());
             mode = (CropMode) in.readSerializable();
             backgroundColor = in.readInt();
             overlayColor = in.readInt();
@@ -2195,7 +2211,6 @@ public class CropImageView extends ImageView {
         @Override
         public void writeToParcel(Parcel out, int flag) {
             super.writeToParcel(out, flag);
-            out.writeParcelable(image, flag);
             out.writeSerializable(mode);
             out.writeInt(backgroundColor);
             out.writeInt(overlayColor);

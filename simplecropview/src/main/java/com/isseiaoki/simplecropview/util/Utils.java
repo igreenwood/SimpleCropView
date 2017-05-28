@@ -436,14 +436,14 @@ public class Utils {
                 bitmap = BitmapFactory.decodeStream(stream, null, options);
             }
         } catch (FileNotFoundException e) {
-            Log.e(TAG, e.getMessage());
+            Logger.e(e.getMessage());
         } finally {
             try {
                 if (stream != null) {
                     stream.close();
                 }
             } catch (IOException e) {
-                Log.e(TAG, e.getMessage());
+                Logger.e(e.getMessage());
             }
         }
         return bitmap;
