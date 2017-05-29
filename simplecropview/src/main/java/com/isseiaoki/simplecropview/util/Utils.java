@@ -17,6 +17,7 @@ import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 
+import android.util.Log;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileDescriptor;
