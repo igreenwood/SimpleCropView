@@ -32,7 +32,7 @@
       android:layout_height="match_parent"
       android:layout_weight="1"
       android:adjustViewBounds="true"
-      android:padding="16dp"
+      android:padding="@dimen/spacing"
       android:scaleType="fitCenter"
       />
 

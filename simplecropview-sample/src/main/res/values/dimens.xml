@@ -2,4 +2,9 @@
   <dimen name="text_size_m">20sp</dimen>
   <dimen name="text_size_s">16sp</dimen>
   <dimen name="button_height">48dp</dimen>
+  <dimen name="spacing">16dp</dimen>
+  <dimen name="spacing_small">8dp</dimen>
+  <dimen name="spacing_large">24dp</dimen>
+  <dimen name="spacing_xlarge">24dp</dimen>
+  <dimen name="spacing_xsmall">4dp</dimen>
 </resources>

@@ -32,10 +32,7 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_weight="1"
-      android:paddingBottom="16dp"
-      android:paddingLeft="16dp"
-      android:paddingRight="16dp"
-      android:paddingTop="16dp"
+      android:padding="@dimen/spacing_xlarge"
       custom:scv_background_color="@color/windowBackground"
       custom:scv_crop_mode="fit_image"
       custom:scv_frame_color="@color/colorAccent"
@@ -54,8 +51,8 @@
   <View
       android:layout_width="match_parent"
       android:layout_height="1dp"
-      android:layout_marginLeft="8dp"
-      android:layout_marginRight="8dp"
+      android:layout_marginLeft="@dimen/spacing_small"
+      android:layout_marginRight="@dimen/spacing_small"
       android:background="@color/divider"
       />
 
@@ -72,8 +69,8 @@
         android:layout_width="wrap_content"
         android:layout_height="48dp"
         android:orientation="horizontal"
-        android:paddingLeft="4dp"
-        android:paddingRight="4dp"
+        android:paddingLeft="@dimen/spacing_xsmall"
+        android:paddingRight="@dimen/spacing_xsmall"
         >
 
       <Button
@@ -81,8 +78,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="FIT IMAGE"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -92,8 +89,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="SQUARE"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -103,8 +100,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="3:4"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -113,8 +110,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="4:3"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -123,8 +120,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="9:16"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -133,8 +130,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="16:9"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -144,8 +141,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="8dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_small"
+          android:padding="@dimen/spacing_xsmall"
           android:text="7:5"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -155,8 +152,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="FREE"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -166,8 +163,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="CIRCLE"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -177,8 +174,8 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical"
-          android:layout_margin="4dp"
-          android:padding="4dp"
+          android:layout_margin="@dimen/spacing_xsmall"
+          android:padding="@dimen/spacing_xsmall"
           android:text="CIRCLE_SQUARE"
           style="@style/AppTheme.Button.Borderless"
           />
@@ -189,8 +186,8 @@
   <View
       android:layout_width="match_parent"
       android:layout_height="1dp"
-      android:layout_marginLeft="8dp"
-      android:layout_marginRight="8dp"
+      android:layout_marginLeft="@dimen/spacing_small"
+      android:layout_marginRight="@dimen/spacing_small"
       android:background="@color/divider"
       />
 
@@ -208,9 +205,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
-        android:layout_marginRight="16dp"
+        android:layout_marginRight="@dimen/spacing"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="16dp"
+        android:padding="@dimen/spacing"
         android:src="@drawable/ic_photo_library_black_24dp"
         />
 
@@ -225,7 +222,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:background="?attr/selectableItemBackgroundBorderless"
-          android:padding="16dp"
+          android:padding="@dimen/spacing"
           android:src="@drawable/ic_rotate_left_black_24dp"
           />
       <ImageButton
@@ -233,7 +230,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:background="?attr/selectableItemBackgroundBorderless"
-          android:padding="16dp"
+          android:padding="@dimen/spacing"
           android:src="@drawable/ic_rotate_right_black_24dp"
           />
 
