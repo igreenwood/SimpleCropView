@@ -221,6 +221,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
     ss.outputImageWidth = this.mOutputImageWidth;
     ss.outputImageHeight = this.mOutputImageHeight;
     ss.actualCropRect = this.getActualCropRect();
+    Logger.e("onSaveInstanceState: frameRect = "+mFrameRect.toString());
+    Logger.e("onSaveInstanceState: mScale = "+mScale);
     return ss;
   }
 
@@ -432,11 +434,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
       canvas.drawText(builder.toString(), x, y, mPaintDebug);
     }
     builder = new StringBuilder();
-    builder.append("FRAME_RECT: ").append(mFrameRect.width());
+    builder.append("FRAME_RECT: ").append(mFrameRect.toString());
     y += textHeight;
     canvas.drawText(builder.toString(), x, y, mPaintDebug);
     builder = new StringBuilder();
-    builder.append("ACTUAL_CROP_RECT: ").append(getActualCropRect().width());
+    builder.append("ACTUAL_CROP_RECT: ").append(getActualCropRect().toString());
     y += textHeight;
     canvas.drawText(builder.toString(), x, y, mPaintDebug);
   }
@@ -1652,9 +1654,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   public void setInitialCropRect(RectF initialCropRect) {
     mFrameRect.set(initialCropRect.left * mScale, initialCropRect.top * mScale,
         initialCropRect.right * mScale, initialCropRect.bottom * mScale);
-    float offsetX = (mImageRect.left / mScale);
-    float offsetY = (mImageRect.top / mScale);
-    mFrameRect.offset(offsetX, offsetY);
+    mFrameRect.offset(mImageRect.left, mImageRect.top);
     invalidate();
   }
 
