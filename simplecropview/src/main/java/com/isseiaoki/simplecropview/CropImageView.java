@@ -220,6 +220,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     ss.inputImageHeight = this.mInputImageHeight;
     ss.outputImageWidth = this.mOutputImageWidth;
     ss.outputImageHeight = this.mOutputImageHeight;
+    ss.actualCropRect = this.getActualCropRect();
     return ss;
   }
 
@@ -262,11 +263,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
     this.mInputImageHeight = ss.inputImageHeight;
     this.mOutputImageWidth = ss.outputImageWidth;
     this.mOutputImageHeight = ss.outputImageHeight;
+    final RectF actualCropRect = ss.actualCropRect;
 
     if (mSourceUri != null) {
       startLoad(mSourceUri, new LoadCallback() {
         @Override public void onSuccess() {
-
+          setInitialCropRect(actualCropRect);
         }
 
         @Override public void onError() {
@@ -429,6 +431,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
       y += textHeight;
       canvas.drawText(builder.toString(), x, y, mPaintDebug);
     }
+    builder = new StringBuilder();
+    builder.append("FRAME_RECT: ").append(mFrameRect.width());
+    y += textHeight;
+    canvas.drawText(builder.toString(), x, y, mPaintDebug);
+    builder = new StringBuilder();
+    builder.append("ACTUAL_CROP_RECT: ").append(getActualCropRect().width());
+    y += textHeight;
+    canvas.drawText(builder.toString(), x, y, mPaintDebug);
   }
 
   private void drawCropFrame(Canvas canvas) {
@@ -1621,6 +1631,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * Get frame position relative to the source bitmap.
    *
    * @return crop area boundaries.
+   * @see #setInitialCropRect(RectF)
    */
   public RectF getActualCropRect() {
     float offsetX = (mImageRect.left / mScale);
@@ -1630,6 +1641,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
     float r = (mFrameRect.right / mScale) - offsetX;
     float b = (mFrameRect.bottom / mScale) - offsetY;
     return new RectF(l, t, r, b);
+  }
+
+  /**
+   * Set initial frame position relative to the source bitmap.
+   * Call this method after {@link #onLayout(boolean, int, int, int, int)}.
+   *
+   * @see #getActualCropRect()
+   */
+  public void setInitialCropRect(RectF initialCropRect) {
+    mFrameRect.set(initialCropRect.left * mScale, initialCropRect.top * mScale,
+        initialCropRect.right * mScale, initialCropRect.bottom * mScale);
+    float offsetX = (mImageRect.left / mScale);
+    float offsetY = (mImageRect.top / mScale);
+    mFrameRect.offset(offsetX, offsetY);
+    invalidate();
   }
 
   /**
@@ -2100,6 +2126,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     int inputImageHeight;
     int outputImageWidth;
     int outputImageHeight;
+    RectF actualCropRect;
 
     SavedState(Parcelable superState) {
       super(superState);
@@ -2144,6 +2171,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       inputImageHeight = in.readInt();
       outputImageWidth = in.readInt();
       outputImageHeight = in.readInt();
+      actualCropRect = in.readParcelable(RectF.class.getClassLoader());
     }
 
     @Override public void writeToParcel(Parcel out, int flag) {
@@ -2185,6 +2213,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       out.writeInt(inputImageHeight);
       out.writeInt(outputImageWidth);
       out.writeInt(outputImageHeight);
+      out.writeParcelable(actualCropRect, flag);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
