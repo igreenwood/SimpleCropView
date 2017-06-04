@@ -91,7 +91,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private LoadCallback mLoadCallback = null;
   private CropCallback mCropCallback = null;
   private SaveCallback mSaveCallback = null;
-  private ExecutorService mExecutor;
   private Handler mHandler = new Handler(Looper.getMainLooper());
   private Uri mSourceUri = null;
   private Uri mSaveUri = null;
@@ -101,14 +100,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private int mOutputWidth = 0;
   private int mOutputHeight = 0;
   private boolean mIsDebug = false;
-  private boolean mIsCropping = false;
   private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.PNG;
   private int mCompressQuality = 100;
   private int mInputImageWidth = 0;
   private int mInputImageHeight = 0;
   private int mOutputImageWidth = 0;
   private int mOutputImageHeight = 0;
+  private AtomicBoolean mIsCropping = new AtomicBoolean(false);
   private AtomicBoolean mIsLoading = new AtomicBoolean(false);
+  private ExecutorService mExecutor;
   // Instance variables for customizable attributes //////////////////////////////////////////////
 
   private TouchArea mTouchArea = TouchArea.OUT_OF_BOUNDS;
@@ -150,6 +150,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     super(context, attrs, defStyle);
 
     mExecutor = Executors.newSingleThreadExecutor();
+
     float density = getDensity();
     mHandleSize = (int) (density * HANDLE_SIZE_IN_DP);
     mMinFrameSize = density * MIN_FRAME_SIZE_IN_DP;
@@ -221,8 +222,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     ss.outputImageWidth = this.mOutputImageWidth;
     ss.outputImageHeight = this.mOutputImageHeight;
     ss.actualCropRect = this.getActualCropRect();
-    Logger.e("onSaveInstanceState: frameRect = "+mFrameRect.toString());
-    Logger.e("onSaveInstanceState: mScale = "+mScale);
     return ss;
   }
 
@@ -273,8 +272,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
           setInitialCropRect(actualCropRect);
         }
 
-        @Override public void onError() {
-
+        @Override public void onError(Throwable e) {
+          Logger.e(e.toString());
         }
       });
     }
@@ -305,6 +304,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         // draw edit frame
         drawCropFrame(canvas);
       }
+
       if (mIsDebug) {
         drawDebugInfo(canvas);
       }
@@ -599,7 +599,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
     if (mIsRotating) return false;
     if (mIsAnimating) return false;
     if (mIsLoading.get()) return false;
-    if (mIsCropping) return false;
+    if (mIsCropping.get()) return false;
+
     switch (event.getAction()) {
       case MotionEvent.ACTION_DOWN:
         onDown(event);
@@ -1153,14 +1154,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
     return val;
   }
 
-  private void postErrorOnMainThread(final Callback callback) {
+  private void postErrorOnMainThread(final Callback callback, final Throwable e) {
     if (callback == null) return;
     if (Looper.myLooper() == Looper.getMainLooper()) {
-      callback.onError();
+      callback.onError(e);
     } else {
       mHandler.post(new Runnable() {
         @Override public void run() {
-          callback.onError();
+          callback.onError(e);
         }
       });
     }
@@ -1215,7 +1216,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   // Cropping ////////////////////////////////////////////////////////////////////////////////////
 
-  private Bitmap decodeRegion() {
+  private Bitmap getCroppedBitmapFromUri() throws IOException {
     Bitmap cropped = null;
     InputStream is = null;
     try {
@@ -1242,12 +1243,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
         cropped = rotated;
       }
-    } catch (IOException e) {
-      Logger.e("An error occurred while cropping the image: " + e.getMessage(), e);
-    } catch (OutOfMemoryError e) {
-      Logger.e("OOM Error: " + e.getMessage(), e);
-    } catch (Exception e) {
-      Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
     } finally {
       Utils.closeQuietly(is);
     }
@@ -1308,7 +1303,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   // File save ///////////////////////////////////////////////////////////////////////////////////
 
-  private void saveToFile(Bitmap bitmap, final Uri uri) {
+  private void saveImage(Bitmap bitmap, final Uri uri) throws IOException {
     OutputStream outputStream = null;
     try {
       outputStream = getContext().getContentResolver().openOutputStream(uri);
@@ -1317,18 +1312,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
         Utils.copyExifInfo(getContext(), mSourceUri, uri, bitmap.getWidth(), bitmap.getHeight());
         Utils.updateGalleryInfo(getContext(), uri);
       }
-    } catch (IOException e) {
-      Logger.e("An error occurred while saving the image: " + uri, e);
-      postErrorOnMainThread(mSaveCallback);
     } finally {
       Utils.closeQuietly(outputStream);
     }
-
-    mHandler.post(new Runnable() {
-      @Override public void run() {
-        if (mSaveCallback != null) mSaveCallback.onSuccess(uri);
-      }
-    });
   }
 
   // Public methods //////////////////////////////////////////////////////////////////////////////
@@ -1414,46 +1400,51 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param sourceUri Image Uri
    * @param callback Callback
    */
-  public void startLoad(Uri sourceUri, LoadCallback callback) {
-    mLoadCallback = callback;
-    mSourceUri = sourceUri;
-    if (sourceUri == null) {
-      postErrorOnMainThread(mLoadCallback);
-      throw new IllegalStateException("Source Uri must not be null.");
-    }
+  public void startLoad(final Uri sourceUri, final LoadCallback callback) {
+
     mExecutor.submit(new Runnable() {
       @Override public void run() {
-        mIsLoading.set(true);
-        mExifRotation = Utils.getExifOrientation(getContext(), mSourceUri);
-        int maxSize = Utils.getMaxSize();
-        int requestSize = Math.max(mViewWidth, mViewHeight);
-        if (requestSize == 0) requestSize = maxSize;
+
         try {
-          final Bitmap sampledBitmap =
-              Utils.decodeSampledBitmapFromUri(getContext(), mSourceUri, requestSize);
-          mInputImageWidth = Utils.sInputImageWidth;
-          mInputImageHeight = Utils.sInputImageHeight;
+          mIsLoading.set(true);
+          mLoadCallback = callback;
+
+          final Bitmap sampled = getImage(sourceUri);
+
           mHandler.post(new Runnable() {
             @Override public void run() {
               mAngle = mExifRotation;
-              setImageDrawableInternal(new BitmapDrawable(getResources(), sampledBitmap));
-              mIsLoading.set(false);
+              setImageDrawableInternal(new BitmapDrawable(getResources(), sampled));
+
               if (mLoadCallback != null) mLoadCallback.onSuccess();
             }
           });
-        } catch (OutOfMemoryError e) {
-          Logger.e("OOM Error: " + e.getMessage(), e);
-          postErrorOnMainThread(mLoadCallback);
-          mIsLoading.set(false);
-          Logger.e("startLoad end: mIsLoading = " + mIsLoading.get());
         } catch (Exception e) {
-          Logger.e("An unexpected error has occurred: " + e.getMessage(), e);
-          postErrorOnMainThread(mLoadCallback);
+          postErrorOnMainThread(mLoadCallback, e);
+        } finally {
           mIsLoading.set(false);
-          Logger.e("startLoad end: mIsLoading = " + mIsLoading.get());
         }
       }
     });
+  }
+
+  private Bitmap getImage(Uri sourceUri) {
+    mSourceUri = sourceUri;
+
+    if (sourceUri == null) {
+      throw new IllegalStateException("Source Uri must not be null.");
+    }
+
+    mExifRotation = Utils.getExifOrientation(getContext(), mSourceUri);
+    int maxSize = Utils.getMaxSize();
+    int requestSize = Math.max(mViewWidth, mViewHeight);
+    if (requestSize == 0) requestSize = maxSize;
+
+    final Bitmap sampledBitmap =
+        Utils.decodeSampledBitmapFromUri(getContext(), mSourceUri, requestSize);
+    mInputImageWidth = Utils.sInputImageWidth;
+    mInputImageHeight = Utils.sInputImageHeight;
+    return sampledBitmap;
   }
 
   /**
@@ -1466,11 +1457,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
     if (mIsRotating) {
       getAnimator().cancelAnimation();
     }
+
     final float currentAngle = mAngle;
     final float newAngle = (mAngle + degrees.getValue());
     final float angleDiff = newAngle - currentAngle;
     final float currentScale = mScale;
     final float newScale = calcScale(mViewWidth, mViewHeight, newAngle);
+
     if (mIsAnimationEnabled) {
       final float scaleDiff = newScale - currentScale;
       SimpleValueAnimator animator = getAnimator();
@@ -1569,70 +1562,81 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * @param saveUri Uri for saving the cropped image
    * @param cropCallback Callback for cropping the image
-   * @param saveCallback Callback for saving the image
    */
-  public void startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback) {
-    mSaveUri = saveUri;
-    mCropCallback = cropCallback;
-    mSaveCallback = saveCallback;
-    if (mIsCropping) {
-      postErrorOnMainThread(mCropCallback);
-      postErrorOnMainThread(mSaveCallback);
-      return;
-    }
-    mIsCropping = true;
+  public void startCrop(final Uri saveUri, final CropCallback cropCallback,
+      final SaveCallback saveCallback) {
+
     mExecutor.submit(new Runnable() {
       @Override public void run() {
-        Bitmap cropped;
+        try {
+          mIsCropping.set(true);
 
-        // Use thumbnail for crop
-        if (mSourceUri == null) {
-          cropped = getCroppedBitmap();
-        }
-        // Use file for crop
-        else {
-          cropped = decodeRegion();
-          if (mCropMode == CropMode.CIRCLE) {
-            Bitmap circle = getCircularBitmap(cropped);
-            if (cropped != getBitmap()) {
-              cropped.recycle();
-            }
-            cropped = circle;
-          }
-        }
+          mCropCallback = cropCallback;
+          final Bitmap cropped = cropImage(saveUri);
 
-        // Success
-        if (cropped != null) {
-          cropped = scaleBitmapIfNeeded(cropped);
-          final Bitmap tmp = cropped;
-          mOutputImageWidth = tmp.getWidth();
-          mOutputImageHeight = tmp.getHeight();
           mHandler.post(new Runnable() {
             @Override public void run() {
-              if (mCropCallback != null) mCropCallback.onSuccess(tmp);
+              if (mCropCallback != null) mCropCallback.onSuccess(cropped);
+              mCropCallback = null;
               if (mIsDebug) invalidate();
             }
           });
-        }
-        // Error
-        else {
-          postErrorOnMainThread(mCropCallback);
-        }
 
-        if (mSaveUri == null) {
-          postErrorOnMainThread(mSaveCallback);
-          return;
+          mSaveCallback = saveCallback;
+          saveImage(cropped, saveUri);
+
+          mHandler.post(new Runnable() {
+            @Override public void run() {
+              if (mSaveCallback != null) mSaveCallback.onSuccess(saveUri);
+              mSaveCallback = null;
+            }
+          });
+        } catch (Exception e) {
+          postErrorOnMainThread(mCropCallback, e);
+          postErrorOnMainThread(mSaveCallback, e);
+        } finally {
+          mIsCropping.set(false);
         }
-        saveToFile(cropped, mSaveUri);
-        mIsCropping = false;
       }
     });
+  }
+
+  private Bitmap cropImage(Uri saveUri) throws IOException, IllegalStateException {
+    mSaveUri = saveUri;
+    if (mSaveUri == null) {
+      throw new IllegalStateException("Save uri must not be null.");
+    }
+
+    Bitmap cropped;
+
+    // Use thumbnail for getCroppedBitmap
+    if (mSourceUri == null) {
+      cropped = getCroppedBitmap();
+    }
+    // Use file for getCroppedBitmap
+    else {
+      cropped = getCroppedBitmapFromUri();
+      if (mCropMode == CropMode.CIRCLE) {
+        Bitmap circle = getCircularBitmap(cropped);
+        if (cropped != getBitmap()) {
+          cropped.recycle();
+        }
+        cropped = circle;
+      }
+    }
+
+    cropped = scaleBitmapIfNeeded(cropped);
+
+    mOutputImageWidth = cropped.getWidth();
+    mOutputImageHeight = cropped.getHeight();
+
+    return cropped;
   }
 
   /**
    * Get frame position relative to the source bitmap.
    *
-   * @return crop area boundaries.
+   * @return getCroppedBitmap area boundaries.
    * @see #setInitialCropRect(RectF)
    */
   public RectF getActualCropRect() {
@@ -1659,9 +1663,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set crop mode
+   * Set getCroppedBitmap mode
    *
-   * @param mode crop mode
+   * @param mode getCroppedBitmap mode
    * @param durationMillis animation duration in milliseconds
    */
   public void setCropMode(CropMode mode, int durationMillis) {
@@ -1674,16 +1678,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set crop mode
+   * Set getCroppedBitmap mode
    *
-   * @param mode crop mode
+   * @param mode getCroppedBitmap mode
    */
   public void setCropMode(CropMode mode) {
     setCropMode(mode, mAnimationDurationMillis);
   }
 
   /**
-   * Set custom aspect ratio to crop frame
+   * Set custom aspect ratio to getCroppedBitmap frame
    *
    * @param ratioX ratio x
    * @param ratioY ratio y
@@ -1697,7 +1701,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set custom aspect ratio to crop frame
+   * Set custom aspect ratio to getCroppedBitmap frame
    *
    * @param ratioX ratio x
    * @param ratioY ratio y
@@ -1717,7 +1721,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set crop frame color
+   * Set getCroppedBitmap frame color
    *
    * @param frameColor color resId or color int(ex. 0xFFFFFFFF)
    */
@@ -1757,18 +1761,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set crop frame minimum size in density-independent pixels.
+   * Set getCroppedBitmap frame minimum size in density-independent pixels.
    *
-   * @param minDp crop frame minimum size in density-independent pixels
+   * @param minDp getCroppedBitmap frame minimum size in density-independent pixels
    */
   public void setMinFrameSizeInDp(int minDp) {
     mMinFrameSize = minDp * getDensity();
   }
 
   /**
-   * Set crop frame minimum size in pixels.
+   * Set getCroppedBitmap frame minimum size in pixels.
    *
-   * @param minPx crop frame minimum size in pixels
+   * @param minPx getCroppedBitmap frame minimum size in pixels
    */
   public void setMinFrameSizeInPx(int minPx) {
     mMinFrameSize = minPx;
@@ -1784,11 +1788,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set crop frame handle touch padding(touch area) in density-independent pixels.
+   * Set getCroppedBitmap frame handle touch padding(touch area) in density-independent pixels.
    *
    * handle touch area : a circle of radius R.(R = handle size + touch padding)
    *
-   * @param paddingDp crop frame handle touch padding(touch area) in density-independent pixels
+   * @param paddingDp getCroppedBitmap frame handle touch padding(touch area) in density-independent
+   * pixels
    */
   public void setTouchPaddingInDp(int paddingDp) {
     mTouchPadding = (int) (paddingDp * getDensity());
@@ -1855,9 +1860,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set whether to show crop frame.
+   * Set whether to show getCroppedBitmap frame.
    *
-   * @param enabled should show crop frame?
+   * @param enabled should show getCroppedBitmap frame?
    */
   public void setCropEnabled(boolean enabled) {
     mIsCropEnabled = enabled;
@@ -1865,9 +1870,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set locking the crop frame.
+   * Set locking the getCroppedBitmap frame.
    *
-   * @param enabled should lock crop frame?
+   * @param enabled should lock getCroppedBitmap frame?
    */
   @Override public void setEnabled(boolean enabled) {
     super.setEnabled(enabled);
@@ -1934,33 +1939,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Set Image Load callback
-   *
-   * @param callback callback
-   */
-  public void setLoadCallback(LoadCallback callback) {
-    mLoadCallback = callback;
-  }
-
-  /**
-   * Set Image Crop callback
-   *
-   * @param callback callback
-   */
-  public void setCropCallback(CropCallback callback) {
-    mCropCallback = callback;
-  }
-
-  /**
-   * Set Image Save callback
-   *
-   * @param callback callback
-   */
-  public void setSaveCallback(SaveCallback callback) {
-    mSaveCallback = callback;
-  }
-
-  /**
    * Set fixed width for output
    * (After cropping, the image is scaled to the specified size.)
    *
@@ -2020,6 +1998,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
    */
   public void setHandleShadowEnabled(boolean handleShadowEnabled) {
     mIsHandleShadowEnabled = handleShadowEnabled;
+  }
+
+  /**
+   * cropping status
+   *
+   * @return is cropping process running
+   */
+  public boolean isCropping() {
+    return mIsCropping.get();
   }
 
   private void setScale(float mScale) {

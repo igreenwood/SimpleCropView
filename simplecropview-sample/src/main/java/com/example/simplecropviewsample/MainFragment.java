@@ -308,7 +308,7 @@ import permissions.dispatcher.RuntimePermissions;
       dismissProgress();
     }
 
-    @Override public void onError() {
+    @Override public void onError(Throwable e) {
       dismissProgress();
     }
   };
@@ -317,7 +317,7 @@ import permissions.dispatcher.RuntimePermissions;
     @Override public void onSuccess(Bitmap cropped) {
     }
 
-    @Override public void onError() {
+    @Override public void onError(Throwable e) {
     }
   };
 
@@ -327,7 +327,7 @@ import permissions.dispatcher.RuntimePermissions;
       ((MainActivity) getActivity()).startResultActivity(outputUri);
     }
 
-    @Override public void onError() {
+    @Override public void onError(Throwable e) {
       dismissProgress();
     }
   };
