@@ -39,9 +39,18 @@ import com.isseiaoki.simplecropview.callback.LoadCallback;
 import com.isseiaoki.simplecropview.callback.SaveCallback;
 import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
+import io.reactivex.CompletableOnSubscribe;
+import io.reactivex.Single;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,9 +97,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private SimpleValueAnimator mAnimator = null;
   private final Interpolator DEFAULT_INTERPOLATOR = new DecelerateInterpolator();
   private Interpolator mInterpolator = DEFAULT_INTERPOLATOR;
-  private LoadCallback mLoadCallback = null;
-  private CropCallback mCropCallback = null;
-  private SaveCallback mSaveCallback = null;
   private Handler mHandler = new Handler(Looper.getMainLooper());
   private Uri mSourceUri = null;
   private Uri mSaveUri = null;
@@ -106,8 +112,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private int mInputImageHeight = 0;
   private int mOutputImageWidth = 0;
   private int mOutputImageHeight = 0;
-  private AtomicBoolean mIsCropping = new AtomicBoolean(false);
   private AtomicBoolean mIsLoading = new AtomicBoolean(false);
+  private AtomicBoolean mIsCropping = new AtomicBoolean(false);
   private ExecutorService mExecutor;
   // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -1303,15 +1309,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   // File save ///////////////////////////////////////////////////////////////////////////////////
 
-  private void saveImage(Bitmap bitmap, final Uri uri) throws IOException {
+  private Uri saveImage(Bitmap bitmap, final Uri uri) throws IOException {
     OutputStream outputStream = null;
     try {
       outputStream = getContext().getContentResolver().openOutputStream(uri);
-      if (outputStream != null) {
-        bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
-        Utils.copyExifInfo(getContext(), mSourceUri, uri, bitmap.getWidth(), bitmap.getHeight());
-        Utils.updateGalleryInfo(getContext(), uri);
-      }
+      bitmap.compress(mCompressFormat, mCompressQuality, outputStream);
+      Utils.copyExifInfo(getContext(), mSourceUri, uri, bitmap.getWidth(), bitmap.getHeight());
+      Utils.updateGalleryInfo(getContext(), uri);
+      return uri;
     } finally {
       Utils.closeQuietly(outputStream);
     }
@@ -1407,7 +1412,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         try {
           mIsLoading.set(true);
-          mLoadCallback = callback;
 
           final Bitmap sampled = getImage(sourceUri);
 
@@ -1415,15 +1419,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
             @Override public void run() {
               mAngle = mExifRotation;
               setImageDrawableInternal(new BitmapDrawable(getResources(), sampled));
-
-              if (mLoadCallback != null) mLoadCallback.onSuccess();
+              if (callback != null) callback.onSuccess();
             }
           });
         } catch (Exception e) {
-          postErrorOnMainThread(mLoadCallback, e);
+          postErrorOnMainThread(callback, e);
         } finally {
           mIsLoading.set(false);
         }
+      }
+    });
+  }
+
+  public Completable loadAsCompletable(final Uri sourceUri) {
+    return Completable.create(new CompletableOnSubscribe() {
+      @Override public void subscribe(@NonNull final CompletableEmitter emitter) throws Exception {
+        mIsLoading.set(true);
+
+        final Bitmap sampled = getImage(sourceUri);
+
+        mHandler.post(new Runnable() {
+          @Override public void run() {
+            mAngle = mExifRotation;
+            setImageDrawableInternal(new BitmapDrawable(getResources(), sampled));
+            emitter.onComplete();
+          }
+        });
       }
     });
   }
@@ -1558,45 +1579,95 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Crop image from Uri
+   * Crop image
    *
    * @param saveUri Uri for saving the cropped image
    * @param cropCallback Callback for cropping the image
+   * @param saveCallback Callback for saving the image
    */
   public void startCrop(final Uri saveUri, final CropCallback cropCallback,
       final SaveCallback saveCallback) {
 
     mExecutor.submit(new Runnable() {
       @Override public void run() {
+
+        Bitmap croppedImage = null;
         try {
           mIsCropping.set(true);
 
-          mCropCallback = cropCallback;
-          final Bitmap cropped = cropImage(saveUri);
+          croppedImage = cropImage(saveUri);
 
+          final Bitmap cropped = croppedImage;
           mHandler.post(new Runnable() {
             @Override public void run() {
-              if (mCropCallback != null) mCropCallback.onSuccess(cropped);
-              mCropCallback = null;
+              if (cropCallback != null) cropCallback.onSuccess(cropped);
               if (mIsDebug) invalidate();
             }
           });
 
-          mSaveCallback = saveCallback;
-          saveImage(cropped, saveUri);
+          saveImage(croppedImage, saveUri);
 
           mHandler.post(new Runnable() {
             @Override public void run() {
-              if (mSaveCallback != null) mSaveCallback.onSuccess(saveUri);
-              mSaveCallback = null;
+              if (saveCallback != null) saveCallback.onSuccess(saveUri);
             }
           });
         } catch (Exception e) {
-          postErrorOnMainThread(mCropCallback, e);
-          postErrorOnMainThread(mSaveCallback, e);
+          if (croppedImage == null) {
+            postErrorOnMainThread(cropCallback, e);
+          } else {
+            postErrorOnMainThread(saveCallback, e);
+          }
         } finally {
           mIsCropping.set(false);
         }
+      }
+    });
+  }
+
+  /**
+   * Crop image with RxJava2
+   *
+   * @param saveUri Uri for saving the cropped image
+   * @return Single of cropping image
+   */
+  public Single<Bitmap> cropAsSingle(final Uri saveUri) {
+    return Single.fromCallable(new Callable<Bitmap>() {
+
+      @Override public Bitmap call() throws Exception {
+        return cropImage(saveUri);
+      }
+    }).doOnSubscribe(new Consumer<Disposable>() {
+      @Override public void accept(@NonNull Disposable disposable) throws Exception {
+        mIsCropping.set(true);
+      }
+    }).doOnDispose(new Action() {
+      @Override public void run() throws Exception {
+        mIsCropping.set(false);
+      }
+    });
+  }
+
+  /**
+   * Save image with RxJava2
+   *
+   * @param bitmap Bitmap fo saving
+   * @param saveUri Uri for saving the cropped image
+   * @return Single of saving image
+   */
+  public Single<Uri> saveAsSingle(final Bitmap bitmap, final Uri saveUri) {
+    return Single.fromCallable(new Callable<Uri>() {
+
+      @Override public Uri call() throws Exception {
+        return saveImage(bitmap, saveUri);
+      }
+    }).doOnSubscribe(new Consumer<Disposable>() {
+      @Override public void accept(@NonNull Disposable disposable) throws Exception {
+        mIsCropping.set(true);
+      }
+    }).doOnDispose(new Action() {
+      @Override public void run() throws Exception {
+        mIsCropping.set(false);
       }
     });
   }
@@ -1792,7 +1863,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * handle touch area : a circle of radius R.(R = handle size + touch padding)
    *
-   * @param paddingDp getCroppedBitmap frame handle touch padding(touch area) in density-independent
+   * @param paddingDp getCroppedBitmap frame handle touch padding(touch area) in
+   * density-independent
    * pixels
    */
   public void setTouchPaddingInDp(int paddingDp) {
