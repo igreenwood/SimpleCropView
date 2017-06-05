@@ -50,6 +50,7 @@ import io.reactivex.functions.Consumer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Observable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1431,10 +1432,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
     });
   }
 
+  /**
+   * Load image from Uri with RxJava2
+   *
+   * @param sourceUri Image Uri
+   */
   public Completable loadAsCompletable(final Uri sourceUri) {
     return Completable.create(new CompletableOnSubscribe() {
+
       @Override public void subscribe(@NonNull final CompletableEmitter emitter) throws Exception {
-        mIsLoading.set(true);
 
         final Bitmap sampled = getImage(sourceUri);
 
@@ -1445,6 +1451,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
             emitter.onComplete();
           }
         });
+      }
+    }).doOnSubscribe(new Consumer<Disposable>() {
+      @Override public void accept(@NonNull Disposable disposable) throws Exception {
+        mIsLoading.set(true);
+      }
+    }).doOnComplete(new Action() {
+      @Override public void run() throws Exception {
+        mIsLoading.set(false);
       }
     });
   }
