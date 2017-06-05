@@ -1,6 +1,7 @@
 language: android
 
 android:
+  jdk: oraclejdk8
   components:
     - tools
     - platform-tools
