@@ -1,7 +1,7 @@
 ![](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/device-art/cover-art.png)
 
 # SimpleCropView
-[![build status](https://travis-ci.org/IsseiAoki/SimpleCropView.svg)](https://travis-ci.org/IsseiAoki/SimpleCropView.svg?branch=master)
+[![build status](https://travis-ci.org/IsseiAoki/SimpleCropView.svg?branch=master)](https://travis-ci.org/IsseiAoki/SimpleCropView.svg?branch=master)
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-SimpleCropView-green.svg?style=flat)](https://android-arsenal.com/details/1/2366)
 [![Android Gems](http://www.android-gems.com/badge/IsseiAoki/SimpleCropView.svg?branch=master)](http://www.android-gems.com/lib/IsseiAoki/SimpleCropView)
 
