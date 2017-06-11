@@ -50,7 +50,6 @@ import io.reactivex.functions.Consumer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Observable;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -115,6 +114,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private int mOutputImageHeight = 0;
   private AtomicBoolean mIsLoading = new AtomicBoolean(false);
   private AtomicBoolean mIsCropping = new AtomicBoolean(false);
+  private AtomicBoolean mIsSaving = new AtomicBoolean(false);
   private ExecutorService mExecutor;
   // Instance variables for customizable attributes //////////////////////////////////////////////
 
@@ -274,7 +274,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     final RectF actualCropRect = ss.actualCropRect;
 
     if (mSourceUri != null) {
-      startLoad(mSourceUri, new LoadCallback() {
+      loadAsync(mSourceUri, new LoadCallback() {
         @Override public void onSuccess() {
           setInitialCropRect(actualCropRect);
         }
@@ -1310,7 +1310,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   // File save ///////////////////////////////////////////////////////////////////////////////////
 
-  private Uri saveImage(Bitmap bitmap, final Uri uri) throws IOException {
+  private Uri saveImage(Bitmap bitmap, final Uri uri) throws IOException, IllegalStateException {
+    mSaveUri = uri;
+    if (mSaveUri == null) {
+      throw new IllegalStateException("Save uri must not be null.");
+    }
+
     OutputStream outputStream = null;
     try {
       outputStream = getContext().getContentResolver().openOutputStream(uri);
@@ -1402,15 +1407,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   /**
    * Load image from Uri.
+   * This method is deprecated. Use loadAsync(Uri, LoadCallback) instead.
+   *
+   * @param sourceUri Image Uri
+   * @param callback Callback
+   * @see #loadAsync(Uri, LoadCallback)
+   */
+  public void startLoad(final Uri sourceUri, final LoadCallback callback) {
+    loadAsync(sourceUri, callback);
+  }
+
+  /**
+   * Load image from Uri.
    *
    * @param sourceUri Image Uri
    * @param callback Callback
    */
-  public void startLoad(final Uri sourceUri, final LoadCallback callback) {
-
+  public void loadAsync(final Uri sourceUri, final LoadCallback callback) {
     mExecutor.submit(new Runnable() {
       @Override public void run() {
-
         try {
           mIsLoading.set(true);
 
@@ -1441,7 +1456,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     return Completable.create(new CompletableOnSubscribe() {
 
       @Override public void subscribe(@NonNull final CompletableEmitter emitter) throws Exception {
-
         final Bitmap sampled = getImage(sourceUri);
 
         mHandler.post(new Runnable() {
@@ -1594,6 +1608,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   /**
    * Crop image
+   * This method is separated to #cropAsync and saveAsync
+   *
+   * @see #cropAsync(CropCallback)
+   * @see #saveAsync(Uri, Bitmap, SaveCallback)
    *
    * @param saveUri Uri for saving the cropped image
    * @param cropCallback Callback for cropping the image
@@ -1604,12 +1622,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
     mExecutor.submit(new Runnable() {
       @Override public void run() {
-
         Bitmap croppedImage = null;
+
         try {
           mIsCropping.set(true);
 
-          croppedImage = cropImage(saveUri);
+          croppedImage = cropImage();
 
           final Bitmap cropped = croppedImage;
           mHandler.post(new Runnable() {
@@ -1640,16 +1658,72 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Crop image with RxJava2
+   * Crop image
+   *
+   * @param cropCallback Callback for cropping the image
+   */
+  public void cropAsync(final CropCallback cropCallback) {
+    mExecutor.submit(new Runnable() {
+      @Override public void run() {
+        try {
+          mIsCropping.set(true);
+
+          final Bitmap cropped = cropImage();
+
+          mHandler.post(new Runnable() {
+            @Override public void run() {
+              if (cropCallback != null) cropCallback.onSuccess(cropped);
+              if (mIsDebug) invalidate();
+            }
+          });
+        } catch (Exception e) {
+          postErrorOnMainThread(cropCallback, e);
+        } finally {
+          mIsCropping.set(false);
+        }
+      }
+    });
+  }
+
+  /**
+   * Save image
    *
    * @param saveUri Uri for saving the cropped image
+   * @param image Image for saving
+   * @param saveCallback Callback for saving the image
+   */
+  public void saveAsync(final Uri saveUri, final Bitmap image, final SaveCallback saveCallback) {
+    mExecutor.submit(new Runnable() {
+
+      @Override public void run() {
+        try {
+          mIsSaving.set(true);
+          saveImage(image, saveUri);
+
+          mHandler.post(new Runnable() {
+            @Override public void run() {
+              if (saveCallback != null) saveCallback.onSuccess(saveUri);
+            }
+          });
+        } catch (Exception e) {
+          postErrorOnMainThread(saveCallback, e);
+        } finally {
+          mIsSaving.set(false);
+        }
+      }
+    });
+  }
+
+  /**
+   * Crop image with RxJava2
+   *
    * @return Single of cropping image
    */
-  public Single<Bitmap> cropAsSingle(final Uri saveUri) {
+  public Single<Bitmap> cropAsSingle() {
     return Single.fromCallable(new Callable<Bitmap>() {
 
       @Override public Bitmap call() throws Exception {
-        return cropImage(saveUri);
+        return cropImage();
       }
     }).doOnSubscribe(new Consumer<Disposable>() {
       @Override public void accept(@NonNull Disposable disposable) throws Exception {
@@ -1677,21 +1751,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
       }
     }).doOnSubscribe(new Consumer<Disposable>() {
       @Override public void accept(@NonNull Disposable disposable) throws Exception {
-        mIsCropping.set(true);
+        mIsSaving.set(true);
       }
     }).doOnDispose(new Action() {
       @Override public void run() throws Exception {
-        mIsCropping.set(false);
+        mIsSaving.set(false);
       }
     });
   }
 
-  private Bitmap cropImage(Uri saveUri) throws IOException, IllegalStateException {
-    mSaveUri = saveUri;
-    if (mSaveUri == null) {
-      throw new IllegalStateException("Save uri must not be null.");
-    }
-
+  private Bitmap cropImage() throws IOException, IllegalStateException {
     Bitmap cropped;
 
     // Use thumbnail for getCroppedBitmap
@@ -2093,6 +2162,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
    */
   public boolean isCropping() {
     return mIsCropping.get();
+  }
+
+  /**
+   * saving status
+   *
+   * @return is saving process running
+   */
+  public boolean isSaving() {
+    return mIsSaving.get();
   }
 
   private void setScale(float mScale) {
