@@ -76,19 +76,17 @@ import permissions.dispatcher.RuntimePermissions;
     mCropView.setDebug(true);
 
     // set bitmap to CropImageView
-    if (mCropView.getImageBitmap() == null) {
-      mCropView.startLoad(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback);
-    }
+    mCropView.loadAsync(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback);
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
     if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
       showProgress();
-      mCropView.startLoad(result.getData(), mLoadCallback);
+      mCropView.loadAsync(result.getData(), mLoadCallback);
     } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
       showProgress();
-      mCropView.startLoad(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
+      mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
     }
   }
 
@@ -134,7 +132,7 @@ import permissions.dispatcher.RuntimePermissions;
   @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) public void cropImage() {
     showProgress();
     mCropView.setCompressFormat(mCompressFormat);
-    mCropView.startCrop(createSaveUri(), mCropCallback, mSaveCallback);
+    mCropView.cropAsync(mCropCallback);
   }
 
   @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -166,7 +164,7 @@ import permissions.dispatcher.RuntimePermissions;
     return createNewUri(getContext(), mCompressFormat);
   }
 
-  public static String getDirPath(Context context) {
+  public static String getDirPath() {
     String dirPath = "";
     File imageDir = null;
     File extStorageDir = Environment.getExternalStorageDirectory();
@@ -200,7 +198,7 @@ import permissions.dispatcher.RuntimePermissions;
     Date today = new Date(currentTimeMillis);
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
     String title = dateFormat.format(today);
-    String dirPath = getDirPath(context);
+    String dirPath = getDirPath();
     String fileName = "scv" + title + "." + getMimeType(format);
     String path = dirPath + "/" + fileName;
     File file = new File(path);
@@ -315,6 +313,7 @@ import permissions.dispatcher.RuntimePermissions;
 
   private final CropCallback mCropCallback = new CropCallback() {
     @Override public void onSuccess(Bitmap cropped) {
+      mCropView.saveAsync(createSaveUri(), cropped, mSaveCallback);
     }
 
     @Override public void onError(Throwable e) {
