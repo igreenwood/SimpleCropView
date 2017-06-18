@@ -76,7 +76,7 @@ public class RxFragment extends Fragment {
     // bind Views
     bindViews(view);
 
-    mCropView.setDebug(true);
+    //mCropView.setDebug(true);
 
     // set bitmap to CropImageView
     mDisposable.add(loadImage(getUriFromDrawableResId(getContext(), R.drawable.sample5)));

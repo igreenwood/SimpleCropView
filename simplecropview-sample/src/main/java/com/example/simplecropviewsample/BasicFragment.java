@@ -73,7 +73,7 @@ import permissions.dispatcher.RuntimePermissions;
     // bind Views
     bindViews(view);
 
-    mCropView.setDebug(true);
+    //mCropView.setDebug(true);
 
     // set bitmap to CropImageView
     mCropView.loadAsync(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback, true);
