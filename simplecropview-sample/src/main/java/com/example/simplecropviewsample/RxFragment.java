@@ -25,6 +25,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions;
 import io.reactivex.CompletableSource;
 import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -107,23 +108,18 @@ public class RxFragment extends Fragment {
           @Override
           public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
               throws Exception {
-            return mCropView.loadAsCompletable(uri);
-          }
-        })
-        .doOnSubscribe(new Consumer<Disposable>() {
-          @Override public void accept(@io.reactivex.annotations.NonNull Disposable disposable)
-              throws Exception {
-            showProgress();
-          }
-        })
-        .doFinally(new Action() {
-          @Override public void run() throws Exception {
-            dismissProgress();
+            return mCropView.loadAsCompletable(uri, true);
           }
         })
         .subscribeOn(Schedulers.newThread())
         .observeOn(AndroidSchedulers.mainThread())
-        .subscribe();
+        .subscribe(new Action() {
+          @Override public void run() throws Exception {
+          }
+        }, new Consumer<Throwable>() {
+          @Override public void accept(@NonNull Throwable throwable) throws Exception {
+          }
+        });
   }
 
   private Disposable cropImage() {

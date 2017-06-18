@@ -1424,10 +1424,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param callback Callback
    */
   public void loadAsync(final Uri sourceUri, final LoadCallback callback) {
+    loadAsync(sourceUri, callback, false);
+  }
+
+  /**
+   * Load image from Uri.
+   *
+   * @param sourceUri Image Uri
+   * @param callback Callback
+   */
+  public void loadAsync(final Uri sourceUri, final LoadCallback callback,
+      final boolean useThumbnail) {
     mExecutor.submit(new Runnable() {
       @Override public void run() {
         try {
           mIsLoading.set(true);
+
+          if (useThumbnail) {
+            applyThumbnail(sourceUri);
+          }
 
           final Bitmap sampled = getImage(sourceUri);
 
@@ -1453,9 +1468,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param sourceUri Image Uri
    */
   public Completable loadAsCompletable(final Uri sourceUri) {
+    return loadAsCompletable(sourceUri, false);
+  }
+
+  /**
+   * Load image from Uri with RxJava2
+   *
+   * @param sourceUri Image Uri
+   */
+  public Completable loadAsCompletable(final Uri sourceUri, final boolean useThumbnail) {
     return Completable.create(new CompletableOnSubscribe() {
 
       @Override public void subscribe(@NonNull final CompletableEmitter emitter) throws Exception {
+        if (useThumbnail) {
+          applyThumbnail(sourceUri);
+        }
+
         final Bitmap sampled = getImage(sourceUri);
 
         mHandler.post(new Runnable() {
@@ -1477,6 +1505,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
     });
   }
 
+  private void applyThumbnail(Uri sourceUri) {
+    final Bitmap thumb = getThumbnail(sourceUri);
+    if(thumb == null) return;
+    mHandler.post(new Runnable() {
+      @Override public void run() {
+        mAngle = mExifRotation;
+        setImageDrawableInternal(new BitmapDrawable(getResources(), thumb));
+      }
+    });
+  }
+
   private Bitmap getImage(Uri sourceUri) {
     mSourceUri = sourceUri;
 
@@ -1488,6 +1527,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
     int maxSize = Utils.getMaxSize();
     int requestSize = Math.max(mViewWidth, mViewHeight);
     if (requestSize == 0) requestSize = maxSize;
+
+    final Bitmap sampledBitmap =
+        Utils.decodeSampledBitmapFromUri(getContext(), mSourceUri, requestSize);
+    mInputImageWidth = Utils.sInputImageWidth;
+    mInputImageHeight = Utils.sInputImageHeight;
+    return sampledBitmap;
+  }
+
+  private Bitmap getThumbnail(Uri sourceUri) {
+    mSourceUri = sourceUri;
+
+    if (sourceUri == null) {
+      throw new IllegalStateException("Source Uri must not be null.");
+    }
+
+    mExifRotation = Utils.getExifOrientation(getContext(), mSourceUri);
+    int requestSize = (int) (Math.max(mViewWidth, mViewHeight) * 0.1f);
+    if (requestSize == 0) return null;
 
     final Bitmap sampledBitmap =
         Utils.decodeSampledBitmapFromUri(getContext(), mSourceUri, requestSize);
@@ -1610,12 +1667,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * Crop image
    * This method is separated to #cropAsync and saveAsync
    *
-   * @see #cropAsync(CropCallback)
-   * @see #saveAsync(Uri, Bitmap, SaveCallback)
-   *
    * @param saveUri Uri for saving the cropped image
    * @param cropCallback Callback for cropping the image
    * @param saveCallback Callback for saving the image
+   * @see #cropAsync(CropCallback)
+   * @see #saveAsync(Uri, Bitmap, SaveCallback)
    */
   public void startCrop(final Uri saveUri, final CropCallback cropCallback,
       final SaveCallback saveCallback) {

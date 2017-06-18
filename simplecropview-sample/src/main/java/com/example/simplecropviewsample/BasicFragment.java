@@ -76,17 +76,15 @@ import permissions.dispatcher.RuntimePermissions;
     mCropView.setDebug(true);
 
     // set bitmap to CropImageView
-    mCropView.loadAsync(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback);
+    mCropView.loadAsync(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback, true);
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
     if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      showProgress();
       mCropView.loadAsync(result.getData(), mLoadCallback);
     } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      showProgress();
-      mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
+      mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), mLoadCallback, true);
     }
   }
 
@@ -302,13 +300,9 @@ import permissions.dispatcher.RuntimePermissions;
   // Callbacks ///////////////////////////////////////////////////////////////////////////////////
 
   private final LoadCallback mLoadCallback = new LoadCallback() {
-    @Override public void onSuccess() {
-      dismissProgress();
-    }
+    @Override public void onSuccess() {}
 
-    @Override public void onError(Throwable e) {
-      dismissProgress();
-    }
+    @Override public void onError(Throwable e) {}
   };
 
   private final CropCallback mCropCallback = new CropCallback() {
