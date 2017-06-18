@@ -3,12 +3,16 @@ package com.example.simplecropviewsample;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.ViewGroup;
@@ -17,7 +21,7 @@ import com.isseiaoki.simplecropview.util.Utils;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ResultActivity extends FragmentActivity {
+public class ResultActivity extends AppCompatActivity {
   private static final String TAG = ResultActivity.class.getSimpleName();
   private ImageView mImageView;
   private ExecutorService mExecutor;
@@ -35,6 +39,8 @@ public class ResultActivity extends FragmentActivity {
     // apply custom font
     FontUtils.setFont((ViewGroup) findViewById(R.id.layout_root));
 
+    initToolbar();
+
     mImageView = (ImageView) findViewById(R.id.result_image);
     mExecutor = Executors.newSingleThreadExecutor();
 
@@ -47,15 +53,29 @@ public class ResultActivity extends FragmentActivity {
     super.onDestroy();
   }
 
-  public int calcImageSize() {
+  @Override public void onConfigurationChanged(Configuration newConfig) {
+    super.onConfigurationChanged(newConfig);
+  }
+
+  @Override public boolean onSupportNavigateUp() {
+    onBackPressed();
+    return super.onSupportNavigateUp();
+  }
+
+  private void initToolbar() {
+    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+    ActionBar actionBar = getSupportActionBar();
+    FontUtils.setTitle(actionBar, "Cropped Image");
+    actionBar.setDisplayHomeAsUpEnabled(true);
+    actionBar.setHomeButtonEnabled(true);
+  }
+
+  private int calcImageSize() {
     DisplayMetrics metrics = new DisplayMetrics();
     Display display = getWindowManager().getDefaultDisplay();
     display.getMetrics(metrics);
     return Math.min(Math.max(metrics.widthPixels, metrics.heightPixels), 2048);
-  }
-
-  public boolean isLargeImage(Bitmap bm) {
-    return bm.getWidth() > 2048 || bm.getHeight() > 2048;
   }
 
   public static class LoadScaledImageTask implements Runnable {

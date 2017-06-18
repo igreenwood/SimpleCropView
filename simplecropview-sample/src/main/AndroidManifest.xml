@@ -12,18 +12,24 @@
       android:label="@string/app_name"
       android:supportsRtl="false"
       android:theme="@style/AppTheme.Light.NoActionBar">
-    <activity
-        android:name=".MainActivity"
-        android:configChanges="orientation|screenSize"
-        android:label="@string/app_name"
-        >
+    <activity android:name=".MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
+
         <category android:name="android.intent.category.LAUNCHER"/>
       </intent-filter>
     </activity>
     <activity
-        android:name=".ResultActivity">
+        android:name=".BasicActivity"
+        android:configChanges="orientation|screenSize"
+        android:label="@string/app_name">
+    </activity>
+    <activity
+        android:name=".RxActivity"
+        android:configChanges="orientation|screenSize"
+        android:label="@string/app_name">
+    </activity>
+    <activity android:name=".ResultActivity">
     </activity>
   </application>
 

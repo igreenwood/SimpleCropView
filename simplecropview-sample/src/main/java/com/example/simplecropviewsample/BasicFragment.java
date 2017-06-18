@@ -35,7 +35,7 @@ import permissions.dispatcher.OnShowRationale;
 import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
-@RuntimePermissions public class MainFragment extends Fragment {
+@RuntimePermissions public class BasicFragment extends Fragment {
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
   private static final String PROGRESS_DIALOG = "ProgressDialog";
@@ -47,11 +47,11 @@ import permissions.dispatcher.RuntimePermissions;
   private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
 
   // Note: only the system can call this constructor by reflection.
-  public MainFragment() {
+  public BasicFragment() {
   }
 
-  public static MainFragment getInstance() {
-    MainFragment fragment = new MainFragment();
+  public static BasicFragment newInstance() {
+    BasicFragment fragment = new BasicFragment();
     Bundle args = new Bundle();
     fragment.setArguments(args);
     return fragment;
@@ -64,15 +64,15 @@ import permissions.dispatcher.RuntimePermissions;
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.fragment_main, null, false);
+    return inflater.inflate(R.layout.fragment_basic, null, false);
   }
 
   @Override public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+
     // bind Views
     bindViews(view);
-    // apply custom font
-    FontUtils.setFont(mRootLayout);
+
     mCropView.setDebug(true);
 
     // set bitmap to CropImageView
@@ -93,7 +93,7 @@ import permissions.dispatcher.RuntimePermissions;
   @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
       @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    MainFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+    BasicFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
   }
 
   // Bind views //////////////////////////////////////////////////////////////////////////////////
@@ -151,7 +151,7 @@ import permissions.dispatcher.RuntimePermissions;
   }
 
   public void dismissProgress() {
-    if (!isAdded()) return;
+    if (!isResumed()) return;
     android.support.v4.app.FragmentManager manager = getFragmentManager();
     if (manager == null) return;
     ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
@@ -254,7 +254,7 @@ import permissions.dispatcher.RuntimePermissions;
     @Override public void onClick(View v) {
       switch (v.getId()) {
         case R.id.buttonDone:
-          MainFragmentPermissionsDispatcher.cropImageWithCheck(MainFragment.this);
+          BasicFragmentPermissionsDispatcher.cropImageWithCheck(BasicFragment.this);
           break;
         case R.id.buttonFitImage:
           mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
@@ -293,7 +293,7 @@ import permissions.dispatcher.RuntimePermissions;
           mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
           break;
         case R.id.buttonPickImage:
-          MainFragmentPermissionsDispatcher.pickImageWithCheck(MainFragment.this);
+          BasicFragmentPermissionsDispatcher.pickImageWithCheck(BasicFragment.this);
           break;
       }
     }
@@ -323,7 +323,7 @@ import permissions.dispatcher.RuntimePermissions;
   private final SaveCallback mSaveCallback = new SaveCallback() {
     @Override public void onSuccess(Uri outputUri) {
       dismissProgress();
-      ((MainActivity) getActivity()).startResultActivity(outputUri);
+      ((BasicActivity) getActivity()).startResultActivity(outputUri);
     }
 
     @Override public void onError(Throwable e) {

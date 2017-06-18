@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -13,29 +12,32 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import com.isseiaoki.simplecropview.CropImageView;
-import com.isseiaoki.simplecropview.callback.CropCallback;
-import com.isseiaoki.simplecropview.callback.LoadCallback;
-import com.isseiaoki.simplecropview.callback.SaveCallback;
 import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
+import com.tbruyelle.rxpermissions2.RxPermissions;
+import io.reactivex.CompletableSource;
+import io.reactivex.SingleSource;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
+import io.reactivex.schedulers.Schedulers;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import permissions.dispatcher.NeedsPermission;
-import permissions.dispatcher.OnShowRationale;
-import permissions.dispatcher.PermissionRequest;
-import permissions.dispatcher.RuntimePermissions;
+import java.util.concurrent.TimeUnit;
 
-@RuntimePermissions public class MainFragment extends Fragment {
+public class RxFragment extends Fragment {
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
   private static final String PROGRESS_DIALOG = "ProgressDialog";
@@ -43,15 +45,16 @@ import permissions.dispatcher.RuntimePermissions;
   // Views ///////////////////////////////////////////////////////////////////////////////////////
   private CropImageView mCropView;
   private LinearLayout mRootLayout;
+  private CompositeDisposable mDisposable = new CompositeDisposable();
 
   private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
 
   // Note: only the system can call this constructor by reflection.
-  public MainFragment() {
+  public RxFragment() {
   }
 
-  public static MainFragment getInstance() {
-    MainFragment fragment = new MainFragment();
+  public static RxFragment newInstance() {
+    RxFragment fragment = new RxFragment();
     Bundle args = new Bundle();
     fragment.setArguments(args);
     return fragment;
@@ -64,36 +67,97 @@ import permissions.dispatcher.RuntimePermissions;
 
   @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    return inflater.inflate(R.layout.fragment_main, null, false);
+    return inflater.inflate(R.layout.fragment_basic, null, false);
   }
 
   @Override public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     // bind Views
     bindViews(view);
-    // apply custom font
-    FontUtils.setFont(mRootLayout);
+
     mCropView.setDebug(true);
 
     // set bitmap to CropImageView
-    mCropView.loadAsync(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback);
+    mDisposable.add(loadImage(getUriFromDrawableResId(getContext(), R.drawable.sample5)));
+  }
+
+  @Override public void onDestroyView() {
+    super.onDestroyView();
+    mDisposable.dispose();
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
     if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      showProgress();
-      mCropView.loadAsync(result.getData(), mLoadCallback);
+      mDisposable.add(loadImage(result.getData()));
     } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      showProgress();
-      mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), mLoadCallback);
+      mDisposable.add(loadImage(Utils.ensureUriPermission(getContext(), result)));
     }
   }
 
-  @Override public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-      @NonNull int[] grantResults) {
-    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    MainFragmentPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
+  private Disposable loadImage(final Uri uri) {
+    return new RxPermissions(getActivity()).request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        .filter(new Predicate<Boolean>() {
+          @Override public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
+              throws Exception {
+            return granted;
+          }
+        })
+        .flatMapCompletable(new Function<Boolean, CompletableSource>() {
+          @Override
+          public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
+              throws Exception {
+            return mCropView.loadAsCompletable(uri);
+          }
+        })
+        .doOnSubscribe(new Consumer<Disposable>() {
+          @Override public void accept(@io.reactivex.annotations.NonNull Disposable disposable)
+              throws Exception {
+            showProgress();
+          }
+        })
+        .doFinally(new Action() {
+          @Override public void run() throws Exception {
+            dismissProgress();
+          }
+        })
+        .subscribeOn(Schedulers.newThread())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe();
+  }
+
+  private Disposable cropImage() {
+    mCropView.setCompressFormat(mCompressFormat);
+    return mCropView.cropAsSingle()
+        .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
+          @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
+              throws Exception {
+            return mCropView.saveAsSingle(bitmap, createSaveUri());
+          }
+        })
+        .doOnSubscribe(new Consumer<Disposable>() {
+          @Override public void accept(@io.reactivex.annotations.NonNull Disposable disposable)
+              throws Exception {
+            showProgress();
+          }
+        })
+        .doFinally(new Action() {
+          @Override public void run() throws Exception {
+            dismissProgress();
+          }
+        })
+        .subscribeOn(Schedulers.newThread())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(new Consumer<Uri>() {
+          @Override public void accept(@io.reactivex.annotations.NonNull Uri uri) throws Exception {
+            ((RxActivity) getActivity()).startResultActivity(uri);
+          }
+        }, new Consumer<Throwable>() {
+          @Override public void accept(@io.reactivex.annotations.NonNull Throwable throwable)
+              throws Exception {
+
+          }
+        });
   }
 
   // Bind views //////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +181,7 @@ import permissions.dispatcher.RuntimePermissions;
     mRootLayout = (LinearLayout) view.findViewById(R.id.layout_root);
   }
 
-  @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE) public void pickImage() {
+  public void pickImage() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
       startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"),
           REQUEST_PICK_IMAGE);
@@ -129,29 +193,13 @@ import permissions.dispatcher.RuntimePermissions;
     }
   }
 
-  @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) public void cropImage() {
-    showProgress();
-    mCropView.setCompressFormat(mCompressFormat);
-    mCropView.cropAsync(mCropCallback);
-  }
-
-  @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
-  public void showRationaleForPick(PermissionRequest request) {
-    showRationaleDialog(R.string.permission_pick_rationale, request);
-  }
-
-  @OnShowRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-  public void showRationaleForCrop(PermissionRequest request) {
-    showRationaleDialog(R.string.permission_crop_rationale, request);
-  }
-
   public void showProgress() {
     ProgressDialogFragment f = ProgressDialogFragment.getInstance();
     getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
   }
 
   public void dismissProgress() {
-    if (!isAdded()) return;
+    if (!isResumed()) return;
     android.support.v4.app.FragmentManager manager = getFragmentManager();
     if (manager == null) return;
     ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
@@ -221,7 +269,6 @@ import permissions.dispatcher.RuntimePermissions;
   }
 
   public static String getMimeType(Bitmap.CompressFormat format) {
-    Logger.i("getMimeType CompressFormat = " + format);
     switch (format) {
       case JPEG:
         return "jpeg";
@@ -231,30 +278,13 @@ import permissions.dispatcher.RuntimePermissions;
     return "png";
   }
 
-  public static Uri createTempUri(Context context) {
-    return Uri.fromFile(new File(context.getCacheDir(), "cropped"));
-  }
-
-  private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
-    new AlertDialog.Builder(getActivity()).setPositiveButton(R.string.button_allow,
-        new DialogInterface.OnClickListener() {
-          @Override public void onClick(@NonNull DialogInterface dialog, int which) {
-            request.proceed();
-          }
-        }).setNegativeButton(R.string.button_deny, new DialogInterface.OnClickListener() {
-      @Override public void onClick(@NonNull DialogInterface dialog, int which) {
-        request.cancel();
-      }
-    }).setCancelable(false).setMessage(messageResId).show();
-  }
-
   // Handle button event /////////////////////////////////////////////////////////////////////////
 
   private final View.OnClickListener btnListener = new View.OnClickListener() {
     @Override public void onClick(View v) {
       switch (v.getId()) {
         case R.id.buttonDone:
-          MainFragmentPermissionsDispatcher.cropImageWithCheck(MainFragment.this);
+          mDisposable.add(cropImage());
           break;
         case R.id.buttonFitImage:
           mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
@@ -293,41 +323,9 @@ import permissions.dispatcher.RuntimePermissions;
           mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
           break;
         case R.id.buttonPickImage:
-          MainFragmentPermissionsDispatcher.pickImageWithCheck(MainFragment.this);
+          pickImage();
           break;
       }
-    }
-  };
-
-  // Callbacks ///////////////////////////////////////////////////////////////////////////////////
-
-  private final LoadCallback mLoadCallback = new LoadCallback() {
-    @Override public void onSuccess() {
-      dismissProgress();
-    }
-
-    @Override public void onError(Throwable e) {
-      dismissProgress();
-    }
-  };
-
-  private final CropCallback mCropCallback = new CropCallback() {
-    @Override public void onSuccess(Bitmap cropped) {
-      mCropView.saveAsync(createSaveUri(), cropped, mSaveCallback);
-    }
-
-    @Override public void onError(Throwable e) {
-    }
-  };
-
-  private final SaveCallback mSaveCallback = new SaveCallback() {
-    @Override public void onSuccess(Uri outputUri) {
-      dismissProgress();
-      ((MainActivity) getActivity()).startResultActivity(outputUri);
-    }
-
-    @Override public void onError(Throwable e) {
-      dismissProgress();
     }
   };
 }

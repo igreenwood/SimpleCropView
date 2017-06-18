@@ -10,11 +10,11 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
-public class BasicActivity extends AppCompatActivity {
-  private static final String TAG = BasicActivity.class.getSimpleName();
+public class RxActivity extends AppCompatActivity {
+  private static final String TAG = RxActivity.class.getSimpleName();
 
   public static Intent createIntent(Activity activity) {
-    return new Intent(activity, BasicActivity.class);
+    return new Intent(activity, RxActivity.class);
   }
 
   // Lifecycle Method ////////////////////////////////////////////////////////////////////////////
@@ -24,14 +24,15 @@ public class BasicActivity extends AppCompatActivity {
     setContentView(R.layout.activity_basic);
 
     Fragment fragment =
-        getSupportFragmentManager().findFragmentByTag(BasicFragment.class.getSimpleName());
+        getSupportFragmentManager().findFragmentByTag(RxFragment.class.getSimpleName());
     if (fragment == null) {
-      fragment = BasicFragment.newInstance();
+      fragment = RxFragment.newInstance();
     }
     getSupportFragmentManager().beginTransaction().add(R.id.container, fragment).commit();
 
     // apply custom font
     FontUtils.setFont(findViewById(R.id.root_layout));
+
     initToolbar();
   }
 
@@ -48,7 +49,7 @@ public class BasicActivity extends AppCompatActivity {
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     ActionBar actionBar = getSupportActionBar();
-    FontUtils.setTitle(actionBar, "Basic Sample");
+    FontUtils.setTitle(actionBar, "Rx Sample");
     actionBar.setDisplayHomeAsUpEnabled(true);
     actionBar.setHomeButtonEnabled(true);
   }
