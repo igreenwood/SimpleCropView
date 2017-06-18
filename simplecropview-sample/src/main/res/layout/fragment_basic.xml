@@ -6,27 +6,6 @@
     android:orientation="vertical"
     >
 
-  <android.support.v7.widget.Toolbar
-      android:id="@+id/toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="?attr/actionBarSize"
-      android:background="@color/colorPrimary"
-      >
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        >
-      <TextView
-          android:id="@+id/textTitle"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_alignParentLeft="true"
-          android:layout_centerVertical="true"
-          android:text="SimpleCropView"
-          />
-    </RelativeLayout>
-  </android.support.v7.widget.Toolbar>
-
   <com.isseiaoki.simplecropview.CropImageView
       android:id="@+id/cropImageView"
       android:layout_width="match_parent"

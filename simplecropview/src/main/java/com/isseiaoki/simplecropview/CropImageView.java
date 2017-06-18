@@ -1470,7 +1470,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       @Override public void accept(@NonNull Disposable disposable) throws Exception {
         mIsLoading.set(true);
       }
-    }).doOnComplete(new Action() {
+    }).doFinally(new Action() {
       @Override public void run() throws Exception {
         mIsLoading.set(false);
       }
@@ -1729,7 +1729,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       @Override public void accept(@NonNull Disposable disposable) throws Exception {
         mIsCropping.set(true);
       }
-    }).doOnDispose(new Action() {
+    }).doFinally(new Action() {
       @Override public void run() throws Exception {
         mIsCropping.set(false);
       }
@@ -1753,7 +1753,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       @Override public void accept(@NonNull Disposable disposable) throws Exception {
         mIsSaving.set(true);
       }
-    }).doOnDispose(new Action() {
+    }).doFinally(new Action() {
       @Override public void run() throws Exception {
         mIsSaving.set(false);
       }
