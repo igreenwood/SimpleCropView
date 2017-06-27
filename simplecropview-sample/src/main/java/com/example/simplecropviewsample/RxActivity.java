@@ -23,12 +23,9 @@ public class RxActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_basic);
 
-    Fragment fragment =
-        getSupportFragmentManager().findFragmentByTag(RxFragment.class.getSimpleName());
-    if (fragment == null) {
-      fragment = RxFragment.newInstance();
+    if(savedInstanceState == null){
+      getSupportFragmentManager().beginTransaction().add(R.id.container, RxFragment.newInstance()).commit();
     }
-    getSupportFragmentManager().beginTransaction().add(R.id.container, fragment).commit();
 
     // apply custom font
     FontUtils.setFont(findViewById(R.id.root_layout));

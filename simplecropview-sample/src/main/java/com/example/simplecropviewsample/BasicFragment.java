@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,7 +21,6 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
@@ -36,15 +36,19 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions public class BasicFragment extends Fragment {
+  private static final String TAG = BasicFragment.class.getSimpleName();
+
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
   private static final String PROGRESS_DIALOG = "ProgressDialog";
+  private static final String KEY_FRAME_RECT = "FrameRect";
+  private static final String KEY_SOURCE_URI = "SourceUri";
 
   // Views ///////////////////////////////////////////////////////////////////////////////////////
   private CropImageView mCropView;
-  private LinearLayout mRootLayout;
-
   private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
+  private RectF mFrameRect = null;
+  private Uri mSourceUri = null;
 
   // Note: only the system can call this constructor by reflection.
   public BasicFragment() {
@@ -69,22 +73,44 @@ import permissions.dispatcher.RuntimePermissions;
 
   @Override public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-
     // bind Views
     bindViews(view);
 
-    //mCropView.setDebug(true);
+    mCropView.setDebug(true);
 
+    if (savedInstanceState != null) {
+      mFrameRect = savedInstanceState.getParcelable(KEY_FRAME_RECT);
+      mSourceUri = savedInstanceState.getParcelable(KEY_SOURCE_URI);
+    }
+
+    if (mSourceUri == null) {
+      mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
+    }
     // set bitmap to CropImageView
-    mCropView.loadAsync(getUriFromDrawableResId(getContext(), R.drawable.sample5), mLoadCallback, true);
+    mCropView.loadAsync(mSourceUri, true, mFrameRect, mLoadCallback);
+  }
+
+  @Override public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    // save crop frame
+    outState.putParcelable(KEY_FRAME_RECT, mCropView.getActualCropRect());
+    outState.putParcelable(KEY_SOURCE_URI, mCropView.getSourceUri());
   }
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
-    if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      mCropView.loadAsync(result.getData(), mLoadCallback);
-    } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), mLoadCallback, true);
+    if (resultCode == Activity.RESULT_OK) {
+      // reset frame rect
+      mFrameRect = null;
+      switch (requestCode) {
+        case REQUEST_PICK_IMAGE:
+          mCropView.loadAsync(result.getData(), true, mFrameRect, mLoadCallback);
+          break;
+        case REQUEST_SAF_PICK_IMAGE:
+          mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), true, mFrameRect,
+              mLoadCallback);
+          break;
+      }
     }
   }
 
@@ -112,7 +138,6 @@ import permissions.dispatcher.RuntimePermissions;
     view.findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
-    mRootLayout = (LinearLayout) view.findViewById(R.id.layout_root);
   }
 
   @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE) public void pickImage() {
@@ -300,9 +325,11 @@ import permissions.dispatcher.RuntimePermissions;
   // Callbacks ///////////////////////////////////////////////////////////////////////////////////
 
   private final LoadCallback mLoadCallback = new LoadCallback() {
-    @Override public void onSuccess() {}
+    @Override public void onSuccess() {
+    }
 
-    @Override public void onError(Throwable e) {}
+    @Override public void onError(Throwable e) {
+    }
   };
 
   private final CropCallback mCropCallback = new CropCallback() {

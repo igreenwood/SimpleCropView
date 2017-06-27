@@ -7,17 +7,16 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.RectF;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
@@ -36,19 +35,22 @@ import io.reactivex.schedulers.Schedulers;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class RxFragment extends Fragment {
+  private static final String TAG = RxFragment.class.getSimpleName();
+
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
   private static final String PROGRESS_DIALOG = "ProgressDialog";
+  private static final String KEY_FRAME_RECT = "FrameRect";
+  private static final String KEY_SOURCE_URI = "SourceUri";
 
   // Views ///////////////////////////////////////////////////////////////////////////////////////
   private CropImageView mCropView;
-  private LinearLayout mRootLayout;
   private CompositeDisposable mDisposable = new CompositeDisposable();
-
   private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
+  private RectF mFrameRect = null;
+  private Uri mSourceUri = null;
 
   // Note: only the system can call this constructor by reflection.
   public RxFragment() {
@@ -76,10 +78,25 @@ public class RxFragment extends Fragment {
     // bind Views
     bindViews(view);
 
-    //mCropView.setDebug(true);
+    mCropView.setDebug(true);
 
+    if(savedInstanceState != null){
+      mFrameRect = savedInstanceState.getParcelable(KEY_FRAME_RECT);
+      mSourceUri = savedInstanceState.getParcelable(KEY_SOURCE_URI);
+    }
+
+    if (mSourceUri == null){
+      mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
+    }
     // set bitmap to CropImageView
-    mDisposable.add(loadImage(getUriFromDrawableResId(getContext(), R.drawable.sample5)));
+    mDisposable.add(loadImage(mSourceUri));
+  }
+
+  @Override public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    // save crop frame
+    outState.putParcelable(KEY_FRAME_RECT, mCropView.getActualCropRect());
+    outState.putParcelable(KEY_SOURCE_URI, mCropView.getSourceUri());
   }
 
   @Override public void onDestroyView() {
@@ -89,10 +106,17 @@ public class RxFragment extends Fragment {
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
-    if (requestCode == REQUEST_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      mDisposable.add(loadImage(result.getData()));
-    } else if (requestCode == REQUEST_SAF_PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-      mDisposable.add(loadImage(Utils.ensureUriPermission(getContext(), result)));
+    if(resultCode == Activity.RESULT_OK){
+      // reset frame rect
+      mFrameRect = null;
+      switch (requestCode){
+        case REQUEST_PICK_IMAGE:
+          mDisposable.add(loadImage(result.getData()));
+          break;
+        case REQUEST_SAF_PICK_IMAGE:
+          mDisposable.add(loadImage(Utils.ensureUriPermission(getContext(), result)));
+          break;
+      }
     }
   }
 
@@ -108,17 +132,16 @@ public class RxFragment extends Fragment {
           @Override
           public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
               throws Exception {
-            return mCropView.loadAsCompletable(uri, true);
+            return mCropView.loadAsCompletable(uri, true, mFrameRect);
           }
         })
         .subscribeOn(Schedulers.newThread())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action() {
-          @Override public void run() throws Exception {
-          }
-        }, new Consumer<Throwable>() {
-          @Override public void accept(@NonNull Throwable throwable) throws Exception {
-          }
+          @Override public void run() throws Exception {}
+        },
+            new Consumer<Throwable>() {
+          @Override public void accept(@NonNull Throwable throwable) throws Exception {}
         });
   }
 
@@ -151,7 +174,6 @@ public class RxFragment extends Fragment {
         }, new Consumer<Throwable>() {
           @Override public void accept(@io.reactivex.annotations.NonNull Throwable throwable)
               throws Exception {
-
           }
         });
   }
@@ -174,7 +196,6 @@ public class RxFragment extends Fragment {
     view.findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
-    mRootLayout = (LinearLayout) view.findViewById(R.id.layout_root);
   }
 
   public void pickImage() {

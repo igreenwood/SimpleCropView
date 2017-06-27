@@ -24,6 +24,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
@@ -89,6 +90,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private Paint mPaintBitmap;
   private Paint mPaintDebug;
   private RectF mFrameRect;
+  private RectF mInitialFrameRect;
   private RectF mImageRect;
   private PointF mCenter = new PointF();
   private float mLastX, mLastY;
@@ -228,7 +230,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     ss.inputImageHeight = this.mInputImageHeight;
     ss.outputImageWidth = this.mOutputImageWidth;
     ss.outputImageHeight = this.mOutputImageHeight;
-    ss.actualCropRect = this.getActualCropRect();
     return ss;
   }
 
@@ -271,19 +272,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     this.mInputImageHeight = ss.inputImageHeight;
     this.mOutputImageWidth = ss.outputImageWidth;
     this.mOutputImageHeight = ss.outputImageHeight;
-    final RectF actualCropRect = ss.actualCropRect;
-
-    if (mSourceUri != null) {
-      loadAsync(mSourceUri, new LoadCallback() {
-        @Override public void onSuccess() {
-          setInitialCropRect(actualCropRect);
-        }
-
-        @Override public void onError(Throwable e) {
-          Logger.e(e.toString());
-        }
-      });
-    }
   }
 
   @Override protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -540,7 +528,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
     setScale(calcScale(viewW, viewH, mAngle));
     setMatrix();
     mImageRect = calcImageRect(new RectF(0f, 0f, mImgWidth, mImgHeight), mMatrix);
-    mFrameRect = calcFrameRect(mImageRect);
+
+    if (mInitialFrameRect != null) {
+      mFrameRect = applyInitialFrameRect(mInitialFrameRect);
+    } else {
+      mFrameRect = calcFrameRect(mImageRect);
+    }
+
     mIsInitialized = true;
     invalidate();
   }
@@ -1424,7 +1418,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param callback Callback
    */
   public void loadAsync(final Uri sourceUri, final LoadCallback callback) {
-    loadAsync(sourceUri, callback, false);
+    loadAsync(sourceUri, false, null, callback);
   }
 
   /**
@@ -1433,12 +1427,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param sourceUri Image Uri
    * @param callback Callback
    */
-  public void loadAsync(final Uri sourceUri, final LoadCallback callback,
-      final boolean useThumbnail) {
+  public void loadAsync(final Uri sourceUri, final boolean useThumbnail,
+      final RectF initialFrameRect, final LoadCallback callback) {
+
     mExecutor.submit(new Runnable() {
       @Override public void run() {
         try {
           mIsLoading.set(true);
+
+          mSourceUri = sourceUri;
+          mInitialFrameRect = initialFrameRect;
 
           if (useThumbnail) {
             applyThumbnail(sourceUri);
@@ -1468,7 +1466,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param sourceUri Image Uri
    */
   public Completable loadAsCompletable(final Uri sourceUri) {
-    return loadAsCompletable(sourceUri, false);
+    return loadAsCompletable(sourceUri, false, null);
   }
 
   /**
@@ -1476,10 +1474,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * @param sourceUri Image Uri
    */
-  public Completable loadAsCompletable(final Uri sourceUri, final boolean useThumbnail) {
+  public Completable loadAsCompletable(final Uri sourceUri, final boolean useThumbnail,
+      final RectF initialFrameRect) {
     return Completable.create(new CompletableOnSubscribe() {
 
       @Override public void subscribe(@NonNull final CompletableEmitter emitter) throws Exception {
+
+        mInitialFrameRect = initialFrameRect;
+        mSourceUri = sourceUri;
+
         if (useThumbnail) {
           applyThumbnail(sourceUri);
         }
@@ -1507,7 +1510,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   private void applyThumbnail(Uri sourceUri) {
     final Bitmap thumb = getThumbnail(sourceUri);
-    if(thumb == null) return;
+    if (thumb == null) return;
     mHandler.post(new Runnable() {
       @Override public void run() {
         mAngle = mExifRotation;
@@ -1517,7 +1520,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   private Bitmap getImage(Uri sourceUri) {
-    mSourceUri = sourceUri;
 
     if (sourceUri == null) {
       throw new IllegalStateException("Source Uri must not be null.");
@@ -1536,7 +1538,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   private Bitmap getThumbnail(Uri sourceUri) {
-    mSourceUri = sourceUri;
 
     if (sourceUri == null) {
       throw new IllegalStateException("Source Uri must not be null.");
@@ -1588,6 +1589,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
         @Override public void onAnimationFinished() {
           mAngle = newAngle % 360;
           mScale = newScale;
+          mInitialFrameRect = null;
           setupLayout(mViewWidth, mViewHeight);
           mIsRotating = false;
         }
@@ -1670,7 +1672,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @param saveUri Uri for saving the cropped image
    * @param cropCallback Callback for cropping the image
    * @param saveCallback Callback for saving the image
-   * @see #cropAsync(CropCallback)
+   * @see #cropAsync(Uri, CropCallback)
    * @see #saveAsync(Uri, Bitmap, SaveCallback)
    */
   public void startCrop(final Uri saveUri, final CropCallback cropCallback,
@@ -1716,13 +1718,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
   /**
    * Crop image
    *
+   * @param sourceUri Uri for cropping(If null, the Uri set in loadAsync() is used)
    * @param cropCallback Callback for cropping the image
    */
-  public void cropAsync(final CropCallback cropCallback) {
+  public void cropAsync(final Uri sourceUri, final CropCallback cropCallback) {
     mExecutor.submit(new Runnable() {
       @Override public void run() {
         try {
           mIsCropping.set(true);
+
+          if (sourceUri != null) mSourceUri = sourceUri;
 
           final Bitmap cropped = cropImage();
 
@@ -1739,6 +1744,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
         }
       }
     });
+  }
+
+  public void cropAsync(final CropCallback cropCallback) {
+    cropAsync(null, cropCallback);
   }
 
   /**
@@ -1773,12 +1782,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
   /**
    * Crop image with RxJava2
    *
+   * @param sourceUri Uri for cropping(If null, the Uri set in loadAsSingle() is used)
    * @return Single of cropping image
    */
-  public Single<Bitmap> cropAsSingle() {
+  public Single<Bitmap> cropAsSingle(final Uri sourceUri) {
     return Single.fromCallable(new Callable<Bitmap>() {
 
       @Override public Bitmap call() throws Exception {
+        if (sourceUri != null) mSourceUri = sourceUri;
         return cropImage();
       }
     }).doOnSubscribe(new Consumer<Disposable>() {
@@ -1790,6 +1801,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
         mIsCropping.set(false);
       }
     });
+  }
+
+  public Single<Bitmap> cropAsSingle() {
+    return cropAsSingle(null);
   }
 
   /**
@@ -1847,7 +1862,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * Get frame position relative to the source bitmap.
    *
    * @return getCroppedBitmap area boundaries.
-   * @see #setInitialCropRect(RectF)
    */
   public RectF getActualCropRect() {
     float offsetX = (mImageRect.left / mScale);
@@ -1856,20 +1870,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
     float t = (mFrameRect.top / mScale) - offsetY;
     float r = (mFrameRect.right / mScale) - offsetX;
     float b = (mFrameRect.bottom / mScale) - offsetY;
+    l = Math.max(0, l);
+    t = Math.max(0, t);
+    r = Math.min(mImageRect.right / mScale, r);
+    b = Math.min(mImageRect.bottom / mScale, b);
     return new RectF(l, t, r, b);
   }
 
-  /**
-   * Set initial frame position relative to the source bitmap.
-   * Call this method after {@link #onLayout(boolean, int, int, int, int)}.
-   *
-   * @see #getActualCropRect()
-   */
-  public void setInitialCropRect(RectF initialCropRect) {
-    mFrameRect.set(initialCropRect.left * mScale, initialCropRect.top * mScale,
-        initialCropRect.right * mScale, initialCropRect.bottom * mScale);
-    mFrameRect.offset(mImageRect.left, mImageRect.top);
-    invalidate();
+  private RectF applyInitialFrameRect(RectF initialFrameRect) {
+    RectF frameRect = new RectF();
+    frameRect.set(initialFrameRect.left * mScale, initialFrameRect.top * mScale,
+        initialFrameRect.right * mScale, initialFrameRect.bottom * mScale);
+    frameRect.offset(mImageRect.left, mImageRect.top);
+    Log.e(TAG, "applyInitialFrameRect: frameRect = " + frameRect);
+    Log.e(TAG, "applyInitialFrameRect: imageRect = " + mImageRect);
+    float l = Math.max(mImageRect.left, frameRect.left);
+    float t = Math.max(mImageRect.top, frameRect.top);
+    float r = Math.min(mImageRect.right, frameRect.right);
+    float b = Math.min(mImageRect.bottom, frameRect.bottom);
+    frameRect.set(l, t, r, b);
+    return frameRect;
   }
 
   /**
@@ -2221,6 +2241,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
+   * source uri
+   *
+   * @return source uri
+   */
+  public Uri getSourceUri() {
+    return mSourceUri;
+  }
+
+  /**
+   * save uri
+   *
+   * @return save uri
+   */
+  public Uri getSaveUri() {
+    return mSaveUri;
+  }
+
+  /**
    * saving status
    *
    * @return is saving process running
@@ -2333,7 +2371,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     int inputImageHeight;
     int outputImageWidth;
     int outputImageHeight;
-    RectF actualCropRect;
 
     SavedState(Parcelable superState) {
       super(superState);
@@ -2378,7 +2415,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
       inputImageHeight = in.readInt();
       outputImageWidth = in.readInt();
       outputImageHeight = in.readInt();
-      actualCropRect = in.readParcelable(RectF.class.getClassLoader());
     }
 
     @Override public void writeToParcel(Parcel out, int flag) {
@@ -2420,7 +2456,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
       out.writeInt(inputImageHeight);
       out.writeInt(outputImageWidth);
       out.writeInt(outputImageHeight);
-      out.writeParcelable(actualCropRect, flag);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

@@ -9,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 
 public class BasicActivity extends AppCompatActivity {
   private static final String TAG = BasicActivity.class.getSimpleName();
@@ -21,14 +22,12 @@ public class BasicActivity extends AppCompatActivity {
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
     setContentView(R.layout.activity_basic);
 
-    Fragment fragment =
-        getSupportFragmentManager().findFragmentByTag(BasicFragment.class.getSimpleName());
-    if (fragment == null) {
-      fragment = BasicFragment.newInstance();
+    if(savedInstanceState == null){
+      getSupportFragmentManager().beginTransaction().add(R.id.container, BasicFragment.newInstance()).commit();
     }
-    getSupportFragmentManager().beginTransaction().add(R.id.container, fragment).commit();
 
     // apply custom font
     FontUtils.setFont(findViewById(R.id.root_layout));
