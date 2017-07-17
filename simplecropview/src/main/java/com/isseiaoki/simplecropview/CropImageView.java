@@ -24,7 +24,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
@@ -1914,7 +1913,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * Get frame position relative to the source bitmap.
    * @see #load(Uri)
    * @see #loadAsync(Uri, boolean, RectF, LoadCallback)
-   * @see #loadAsCompletable(Uri, boolean, RectF) 
+   * @see #loadAsCompletable(Uri, boolean, RectF)
    *
    * @return getCroppedBitmap area boundaries.
    */

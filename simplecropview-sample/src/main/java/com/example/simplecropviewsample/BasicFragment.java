@@ -76,17 +76,17 @@ import permissions.dispatcher.RuntimePermissions;
     // bind Views
     bindViews(view);
 
-    mCropView.setDebug(true);
-
     if (savedInstanceState != null) {
+      // restore data
       mFrameRect = savedInstanceState.getParcelable(KEY_FRAME_RECT);
       mSourceUri = savedInstanceState.getParcelable(KEY_SOURCE_URI);
     }
 
     if (mSourceUri == null) {
+      // default data
       mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
     }
-    // set bitmap to CropImageView
+    // load image
     mCropView.load(mSourceUri)
         .initialFrameRect(mFrameRect)
         .useThumbnail(true)
@@ -95,7 +95,7 @@ import permissions.dispatcher.RuntimePermissions;
 
   @Override public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
-    // save crop frame
+    // save data
     outState.putParcelable(KEY_FRAME_RECT, mCropView.getActualCropRect());
     outState.putParcelable(KEY_SOURCE_URI, mCropView.getSourceUri());
   }
