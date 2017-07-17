@@ -135,7 +135,7 @@ public class RxFragment extends Fragment {
             return mCropView.load(uri)
                 .useThumbnail(true)
                 .initialFrameRect(mFrameRect)
-                .executeAsObservable();
+                .executeAsCompletable();
           }
         })
         .subscribeOn(Schedulers.newThread())

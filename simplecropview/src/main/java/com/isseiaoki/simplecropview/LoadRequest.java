@@ -40,7 +40,7 @@ public class LoadRequest {
     cropImageView.loadAsync(sourceUri, useThumbnail, initialFrameRect, callback);
   }
 
-  public Completable executeAsObservable() {
+  public Completable executeAsCompletable() {
     if (initialFrameRect == null) {
       cropImageView.setInitialFrameScale(initialFrameScale);
     }
