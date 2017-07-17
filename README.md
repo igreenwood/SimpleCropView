@@ -19,6 +19,7 @@ Supported on API Level 10 and above.
   * [Image Cropping](#image-cropping) 
   * [Image Rotation](#image-rotation)
 * [Load Image](#load-image)
+  * [Apply Thumbnail](#apply-thumbnail) 
 * [Crop and Save Image](#crop-and-save-image)
   * [Compress Format](#compress-format)
   * [Compress Quality](#compress-quality)
@@ -28,6 +29,7 @@ Supported on API Level 10 and above.
   * [CropMode](#cropmode)
   * [MinimumFrameSize](#minimumframesize)
   * [InitialFrameScale](#initialframescale)
+  * [Save and Restore FrameRect](#save-and-restoreframerect)
   * [Color](#color)
   * [Stroke Weight and Handle Size](#stroke-weight-and-handle-size)
   * [Handle Touch Padding](#handle-touch-padding)
@@ -49,7 +51,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.isseiaoki:simplecropview:1.1.4'
+    compile 'com.isseiaoki:simplecropview:1.1.5'
 }
 ```
 
@@ -96,53 +98,60 @@ Add the `com.isseiaoki.simplecropview.CropImageView` to your layout XML file.
 
 ```
 
-
 Load image from sourceUri.
-
 
 ```java
 
 mCropView = (CropImageView) findViewById(R.id.cropImageView);
 
-mCropView.startLoad(
+mCropView.load(sourceUri).execute(mLoadCallback);
+```
 
-    sourceUri,
-    
-    new LoadCallback() {
-        @Override
-        public void onSuccess() {}
+with RxJava,
 
-        @Override
-        public void onError() {}
-});
-
+```
+mCropView.load(sourceUri).executeAsCompletable();
 ```
 
 Crop image and save cropped bitmap in saveUri.
 
 ```java
+mCropView.crop(sourceUri)
+    .execute(new CropCallback() {
+  @Override public void onSuccess(Bitmap cropped) {
+    mCropView.save(cropped)
+        .execute(saveUri, mSaveCallback);
+  }
 
-mCropView.startCrop(
+  @Override public void onError(Throwable e) {
+  }
+});
+```
 
-    saveUri,
-    
-    new CropCallback() {
-        @Override
-        public void onSuccess(Bitmap cropped) {}
+with RxJava,
 
-        @Override
-        public void onError() {}
-    },
-    
-    new SaveCallback() {
-        @Override
-        public void onSuccess(Uri outputUri) {}
-
-        @Override
-        public void onError() {}
-    }
-);
-
+```
+mCropView.crop(sourceUri)
+    .executeAsSingle()
+    .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
+      @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
+              throws Exception {
+        return mCropView.save(bitmap)
+            .executeAsSingle(saveUri);
+      }
+    })
+    .subscribeOn(Schedulers.newThread())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(new Consumer<Uri>() {
+      @Override public void accept(@io.reactivex.annotations.NonNull Uri uri) throws Exception {
+        // on success
+      }
+    }, new Consumer<Throwable>() {
+      @Override public void accept(@io.reactivex.annotations.NonNull Throwable throwable)
+              throws Exception {
+        // on error
+      }
+    });
 ```
 
 ### Image Rotation
@@ -162,28 +171,68 @@ cropImageView.rotateImage(CropImageView.RotateDegrees.ROTATE_M90D); // rotate co
 
 ## Load Image
 
-* `setImageXXX()`(Sync method)
+* `load(sourceUri).execute(mLoadCallback);`
 
-This method loads the given Bitmap. If the bitmap size is too large, Exception occurs.
+with RxJava,
 
-* `startLoad(Uri sourceUri, LoadCallback callback)`(Async method, **RECOMMENDED**)
+* `load(sourceUri).executeAsCompletable();`
 
-This method loads Bitmap in efficient size from sourceUri. 
+These method load Bitmap in efficient size from sourceUri. 
 You don't have to care for filePath and image size.
+You can also use `Picasso` or `Glide`.
 
-**REMEMBER** : `sourceUri` parameter will be used in `startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback)`.
+### Apply Thumbnail
+You can use blurred image for placeholder.
+
+```
+mCropView.load(result.getData())
+         .useThumbnail(true)
+         .execute(mLoadCallback);
+```
 
 ## Crop and Save Image
 
-* `getCroppedBitmap()`(Sync method)
+```java
+mCropView.crop(sourceUri)
+    .execute(new CropCallback() {
+  @Override public void onSuccess(Bitmap cropped) {
+    mCropView.save(cropped)
+        .execute(saveUri, mSaveCallback);
+  }
 
-This method always use thumbnail bitmap set by `setImageXXX()` for cropping.
-It does not save cropped bitmap.
+  @Override public void onError(Throwable e) {
+  }
+});
+```
 
-* `startCrop(Uri saveUri, CropCallback cropCallback, SaveCallback saveCallback)`(Async Method, **RECOMMENDED**)
+with RxJava,
 
-This method uses full size bitmap taken from `sourceUri` for cropping. 
-If `sourceUri` is not set, it uses thumbnail bitmap. 
+```
+mCropView.crop(sourceUri)
+    .executeAsSingle()
+    .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
+      @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
+              throws Exception {
+        return mCropView.save(bitmap)
+                .executeAsSingle(saveUri);
+      }
+    })
+    .subscribeOn(Schedulers.newThread())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(new Consumer<Uri>() {
+      @Override public void accept(@io.reactivex.annotations.NonNull Uri uri) throws Exception {
+        // on success
+      }
+    }, new Consumer<Throwable>() {
+      @Override public void accept(@io.reactivex.annotations.NonNull Throwable throwable)
+              throws Exception {
+        // on error
+      }
+    });
+```
+
+These cropping method use full size bitmap taken from `sourceUri` for cropping. 
+If `sourceUri` is null, the Uri set in load(Uri) is used.
 After cropping, it saves cropped image in `saveUri`.
 
 ### Compress Format
@@ -283,6 +332,22 @@ cropImageView.setInitialFrameScale(1.0f);
 | 0.5 | <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.5.jpg" width="100%"> |
 | 0.75| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_0.75.jpg" width="100%"> |
 | 1.0 (default)| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_1.0.jpg" width="100%"> |
+
+### Save and Restore FrameRect
+
+* Save FrameRect
+
+```
+mCropView.getActualCropRect()
+```
+
+* Restore FrameRect
+
+```
+mCropView.load(result.getData())
+         .initialFrameRect(mFrameRect)
+         .execute(mLoadCallback);
+```
 
 ### Color
 
