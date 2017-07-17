@@ -10,7 +10,7 @@ public class SaveRequest {
   private CropImageView cropImageView;
   private Bitmap image;
   private Bitmap.CompressFormat compressFormat;
-  private int compressQuality;
+  private int compressQuality = -1;
 
   public SaveRequest(CropImageView cropImageView, Bitmap image) {
     this.cropImageView = cropImageView;
@@ -28,8 +28,12 @@ public class SaveRequest {
   }
 
   private void build() {
-    cropImageView.setCompressFormat(compressFormat);
-    cropImageView.setCompressQuality(compressQuality);
+    if (compressFormat != null) {
+      cropImageView.setCompressFormat(compressFormat);
+    }
+    if (compressQuality >= 0) {
+      cropImageView.setCompressQuality(compressQuality);
+    }
   }
 
   public void execute(Uri saveUri, SaveCallback callback) {
