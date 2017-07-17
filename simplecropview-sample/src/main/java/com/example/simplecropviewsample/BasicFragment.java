@@ -87,7 +87,10 @@ import permissions.dispatcher.RuntimePermissions;
       mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
     }
     // set bitmap to CropImageView
-    mCropView.loadAsync(mSourceUri, true, mFrameRect, mLoadCallback);
+    mCropView.load(mSourceUri)
+        .initialFrameRect(mFrameRect)
+        .useThumbnail(true)
+        .execute(mLoadCallback);
   }
 
   @Override public void onSaveInstanceState(Bundle outState) {
@@ -104,11 +107,16 @@ import permissions.dispatcher.RuntimePermissions;
       mFrameRect = null;
       switch (requestCode) {
         case REQUEST_PICK_IMAGE:
-          mCropView.loadAsync(result.getData(), true, mFrameRect, mLoadCallback);
+          mCropView.load(result.getData())
+              .initialFrameRect(mFrameRect)
+              .useThumbnail(true)
+              .execute(mLoadCallback);
           break;
         case REQUEST_SAF_PICK_IMAGE:
-          mCropView.loadAsync(Utils.ensureUriPermission(getContext(), result), true, mFrameRect,
-              mLoadCallback);
+          mCropView.load(Utils.ensureUriPermission(getContext(), result))
+              .initialFrameRect(mFrameRect)
+              .useThumbnail(true)
+              .execute(mLoadCallback);
           break;
       }
     }

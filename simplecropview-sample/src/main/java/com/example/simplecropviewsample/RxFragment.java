@@ -132,7 +132,10 @@ public class RxFragment extends Fragment {
           @Override
           public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
               throws Exception {
-            return mCropView.loadAsCompletable(uri, true, mFrameRect);
+            return mCropView.load(uri)
+                .useThumbnail(true)
+                .initialFrameRect(mFrameRect)
+                .executeAsObservable();
           }
         })
         .subscribeOn(Schedulers.newThread())

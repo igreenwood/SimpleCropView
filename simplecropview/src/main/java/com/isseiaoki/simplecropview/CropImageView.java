@@ -1508,6 +1508,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
     });
   }
 
+  public LoadRequest load(Uri sourceUri){
+    return new LoadRequest(this, sourceUri);
+  }
+
   private void applyThumbnail(Uri sourceUri) {
     final Bitmap thumb = getThumbnail(sourceUri);
     if (thumb == null) return;
