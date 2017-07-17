@@ -1508,7 +1508,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     });
   }
 
-  public LoadRequest load(Uri sourceUri){
+  public LoadRequest load(Uri sourceUri) {
     return new LoadRequest(this, sourceUri);
   }
 
@@ -1754,8 +1754,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
     cropAsync(null, cropCallback);
   }
 
-  public CropRequest crop(Uri sourceUri){
+  public CropRequest crop(Uri sourceUri) {
     return new CropRequest(this, sourceUri);
+  }
+
+  /**
+   * Crop image with RxJava2
+   *
+   * @param sourceUri Uri for cropping(If null, the Uri set in loadAsSingle() is used)
+   * @return Single of cropping image
+   */
+  public Single<Bitmap> cropAsSingle(final Uri sourceUri) {
+    return Single.fromCallable(new Callable<Bitmap>() {
+
+      @Override public Bitmap call() throws Exception {
+        if (sourceUri != null) mSourceUri = sourceUri;
+        return cropImage();
+      }
+    }).doOnSubscribe(new Consumer<Disposable>() {
+      @Override public void accept(@NonNull Disposable disposable) throws Exception {
+        mIsCropping.set(true);
+      }
+    }).doFinally(new Action() {
+      @Override public void run() throws Exception {
+        mIsCropping.set(false);
+      }
+    });
+  }
+
+  public Single<Bitmap> cropAsSingle() {
+    return cropAsSingle(null);
   }
 
   /**
@@ -1788,34 +1816,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
-   * Crop image with RxJava2
-   *
-   * @param sourceUri Uri for cropping(If null, the Uri set in loadAsSingle() is used)
-   * @return Single of cropping image
-   */
-  public Single<Bitmap> cropAsSingle(final Uri sourceUri) {
-    return Single.fromCallable(new Callable<Bitmap>() {
-
-      @Override public Bitmap call() throws Exception {
-        if (sourceUri != null) mSourceUri = sourceUri;
-        return cropImage();
-      }
-    }).doOnSubscribe(new Consumer<Disposable>() {
-      @Override public void accept(@NonNull Disposable disposable) throws Exception {
-        mIsCropping.set(true);
-      }
-    }).doFinally(new Action() {
-      @Override public void run() throws Exception {
-        mIsCropping.set(false);
-      }
-    });
-  }
-
-  public Single<Bitmap> cropAsSingle() {
-    return cropAsSingle(null);
-  }
-
-  /**
    * Save image with RxJava2
    *
    * @param bitmap Bitmap fo saving
@@ -1837,6 +1837,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
         mIsSaving.set(false);
       }
     });
+  }
+
+  public SaveRequest save(Bitmap bitmap) {
+    return new SaveRequest(this, bitmap);
   }
 
   private Bitmap cropImage() throws IOException, IllegalStateException {

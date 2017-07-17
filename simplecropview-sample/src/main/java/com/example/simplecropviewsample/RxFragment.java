@@ -155,7 +155,9 @@ public class RxFragment extends Fragment {
         .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
           @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
               throws Exception {
-            return mCropView.saveAsSingle(bitmap, createSaveUri());
+            return mCropView.save(bitmap)
+                .compressFormat(mCompressFormat)
+                .executeAsSingle(createSaveUri());
           }
         })
         .doOnSubscribe(new Consumer<Disposable>() {

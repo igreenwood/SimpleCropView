@@ -341,7 +341,9 @@ import permissions.dispatcher.RuntimePermissions;
 
   private final CropCallback mCropCallback = new CropCallback() {
     @Override public void onSuccess(Bitmap cropped) {
-      mCropView.saveAsync(createSaveUri(), cropped, mSaveCallback);
+      mCropView.save(cropped)
+          .compressFormat(mCompressFormat)
+          .execute(createSaveUri(), mSaveCallback);
     }
 
     @Override public void onError(Throwable e) {
