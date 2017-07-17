@@ -1405,6 +1405,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * @param sourceUri Image Uri
    * @param callback Callback
+   *
    * @see #loadAsync(Uri, LoadCallback)
    */
   public void startLoad(final Uri sourceUri, final LoadCallback callback) {
@@ -1416,6 +1417,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * @param sourceUri Image Uri
    * @param callback Callback
+   *
+   * @see #loadAsync(Uri, boolean, RectF, LoadCallback)
    */
   public void loadAsync(final Uri sourceUri, final LoadCallback callback) {
     loadAsync(sourceUri, false, null, callback);
@@ -1426,6 +1429,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * @param sourceUri Image Uri
    * @param callback Callback
+   *
+   * @see #load(Uri)
+   * @see #loadAsCompletable(Uri, boolean, RectF)
    */
   public void loadAsync(final Uri sourceUri, final boolean useThumbnail,
       final RectF initialFrameRect, final LoadCallback callback) {
@@ -1464,6 +1470,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * Load image from Uri with RxJava2
    *
    * @param sourceUri Image Uri
+   *
+   * @see #load(Uri)
    */
   public Completable loadAsCompletable(final Uri sourceUri) {
     return loadAsCompletable(sourceUri, false, null);
@@ -1473,6 +1481,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * Load image from Uri with RxJava2
    *
    * @param sourceUri Image Uri
+   *
+   * @see #load(Uri)
+   *
+   * @return Completable of loading image
    */
   public Completable loadAsCompletable(final Uri sourceUri, final boolean useThumbnail,
       final RectF initialFrameRect) {
@@ -1508,6 +1520,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
     });
   }
 
+  /**
+   * Load image from Uri with Builder Pattern
+   *
+   * @param sourceUri Image Uri
+   *
+   * @return Builder
+   */
   public LoadRequest load(Uri sourceUri) {
     return new LoadRequest(this, sourceUri);
   }
@@ -1671,13 +1690,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   /**
    * Crop image
-   * This method is separated to #cropAsync and saveAsync
+   * This method is separated to #crop(Uri) and #save(Bitmap)
+   * Use #crop(Uri) and #save(Bitmap)
    *
    * @param saveUri Uri for saving the cropped image
    * @param cropCallback Callback for cropping the image
    * @param saveCallback Callback for saving the image
-   * @see #cropAsync(Uri, CropCallback)
-   * @see #saveAsync(Uri, Bitmap, SaveCallback)
+   *
+   * @see #crop(Uri)
+   * @see #save(Bitmap)
    */
   public void startCrop(final Uri saveUri, final CropCallback cropCallback,
       final SaveCallback saveCallback) {
@@ -1724,6 +1745,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
    *
    * @param sourceUri Uri for cropping(If null, the Uri set in loadAsync() is used)
    * @param cropCallback Callback for cropping the image
+   *
+   * @see #crop(Uri)
+   * @see #cropAsSingle(Uri)
    */
   public void cropAsync(final Uri sourceUri, final CropCallback cropCallback) {
     mExecutor.submit(new Runnable() {
@@ -1754,14 +1778,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
     cropAsync(null, cropCallback);
   }
 
-  public CropRequest crop(Uri sourceUri) {
-    return new CropRequest(this, sourceUri);
-  }
-
   /**
    * Crop image with RxJava2
    *
    * @param sourceUri Uri for cropping(If null, the Uri set in loadAsSingle() is used)
+   *
    * @return Single of cropping image
    */
   public Single<Bitmap> cropAsSingle(final Uri sourceUri) {
@@ -1784,6 +1805,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   public Single<Bitmap> cropAsSingle() {
     return cropAsSingle(null);
+  }
+
+  /**
+   * Crop image with Builder Pattern
+   *
+   * @param sourceUri Uri for cropping(If null, the Uri set in loadAsSingle() is used)
+   *
+   * @return Builder
+   */
+  public CropRequest crop(Uri sourceUri) {
+    return new CropRequest(this, sourceUri);
   }
 
   /**
@@ -1818,8 +1850,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
   /**
    * Save image with RxJava2
    *
-   * @param bitmap Bitmap fo saving
+   * @param bitmap Bitmap for saving
    * @param saveUri Uri for saving the cropped image
+   *
    * @return Single of saving image
    */
   public Single<Uri> saveAsSingle(final Bitmap bitmap, final Uri saveUri) {
@@ -1839,6 +1872,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
     });
   }
 
+  /**
+   * Save image with Builder Pattern
+   *
+   * @param bitmap image for saving
+   *
+   * @return Builder
+   */
   public SaveRequest save(Bitmap bitmap) {
     return new SaveRequest(this, bitmap);
   }
@@ -1872,6 +1912,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   /**
    * Get frame position relative to the source bitmap.
+   * @see #load(Uri)
+   * @see #loadAsync(Uri, boolean, RectF, LoadCallback)
+   * @see #loadAsCompletable(Uri, boolean, RectF) 
    *
    * @return getCroppedBitmap area boundaries.
    */
@@ -1894,8 +1937,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     frameRect.set(initialFrameRect.left * mScale, initialFrameRect.top * mScale,
         initialFrameRect.right * mScale, initialFrameRect.bottom * mScale);
     frameRect.offset(mImageRect.left, mImageRect.top);
-    Log.e(TAG, "applyInitialFrameRect: frameRect = " + frameRect);
-    Log.e(TAG, "applyInitialFrameRect: imageRect = " + mImageRect);
     float l = Math.max(mImageRect.left, frameRect.left);
     float t = Math.max(mImageRect.top, frameRect.top);
     float r = Math.min(mImageRect.right, frameRect.right);
