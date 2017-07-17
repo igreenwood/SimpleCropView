@@ -6,6 +6,7 @@ import com.isseiaoki.simplecropview.callback.LoadCallback;
 import io.reactivex.Completable;
 
 public class LoadRequest {
+
   private float initialFrameScale;
   private RectF initialFrameRect;
   private boolean useThumbnail;

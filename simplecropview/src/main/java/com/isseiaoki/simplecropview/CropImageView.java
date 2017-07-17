@@ -1754,6 +1754,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
     cropAsync(null, cropCallback);
   }
 
+  public CropRequest crop(Uri sourceUri){
+    return new CropRequest(this, sourceUri);
+  }
+
   /**
    * Save image
    *

@@ -80,12 +80,12 @@ public class RxFragment extends Fragment {
 
     mCropView.setDebug(true);
 
-    if(savedInstanceState != null){
+    if (savedInstanceState != null) {
       mFrameRect = savedInstanceState.getParcelable(KEY_FRAME_RECT);
       mSourceUri = savedInstanceState.getParcelable(KEY_SOURCE_URI);
     }
 
-    if (mSourceUri == null){
+    if (mSourceUri == null) {
       mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
     }
     // set bitmap to CropImageView
@@ -106,10 +106,10 @@ public class RxFragment extends Fragment {
 
   @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
-    if(resultCode == Activity.RESULT_OK){
+    if (resultCode == Activity.RESULT_OK) {
       // reset frame rect
       mFrameRect = null;
-      switch (requestCode){
+      switch (requestCode) {
         case REQUEST_PICK_IMAGE:
           mDisposable.add(loadImage(result.getData()));
           break;
@@ -141,16 +141,17 @@ public class RxFragment extends Fragment {
         .subscribeOn(Schedulers.newThread())
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe(new Action() {
-          @Override public void run() throws Exception {}
-        },
-            new Consumer<Throwable>() {
-          @Override public void accept(@NonNull Throwable throwable) throws Exception {}
+          @Override public void run() throws Exception {
+          }
+        }, new Consumer<Throwable>() {
+          @Override public void accept(@NonNull Throwable throwable) throws Exception {
+          }
         });
   }
 
   private Disposable cropImage() {
-    mCropView.setCompressFormat(mCompressFormat);
-    return mCropView.cropAsSingle()
+    return mCropView.crop(mSourceUri)
+        .executeAsSingle()
         .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
           @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
               throws Exception {

@@ -162,8 +162,7 @@ import permissions.dispatcher.RuntimePermissions;
 
   @NeedsPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) public void cropImage() {
     showProgress();
-    mCropView.setCompressFormat(mCompressFormat);
-    mCropView.cropAsync(mCropCallback);
+    mCropView.crop(mSourceUri).execute(mCropCallback);
   }
 
   @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
