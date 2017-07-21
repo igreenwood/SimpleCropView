@@ -1,5 +1,11 @@
 Change Log
 =========
+## Version 1.1.5
+* Fix OOM in onSaveInstanceState(CropImageView does not save bitmap internally anymore.)
+* Support RxJava2
+* Add Builder interface(LoadRequest/CropRequest/SaveRequest)
+* Support save/restore frame rect
+
 ## Version 1.1.4
 * Fix Overlay drawing is lacking when CropMode.CIRCLE
 
