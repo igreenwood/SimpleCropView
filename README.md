@@ -334,6 +334,7 @@ cropImageView.setInitialFrameScale(1.0f);
 | 1.0 (default)| <img src="https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.0.8/initial_frame_scale_1.0.jpg" width="100%"> |
 
 ### Save and Restore FrameRect
+You can save and restore frame rect as follows. See [sample project](https://github.com/IsseiAoki/SimpleCropView/tree/master/simplecropview-sample) for more details.
 
 * Save FrameRect
 
