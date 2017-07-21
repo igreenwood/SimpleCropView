@@ -5,6 +5,7 @@ Change Log
 * Support RxJava2
 * Add Builder interface(LoadRequest/CropRequest/SaveRequest)
 * Support save/restore frame rect
+* Support thumbnail for image loading(use blurred image for placeholder)
 
 ## Version 1.1.4
 * Fix Overlay drawing is lacking when CropMode.CIRCLE
