@@ -45,16 +45,16 @@ import static android.graphics.Bitmap.createBitmap;
    * NOTE: PNG cannot not have EXIF info.
    *
    * source: JPEG, save: JPEG
-   * > copies all EXIF data
+   * copies all EXIF data
    *
    * source: JPEG, save: PNG
-   * > saves no EXIF data
+   * saves no EXIF data
    *
    * source: PNG, save: JPEG
-   * > saves only width and height EXIF data
+   * saves only width and height EXIF data
    *
    * source: PNG, save: PNG
-   * > saves no EXIF data
+   * saves no EXIF data
    *
    * =========================================
    */
