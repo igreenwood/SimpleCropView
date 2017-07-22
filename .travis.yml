@@ -1,5 +1,7 @@
 language: android
 
+install: ant deps
+
 jdk:
     - oraclejdk8
 
