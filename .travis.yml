@@ -1,9 +1,16 @@
 language: android
 
-install: ant deps
-
 jdk:
     - oraclejdk8
+
+cache:
+ directories:
+  — $HOME/.gradle
+
+before_cache:
+ - find $HOME/.gradle -type f -not -name "*.jar" -delete
+ - find $HOME/.gradle -type f -not -name "*.pom" -delete
+ - find $HOME/.gradle -type f -not -name "*.aar" -delete
 
 android:
   components:
