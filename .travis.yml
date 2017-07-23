@@ -1,5 +1,8 @@
 language: android
 
+install:
+    - ./gradlew dependencies --debug
+
 jdk:
     - oraclejdk8
 
