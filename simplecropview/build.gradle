@@ -11,6 +11,10 @@ android {
     versionName "1.1.5"
     consumerProguardFiles 'proguard-rules.pro'
   }
+
+  dexOptions {
+    preDexLibraries = false
+  }
 }
 
 def file = project.rootProject.file('local.properties')
