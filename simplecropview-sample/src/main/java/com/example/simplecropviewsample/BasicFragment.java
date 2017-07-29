@@ -18,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +77,8 @@ import permissions.dispatcher.RuntimePermissions;
     // bind Views
     bindViews(view);
 
+    mCropView.setDebug(true);
+
     if (savedInstanceState != null) {
       // restore data
       mFrameRect = savedInstanceState.getParcelable(KEY_FRAME_RECT);
@@ -85,6 +88,7 @@ import permissions.dispatcher.RuntimePermissions;
     if (mSourceUri == null) {
       // default data
       mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
+      Log.e("aoki", "mSourceUri = "+mSourceUri);
     }
     // load image
     mCropView.load(mSourceUri)
@@ -107,13 +111,15 @@ import permissions.dispatcher.RuntimePermissions;
       mFrameRect = null;
       switch (requestCode) {
         case REQUEST_PICK_IMAGE:
-          mCropView.load(result.getData())
+          mSourceUri = result.getData();
+          mCropView.load(mSourceUri)
               .initialFrameRect(mFrameRect)
               .useThumbnail(true)
               .execute(mLoadCallback);
           break;
         case REQUEST_SAF_PICK_IMAGE:
-          mCropView.load(Utils.ensureUriPermission(getContext(), result))
+          mSourceUri = Utils.ensureUriPermission(getContext(), result);
+          mCropView.load(mSourceUri)
               .initialFrameRect(mFrameRect)
               .useThumbnail(true)
               .execute(mLoadCallback);

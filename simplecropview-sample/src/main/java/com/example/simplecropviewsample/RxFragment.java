@@ -121,6 +121,7 @@ public class RxFragment extends Fragment {
   }
 
   private Disposable loadImage(final Uri uri) {
+    mSourceUri = uri;
     return new RxPermissions(getActivity()).request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         .filter(new Predicate<Boolean>() {
           @Override public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
