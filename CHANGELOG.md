@@ -1,6 +1,7 @@
 Change Log
 =========
 ## Version 1.1.5
+* Fix EXIF data bug
 * Fix OOM in onSaveInstanceState(CropImageView does not save bitmap internally anymore.)
 * Support RxJava2
 * Add Builder interface(LoadRequest/CropRequest/SaveRequest)
