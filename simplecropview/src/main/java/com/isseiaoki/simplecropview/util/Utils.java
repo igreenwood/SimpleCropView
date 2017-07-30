@@ -27,6 +27,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import static android.graphics.Bitmap.createBitmap;
 
@@ -58,8 +60,8 @@ import static android.graphics.Bitmap.createBitmap;
    *
    * =========================================
    */
-  public static void copyExifInfo(Context context, Uri sourceUri, Uri saveUri, int outputWidth,
-      int outputHeight) {
+  @SuppressWarnings("deprecation") public static void copyExifInfo(Context context, Uri sourceUri,
+      Uri saveUri, int outputWidth, int outputHeight) {
     if (sourceUri == null || saveUri == null) return;
     try {
       File sourceFile = Utils.getFileFromUri(context, sourceUri);
@@ -71,18 +73,26 @@ import static android.graphics.Bitmap.createBitmap;
       String savePath = saveFile.getAbsolutePath();
 
       ExifInterface sourceExif = new ExifInterface(sourcePath);
-      String[] tags = new String[] {
-          ExifInterface.TAG_APERTURE, ExifInterface.TAG_DATETIME,
-          ExifInterface.TAG_DATETIME_DIGITIZED, ExifInterface.TAG_EXPOSURE_TIME,
-          ExifInterface.TAG_FLASH, ExifInterface.TAG_FOCAL_LENGTH, ExifInterface.TAG_GPS_ALTITUDE,
+      List<String> tags = Arrays.asList(ExifInterface.TAG_DATETIME, ExifInterface.TAG_FLASH,
+          ExifInterface.TAG_FOCAL_LENGTH, ExifInterface.TAG_GPS_ALTITUDE,
           ExifInterface.TAG_GPS_ALTITUDE_REF, ExifInterface.TAG_GPS_DATESTAMP,
           ExifInterface.TAG_GPS_LATITUDE, ExifInterface.TAG_GPS_LATITUDE_REF,
           ExifInterface.TAG_GPS_LONGITUDE, ExifInterface.TAG_GPS_LONGITUDE_REF,
           ExifInterface.TAG_GPS_PROCESSING_METHOD, ExifInterface.TAG_GPS_TIMESTAMP,
-          ExifInterface.TAG_ISO, ExifInterface.TAG_MAKE, ExifInterface.TAG_MODEL,
-          ExifInterface.TAG_SUBSEC_TIME, ExifInterface.TAG_SUBSEC_TIME_DIG,
-          ExifInterface.TAG_SUBSEC_TIME_ORIG, ExifInterface.TAG_WHITE_BALANCE
-      };
+          ExifInterface.TAG_MAKE, ExifInterface.TAG_MODEL, ExifInterface.TAG_WHITE_BALANCE);
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        tags.add(ExifInterface.TAG_APERTURE);
+        tags.add(ExifInterface.TAG_ISO);
+        tags.add(ExifInterface.TAG_EXPOSURE_TIME);
+      }
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        tags.add(ExifInterface.TAG_SUBSEC_TIME_DIG);
+        tags.add(ExifInterface.TAG_SUBSEC_TIME_ORIG);
+        tags.add(ExifInterface.TAG_SUBSEC_TIME);
+        tags.add(ExifInterface.TAG_DATETIME_DIGITIZED);
+      }
 
       ExifInterface saveExif = new ExifInterface(savePath);
       String value;
@@ -490,7 +500,7 @@ import static android.graphics.Bitmap.createBitmap;
   public static void updateGalleryInfo(Context context, Uri uri) {
     ContentValues values = new ContentValues();
     File file = getFileFromUri(context, uri);
-    if (file.exists()) {
+    if (file != null && file.exists()) {
       values.put(MediaStore.Images.Media.SIZE, file.length());
     }
     ContentResolver resolver = context.getContentResolver();
