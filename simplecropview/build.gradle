@@ -1,31 +1,37 @@
 apply plugin: 'com.android.library'
 
-android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+dependencies {
+  compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    defaultConfig {
-        minSdkVersion 10
-        targetSdkVersion 23
-        versionCode 22
-        versionName "1.1.4"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
+  compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+  compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
+}
+
+android {
+  compileSdkVersion 25
+  buildToolsVersion '25.0.3'
+
+  defaultConfig {
+    minSdkVersion 10
+    targetSdkVersion 25
+    versionCode 23
+    versionName "1.1.5"
+    consumerProguardFiles 'proguard-rules.pro'
+  }
+
+  dexOptions {
+    preDexLibraries = false
+  }
 }
 
 def file = project.rootProject.file('local.properties')
-if(!file.exists())return
+if (!file.exists()) return
 
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'com.isseiaoki'
-version = '1.1.4'
+version = '1.1.5'
 def siteUrl = 'https://github.com/IsseiAoki/SimpleCropView'
 def gitUrl = 'https://github.com/IsseiAoki/SimpleCropView.git'
 Properties properties = new Properties()
@@ -33,77 +39,72 @@ properties.load(project.rootProject.file('local.properties').newDataInputStream(
 
 bintray {
 
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
+  user = properties.getProperty("bintray.user")
+  key = properties.getProperty("bintray.apikey")
 
-    configurations = ['archives'] //When uploading configuration files
-    pkg {
-        repo = 'maven'
-        name = 'SimpleCropView'
-        desc = 'A simple image cropping library for Android.'
-        websiteUrl = siteUrl
-        issueTrackerUrl = 'https://github.com/IsseiAoki/SimpleCropView/issues'
-        vcsUrl = gitUrl
-        licenses = ['MIT']
-        labels = ['android']
-        publicDownloadNumbers = true
-    }
+  configurations = ['archives'] //When uploading configuration files
+  pkg {
+    repo = 'maven'
+    name = 'SimpleCropView'
+    desc = 'A simple image cropping library for Android.'
+    websiteUrl = siteUrl
+    issueTrackerUrl = 'https://github.com/IsseiAoki/SimpleCropView/issues'
+    vcsUrl = gitUrl
+    licenses = ['MIT']
+    labels = ['android']
+    publicDownloadNumbers = true
+  }
 }
 
 install {
-    repositories.mavenInstaller {
-        pom {
-            project {
-                packaging 'aar'
-                name 'SimpleCropView'
-                url siteUrl
-                licenses {
-                    license {
-                        name 'The MIT License (MIT)'
-                        url 'http://opensource.org/licenses/MIT'
-                    }
-                }
-                developers {
-                    developer {
-                        id 'isseiaoki'
-                        name 'Issei Aoki'
-                        email 'i.greenwood.dev@gmail.com'
-                    }
-                }
-                scm {
-                    connection 'https://github.com/IsseiAoki/SimpleCropView.git'
-                    developerConnection 'https://github.com/IsseiAoki/SimpleCropView.git'
-                    url siteUrl
-
-                }
-            }
+  repositories.mavenInstaller {
+    pom {
+      project {
+        packaging 'aar'
+        name 'SimpleCropView'
+        url siteUrl
+        licenses {
+          license {
+            name 'The MIT License (MIT)'
+            url 'http://opensource.org/licenses/MIT'
+          }
         }
+        developers {
+          developer {
+            id 'isseiaoki'
+            name 'Issei Aoki'
+            email 'i.greenwood.dev@gmail.com'
+          }
+        }
+        scm {
+          connection 'https://github.com/IsseiAoki/SimpleCropView.git'
+          developerConnection 'https://github.com/IsseiAoki/SimpleCropView.git'
+          url siteUrl
+        }
+      }
     }
-}
-
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+  }
 }
 
 task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
+  from android.sourceSets.main.java.srcDirs
+  classifier = 'sources'
 }
 
 task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+  source = android.sourceSets.main.java.srcDirs
+  classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
+  classifier = 'javadoc'
+  from javadoc.destinationDir
 }
 artifacts {
-    archives javadocJar
-    archives sourcesJar
+  archives javadocJar
+  archives sourcesJar
 }
 
 task findConventions << {
-    println project.getConvention()
+  println project.getConvention()
 }

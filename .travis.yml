@@ -1,13 +1,34 @@
 language: android
 
+install:
+    - ./gradlew dependencies --debug
+
+jdk:
+    - oraclejdk8
+
+cache:
+ directories:
+  — $HOME/.gradle
+
+before_cache:
+ - find $HOME/.gradle -type f -not -name "*.jar" -delete
+ - find $HOME/.gradle -type f -not -name "*.pom" -delete
+ - find $HOME/.gradle -type f -not -name "*.aar" -delete
+
 android:
   components:
     - tools
     - platform-tools
-    - build-tools-23.0.2
-    - android-23
+    - tools
+    - build-tools-25.0.3
+    - android-25
     - extra-android-support
     - extra-android-m2repository
+
+  licenses:
+    - 'android-sdk-preview-license-52d11cd2'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
 
 script:
    - ./gradlew clean build --stacktrace

@@ -2,45 +2,45 @@ apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+  compileSdkVersion 25
+  buildToolsVersion '25.0.3'
 
-    defaultConfig {
-        applicationId "com.example.simplecropviewsample"
-        minSdkVersion 13
-        targetSdkVersion 23
-        versionCode 1
-        versionName "1.0.0"
+  defaultConfig {
+    applicationId "com.example.simplecropviewsample"
+    minSdkVersion 13
+    targetSdkVersion 25
+    versionCode 1
+    versionName "1.0.0"
+  }
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+  }
+  sourceSets {
+    main {
+      res.srcDirs = ['src/main/res', 'src/main/res/raw']
+      assets.srcDirs = ['src/main/assets', 'src/main/assets/']
     }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-    sourceSets {
-        main {
-            res.srcDirs = ['src/main/res', 'src/main/res/raw']
-            assets.srcDirs = ['src/main/assets', 'src/main/assets/']
-        }
-    }
-    lintOptions {
-        abortOnError false
-    }
+  }
+  lintOptions {
+    abortOnError false
+  }
 }
 
 ext {
-    permissionsDispatcherVersion = '2.1.2'
+  permissionsDispatcherVersion = '2.1.2'
+  supportLibraryVersion = '25.3.1'
 }
 
 dependencies {
-    compile "com.android.support:appcompat-v7:23.3.0"
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile project(':simplecropview')
-    compile "com.github.hotchemi:permissionsdispatcher:${permissionsDispatcherVersion}"
-    apt "com.github.hotchemi:permissionsdispatcher-processor:${permissionsDispatcherVersion}"
+  compile fileTree(dir: 'libs', include: ['*.jar'])
+  compile project(':simplecropview')
+  compile "com.github.hotchemi:permissionsdispatcher:$permissionsDispatcherVersion"
+  apt "com.github.hotchemi:permissionsdispatcher-processor:$permissionsDispatcherVersion"
+  compile "com.android.support:appcompat-v7:$supportLibraryVersion"
+  compile 'com.tbruyelle.rxpermissions2:rxpermissions:0.9.4@aar'
+  compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+  compile 'io.reactivex.rxjava2:rxandroid:2.0.1'
 }

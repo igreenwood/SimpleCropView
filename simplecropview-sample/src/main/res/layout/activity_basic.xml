@@ -1,26 +1,21 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/layout_root"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    >
+    android:orientation="vertical">
 
   <android.support.v7.widget.Toolbar
       android:id="@+id/toolbar"
       android:layout_width="match_parent"
       android:layout_height="?attr/actionBarSize"
       android:background="@color/colorPrimary"
+      app:title="SimpleCropView"
       />
 
-  <ImageView
-      android:id="@+id/result_image"
+  <FrameLayout
+      android:id="@+id/container"
       android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1"
-      android:adjustViewBounds="true"
-      android:padding="@dimen/spacing"
-      android:scaleType="fitCenter"
+      android:layout_height="match_parent"
       />
-
 </LinearLayout>

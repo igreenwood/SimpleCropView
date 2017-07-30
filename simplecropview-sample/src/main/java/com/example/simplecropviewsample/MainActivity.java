@@ -1,43 +1,41 @@
 package com.example.simplecropviewsample;
 
-import android.content.Intent;
-import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
 
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
+  @Override protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
 
-    // Lifecycle Method ////////////////////////////////////////////////////////////////////////////
+    findViewById(R.id.basic_sample_button).setOnClickListener(this);
+    findViewById(R.id.rx_sample_button).setOnClickListener(this);
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    // apply custom font
+    FontUtils.setFont(findViewById(R.id.root_layout));
 
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.container, MainFragment.getInstance()).commit();
-        }
+    initToolbar();
+  }
+
+  @Override public void onClick(View view) {
+    switch (view.getId()) {
+      case R.id.basic_sample_button:
+        startActivity(BasicActivity.createIntent(this));
+        break;
+      case R.id.rx_sample_button:
+        startActivity(RxActivity.createIntent(this));
+        break;
     }
+  }
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        finish();
-    }
-
-    public void startResultActivity(Uri uri) {
-        if (isFinishing()) return;
-        // Start ResultActivity
-        startActivity(ResultActivity.createIntent(this, uri));
-    }
+  private void initToolbar() {
+    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+    setSupportActionBar(toolbar);
+    ActionBar actionBar = getSupportActionBar();
+    FontUtils.setTitle(actionBar, "SimpleCropView");
+  }
 }
