@@ -29,7 +29,7 @@ Supported on API Level 10 and above.
   * [CropMode](#cropmode)
   * [MinimumFrameSize](#minimumframesize)
   * [InitialFrameScale](#initialframescale)
-  * [Save and Restore FrameRect](#save-and-restoreframerect)
+  * [Save and Restore FrameRect](#save-and-restore-framerect)
   * [Color](#color)
   * [Stroke Weight and Handle Size](#stroke-weight-and-handle-size)
   * [Handle Touch Padding](#handle-touch-padding)
@@ -51,7 +51,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.isseiaoki:simplecropview:1.1.5'
+    compile 'com.isseiaoki:simplecropview:1.1.6'
 }
 ```
 

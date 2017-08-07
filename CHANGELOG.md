@@ -1,5 +1,8 @@
 Change Log
 =========
+## Version 1.1.6
+* Fix UnsupportedOperationException(#113)
+
 ## Version 1.1.5
 * Fix EXIF data bug
 * Fix OOM in onSaveInstanceState(CropImageView does not save bitmap internally anymore.)
