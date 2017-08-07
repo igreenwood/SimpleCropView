@@ -27,7 +27,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.graphics.Bitmap.createBitmap;
@@ -60,8 +60,8 @@ import static android.graphics.Bitmap.createBitmap;
    *
    * =========================================
    */
-  @SuppressWarnings("deprecation") public static void copyExifInfo(Context context, Uri sourceUri,
-      Uri saveUri, int outputWidth, int outputHeight) {
+  public static void copyExifInfo(Context context, Uri sourceUri, Uri saveUri, int outputWidth,
+      int outputHeight) {
     if (sourceUri == null || saveUri == null) return;
     try {
       File sourceFile = Utils.getFileFromUri(context, sourceUri);
@@ -73,25 +73,45 @@ import static android.graphics.Bitmap.createBitmap;
       String savePath = saveFile.getAbsolutePath();
 
       ExifInterface sourceExif = new ExifInterface(sourcePath);
-      List<String> tags = Arrays.asList(ExifInterface.TAG_DATETIME, ExifInterface.TAG_FLASH,
-          ExifInterface.TAG_FOCAL_LENGTH, ExifInterface.TAG_GPS_ALTITUDE,
-          ExifInterface.TAG_GPS_ALTITUDE_REF, ExifInterface.TAG_GPS_DATESTAMP,
-          ExifInterface.TAG_GPS_LATITUDE, ExifInterface.TAG_GPS_LATITUDE_REF,
-          ExifInterface.TAG_GPS_LONGITUDE, ExifInterface.TAG_GPS_LONGITUDE_REF,
-          ExifInterface.TAG_GPS_PROCESSING_METHOD, ExifInterface.TAG_GPS_TIMESTAMP,
-          ExifInterface.TAG_MAKE, ExifInterface.TAG_MODEL, ExifInterface.TAG_WHITE_BALANCE);
+      List<String> tags = new ArrayList<>();
+      tags.add(ExifInterface.TAG_DATETIME);
+      tags.add(ExifInterface.TAG_FLASH);
+      tags.add(ExifInterface.TAG_FOCAL_LENGTH);
+      tags.add(ExifInterface.TAG_GPS_ALTITUDE);
+      tags.add(ExifInterface.TAG_GPS_ALTITUDE_REF);
+      tags.add(ExifInterface.TAG_GPS_DATESTAMP);
+      tags.add(ExifInterface.TAG_GPS_LATITUDE);
+      tags.add(ExifInterface.TAG_GPS_LATITUDE_REF);
+      tags.add(ExifInterface.TAG_GPS_LONGITUDE);
+      tags.add(ExifInterface.TAG_GPS_LONGITUDE_REF);
+      tags.add(ExifInterface.TAG_GPS_PROCESSING_METHOD);
+      tags.add(ExifInterface.TAG_GPS_TIMESTAMP);
+      tags.add(ExifInterface.TAG_MAKE);
+      tags.add(ExifInterface.TAG_MODEL);
+      tags.add(ExifInterface.TAG_WHITE_BALANCE);
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-        tags.add(ExifInterface.TAG_APERTURE);
-        tags.add(ExifInterface.TAG_ISO);
         tags.add(ExifInterface.TAG_EXPOSURE_TIME);
+        //noinspection deprecation
+        tags.add(ExifInterface.TAG_APERTURE);
+        //noinspection deprecation
+        tags.add(ExifInterface.TAG_ISO);
       }
 
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        tags.add(ExifInterface.TAG_SUBSEC_TIME_DIG);
-        tags.add(ExifInterface.TAG_SUBSEC_TIME_ORIG);
-        tags.add(ExifInterface.TAG_SUBSEC_TIME);
         tags.add(ExifInterface.TAG_DATETIME_DIGITIZED);
+        tags.add(ExifInterface.TAG_SUBSEC_TIME);
+        //noinspection deprecation
+        tags.add(ExifInterface.TAG_SUBSEC_TIME_DIG);
+        //noinspection deprecation
+        tags.add(ExifInterface.TAG_SUBSEC_TIME_ORIG);
+      }
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        tags.add(ExifInterface.TAG_F_NUMBER);
+        tags.add(ExifInterface.TAG_ISO_SPEED_RATINGS);
+        tags.add(ExifInterface.TAG_SUBSEC_TIME_DIGITIZED);
+        tags.add(ExifInterface.TAG_SUBSEC_TIME_ORIGINAL);
       }
 
       ExifInterface saveExif = new ExifInterface(savePath);
@@ -104,7 +124,8 @@ import static android.graphics.Bitmap.createBitmap;
       }
       saveExif.setAttribute(ExifInterface.TAG_IMAGE_WIDTH, String.valueOf(outputWidth));
       saveExif.setAttribute(ExifInterface.TAG_IMAGE_LENGTH, String.valueOf(outputHeight));
-      saveExif.setAttribute(ExifInterface.TAG_ORIENTATION, "0");
+      saveExif.setAttribute(ExifInterface.TAG_ORIENTATION,
+          String.valueOf(ExifInterface.ORIENTATION_UNDEFINED));
 
       saveExif.saveAttributes();
     } catch (IOException e) {
