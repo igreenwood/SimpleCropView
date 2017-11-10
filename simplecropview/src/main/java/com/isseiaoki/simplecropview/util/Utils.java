@@ -519,6 +519,10 @@ import static android.graphics.Bitmap.createBitmap;
   }
 
   public static void updateGalleryInfo(Context context, Uri uri) {
+    if (!ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+      return;
+    }
+
     ContentValues values = new ContentValues();
     File file = getFileFromUri(context, uri);
     if (file != null && file.exists()) {
