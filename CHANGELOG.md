@@ -1,5 +1,8 @@
 Change Log
 =========
+## Version 1.1.7
+* Fix IllegalArgumentException(#121)
+
 ## Version 1.1.6
 * Fix UnsupportedOperationException(#113)
 
