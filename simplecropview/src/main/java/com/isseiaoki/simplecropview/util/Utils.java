@@ -278,10 +278,15 @@ import static android.graphics.Bitmap.createBitmap;
       // DownloadsProvider
       else if (isDownloadsDocument(uri)) {
         final String id = DocumentsContract.getDocumentId(uri);
-        final Uri contentUri =
-            ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"),
-                Long.valueOf(id));
-        filePath = getDataColumn(context, contentUri, null, null);
+        // String "id" may not represent a valid Long type data, it may equals to
+        // something like "raw:/storage/emulated/0/Download/some_file" instead.
+        // Doing a check before passing the "id" to Long.valueOf(String) would be much safer.
+        if (RawDocumentsHelper.isRawDocId(id)) {
+          filePath = RawDocumentsHelper.getAbsoluteFilePath(id);
+        } else {
+          final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+          filePath = getDataColumn(context, contentUri, null, null);
+        }
       }
       // MediaProvider
       else if (isMediaDocument(uri)) {
@@ -321,6 +326,23 @@ import static android.graphics.Bitmap.createBitmap;
       return new File(filePath);
     }
     return null;
+  }
+
+  // A copy of com.android.providers.downloads.RawDocumentsHelper since it is invisibility.
+  public static class RawDocumentsHelper {
+    public static final String RAW_PREFIX = "raw:";
+
+    public static boolean isRawDocId(String docId) {
+      return docId != null && docId.startsWith(RAW_PREFIX);
+    }
+
+    public static String getDocIdForFile(File file) {
+      return RAW_PREFIX + file.getAbsolutePath();
+    }
+
+    public static String getAbsoluteFilePath(String rawDocumentId) {
+      return rawDocumentId.substring(RAW_PREFIX.length());
+    }
   }
 
   /**
