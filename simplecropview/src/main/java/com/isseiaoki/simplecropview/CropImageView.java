@@ -432,7 +432,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     y += textHeight;
     canvas.drawText(builder.toString(), x, y, mPaintDebug);
     builder = new StringBuilder();
-    builder.append("ACTUAL_CROP_RECT: ").append(getActualCropRect().toString());
+    builder.append("ACTUAL_CROP_RECT: ").append(getActualCropRect() != null ? getActualCropRect().toString() : "");
     y += textHeight;
     canvas.drawText(builder.toString(), x, y, mPaintDebug);
   }
@@ -1918,6 +1918,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
    * @return getCroppedBitmap area boundaries.
    */
   public RectF getActualCropRect() {
+    if(mImageRect == null) return null;
     float offsetX = (mImageRect.left / mScale);
     float offsetY = (mImageRect.top / mScale);
     float l = (mFrameRect.left / mScale) - offsetX;
