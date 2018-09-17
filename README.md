@@ -7,7 +7,7 @@
 
 The SimpleCropView is an image cropping library for Android.<br>
 It simplifies your code for cropping image and provides an easily customizable UI.<br><br>
-Supported on API Level 10 and above.
+Supported on API Level 14 and above.
 
 
 ![demo](https://raw.github.com/wiki/IsseiAoki/SimpleCropView/images/1.1.0/demo_basic_usage.gif)
@@ -51,7 +51,7 @@ repositories {
     jcenter()
 }
 dependencies {
-    compile 'com.isseiaoki:simplecropview:1.1.7'
+    compile 'com.isseiaoki:simplecropview:1.1.8'
 }
 ```
 

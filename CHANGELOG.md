@@ -1,5 +1,9 @@
 Change Log
 =========
+## Version 1.1.8
+* Fix Unchecked call to Long.valueOf(String) may cause an NFE
+* Changed minimum api level 10 to 14
+
 ## Version 1.1.7
 * Fix IllegalArgumentException(#121)
 
