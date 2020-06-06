@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FilterImageView">
+        <attr name="filter_mode">
+            <enum name="no_filter" value="0"/>
+            <enum name="m_filter" value="1"/>
+        </attr>
+    </declare-styleable>
+</resources>

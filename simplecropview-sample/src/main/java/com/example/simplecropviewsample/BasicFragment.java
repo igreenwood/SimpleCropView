@@ -37,7 +37,8 @@ import permissions.dispatcher.PermissionRequest;
 import permissions.dispatcher.RuntimePermissions;
 
 @RuntimePermissions public class BasicFragment extends Fragment {
-  private static final String TAG = BasicFragment.class.getSimpleName();
+//  private static final String TAG = BasicFragment.class.getSimpleName();
+  private static final String TAG = "BASIC FRAG";
 
   private static final int REQUEST_PICK_IMAGE = 10011;
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
@@ -152,6 +153,11 @@ import permissions.dispatcher.RuntimePermissions;
     view.findViewById(R.id.buttonCustom).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
+
+    /// Filter ////////////////////////////////////////////////////////////////////////////
+    view.findViewById(R.id.buttonFilter).setOnClickListener(btnListener);
+    view.findViewById(R.id.buttonNoFilter).setOnClickListener(btnListener);
+    /// EOFilter //////////////////////////////////////////////////////////////////////////
   }
 
   @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE) public void pickImage() {
@@ -331,6 +337,17 @@ import permissions.dispatcher.RuntimePermissions;
         case R.id.buttonPickImage:
           BasicFragmentPermissionsDispatcher.pickImageWithCheck(BasicFragment.this);
           break;
+
+          /// Filter ///////////////////////////////////////////////////////////////
+        case R.id.buttonFilter:
+          mCropView.setFilterMode(CropImageView.FilterMode.mFilter);
+          Log.d(TAG, "onClick: Filter CLICKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+          break;
+        case R.id.buttonNoFilter:
+//          mCropView.setFilterMode(CropImageView.FilterMode.NO_FILTER);
+          Log.d(TAG, "onClick: NO FILTER CLICKEd ////////////////////////////");
+          break;
+          /// EO Filter ////////////////////////////////////////////////////////////
       }
     }
   };

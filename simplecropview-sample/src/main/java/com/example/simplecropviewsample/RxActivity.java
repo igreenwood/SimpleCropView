@@ -5,10 +5,11 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+
 
 public class RxActivity extends AppCompatActivity {
   private static final String TAG = RxActivity.class.getSimpleName();
@@ -23,7 +24,7 @@ public class RxActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_basic);
 
-    if(savedInstanceState == null){
+    if(savedInstanceState == null) {
       getSupportFragmentManager().beginTransaction().add(R.id.container, RxFragment.newInstance()).commit();
     }
 
@@ -55,5 +56,6 @@ public class RxActivity extends AppCompatActivity {
     if (isFinishing()) return;
     // Start ResultActivity
     startActivity(ResultActivity.createIntent(this, uri));
+//      startActivity(FilterActivity.createIntent(this, uri));
   }
 }
