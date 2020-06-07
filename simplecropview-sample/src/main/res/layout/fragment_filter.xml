@@ -1,0 +1,127 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/filter_layout_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/filterImageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="@dimen/spacing_xlarge"
+        />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="@dimen/spacing_small"
+        android:layout_marginRight="@dimen/spacing_small"
+        android:background="@color/divider" />
+
+    <HorizontalScrollView
+        android:id="@+id/filter_tab_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/windowBackground"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/filter_tab_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:paddingLeft="@dimen/spacing_xsmall"
+            android:paddingRight="@dimen/spacing_xsmall">
+
+            <Button
+                android:id="@+id/NoFilterButton"
+                style="@style/AppTheme.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/spacing_xsmall"
+                android:padding="@dimen/spacing_xsmall"
+                android:text="No Filter" />
+
+            <Button
+                android:id="@+id/Filter1Button"
+                style="@style/AppTheme.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/spacing_xsmall"
+                android:padding="@dimen/spacing_xsmall"
+                android:text="Filter1" />
+
+            <Button
+                android:id="@+id/Filter2Button"
+                style="@style/AppTheme.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/spacing_xsmall"
+                android:padding="@dimen/spacing_xsmall"
+                android:text="Filter 2" />
+
+            <Button
+                android:id="@+id/Filter3Button"
+                style="@style/AppTheme.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/spacing_xsmall"
+                android:padding="@dimen/spacing_xsmall"
+                android:text="Filter 3" />
+
+            <Button
+                android:id="@+id/Filter4Button"
+                style="@style/AppTheme.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/spacing_xsmall"
+                android:padding="@dimen/spacing_xsmall"
+                android:text="Filter 4" />
+
+
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="@dimen/spacing_small"
+        android:layout_marginRight="@dimen/spacing_small"
+        android:background="@color/divider" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/filterImageView"
+        android:layout_centerHorizontal="true"
+        android:background="@color/windowBackground"
+        android:orientation="horizontal">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:orientation="horizontal">
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/filterButtonDone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="16dp"
+            android:src="@drawable/ic_done_black_24dp" />
+    </RelativeLayout>
+</LinearLayout>

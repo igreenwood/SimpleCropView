@@ -55,7 +55,7 @@ public class RxActivity extends AppCompatActivity {
   public void startResultActivity(Uri uri) {
     if (isFinishing()) return;
     // Start ResultActivity
-    startActivity(ResultActivity.createIntent(this, uri));
+    startActivity(FilterActivity.createIntent(this, uri));
 //      startActivity(FilterActivity.createIntent(this, uri));
   }
 }

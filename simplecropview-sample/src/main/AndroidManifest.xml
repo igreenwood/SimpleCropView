@@ -12,7 +12,8 @@
         android:label="@string/app_name"
         android:supportsRtl="false"
         android:theme="@style/AppTheme.Light.NoActionBar">
-        <activity android:name=".AddedForFilter.FilterActivity"></activity>
+        <activity android:name=".FilterActivity"></activity>
+        <activity android:name=".AddedForFilter.FilterActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,12 +24,12 @@
         <activity
             android:name=".BasicActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"></activity>
+            android:label="@string/app_name" />
         <activity
             android:name=".RxActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"></activity>
-        <activity android:name=".ResultActivity"></activity>
+            android:label="@string/app_name" />
+        <activity android:name=".ResultActivity" />
     </application>
 
 </manifest>
