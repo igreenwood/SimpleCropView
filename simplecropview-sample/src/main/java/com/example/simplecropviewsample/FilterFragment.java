@@ -205,7 +205,7 @@ public class FilterFragment extends Fragment {
 
 
     private void sendImageToResult(){
-        // TODO: 6/8/20 must be completed with create uri for image and send to result activity 
+        // TODO: 6/8/20 must be completed with create uri for image and send to result activity
 
 
     }
