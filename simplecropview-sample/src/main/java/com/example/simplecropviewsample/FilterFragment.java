@@ -23,6 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.isseiaoki.simplecropview.CropImageView;
+import com.isseiaoki.simplecropview.FilterImageView;
 import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
 import com.tbruyelle.rxpermissions2.RxPermissions;
@@ -56,7 +57,8 @@ public class FilterFragment extends Fragment {
     private static final String KEY_SOURCE_URI = "SourceUri";
 
     // Views ///////////////////////////////////////////////////////////////////////////////////////
-    private ImageView mImageView;
+//    private ImageView mImageView;
+    private FilterImageView mImageView;
     private CompositeDisposable mDisposable = new CompositeDisposable();
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
 //    private RectF mFrameRect = null;
@@ -213,7 +215,7 @@ public class FilterFragment extends Fragment {
     private void bindViews(View view) {
 
 
-        mImageView = (ImageView) view.findViewById(R.id.filterImageView);
+        mImageView = (FilterImageView) view.findViewById(R.id.filterImageView);
         view.findViewById(R.id.filterButtonDone).setOnClickListener(btnListener);
         view.findViewById(R.id.NoFilterButton).setOnClickListener(btnListener);
         view.findViewById(R.id.Filter1Button).setOnClickListener(btnListener);
@@ -324,18 +326,23 @@ public class FilterFragment extends Fragment {
                     break;
                 case R.id.NoFilterButton:
                     // TODO: 6/7/20 no filter
+                    mImageView.setFilterMode(FilterImageView.FilterMode.NO_FILTER);
                     break;
                 case R.id.Filter1Button:
                     // TODO: 6/7/20 filter 1
+                    mImageView.setFilterMode(FilterImageView.FilterMode.mFilter);
                     break;
                 case R.id.Filter2Button:
                     // TODO: 6/7/20 filter 2
+                    mImageView.setFilterMode(FilterImageView.FilterMode.SEPIA);
                     break;
                 case R.id.Filter3Button:
                     // TODO: 6/7/20 filter 3
+                    mImageView.setFilterMode(FilterImageView.FilterMode.GREY_SCALE);
                     break;
                 case R.id.Filter4Button:
                     // TODO: 6/7/20 filter 4
+                    mImageView.setFilterMode(FilterImageView.FilterMode.DIAGONAL_SEPIA);
                     break;
             }
         }

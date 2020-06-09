@@ -5,10 +5,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <ImageView
+    <com.isseiaoki.simplecropview.FilterImageView
         android:id="@+id/filterImageView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="@dimen/spacing_xlarge"
         />
@@ -53,7 +53,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_margin="@dimen/spacing_xsmall"
                 android:padding="@dimen/spacing_xsmall"
-                android:text="Filter1" />
+                android:text="Inverter" />
 
             <Button
                 android:id="@+id/Filter2Button"
@@ -63,7 +63,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_margin="@dimen/spacing_xsmall"
                 android:padding="@dimen/spacing_xsmall"
-                android:text="Filter 2" />
+                android:text="Sepia" />
 
             <Button
                 android:id="@+id/Filter3Button"
@@ -73,7 +73,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_margin="@dimen/spacing_xsmall"
                 android:padding="@dimen/spacing_xsmall"
-                android:text="Filter 3" />
+                android:text="GreyScale" />
 
             <Button
                 android:id="@+id/Filter4Button"
@@ -83,7 +83,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_margin="@dimen/spacing_xsmall"
                 android:padding="@dimen/spacing_xsmall"
-                android:text="Filter 4" />
+                android:text="Diagonal Sepia" />
 
 
 
