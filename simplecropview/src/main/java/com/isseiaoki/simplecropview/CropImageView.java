@@ -374,14 +374,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
       mIsHandleShadowEnabled =
           ta.getBoolean(R.styleable.scv_CropImageView_scv_handle_shadow_enabled, true);
 
-      /// Filter /////////////////////////////////////////////////////////////////
-      for (FilterMode mode: FilterMode.values()) {
-        if (ta.getInt(R.styleable.scv_CropImageView_scv_filter_mode, 0) == mode.getID()){
-          mFilterMode = mode;
-          break;
-        }
-      }
-      /// EOFilter //////////////////////////////////////////////////////////////
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -2533,102 +2525,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
         return new SavedState[inSize];
       }
     };
-  }
-
-  // Filter //////////////////////////////////////////////////////////////////////////////////////
-
-  private FilterMode mFilterMode = FilterMode.NO_FILTER;
-//  private Bitmap NO_FILTER_BITMAP;
-
-
-  public FilterMode getFilterMode(){
-    return mFilterMode;
-  }
-
-  public enum FilterMode{
-    NO_FILTER(0), mFilter(1);
-
-    private final int ID;
-
-    FilterMode(int ID){
-      this.ID = ID;
-    }
-
-    public int getID() {
-      return ID;
-    }
-  }
-
-  public void setFilterMode(FilterMode mode){
-    switch (mode){
-      case mFilter:{
-        setMFilter();
-        break;
-      }
-      case NO_FILTER:{
-//        if (NO_FILTER_BITMAP == null){
-//          NO_FILTER_BITMAP = getImage(getSourceUri());
-        }
-//        setImageBitmap(NO_FILTER_BITMAP);
-//        break;
-//      }
-    }
-    invalidate();
-  }
-
-  private void setMFilter(){
-      ApplyMFilter applyMFilter = new ApplyMFilter(this);
-      applyMFilter.execute();
-  }
-
-
-  private static class ApplyMFilter extends AsyncTask<Void, Void, Bitmap>{
-    Bitmap bitmap;
-    WeakReference<CropImageView> cropImageViewWeakReference;
-    int WIDTH;
-    int HEIGHT;
-
-    ApplyMFilter(CropImageView cropImageView){
-      cropImageViewWeakReference = new WeakReference<>(cropImageView);
-      bitmap = cropImageView.getImageBitmap();
-      WIDTH = bitmap.getWidth();
-      HEIGHT = bitmap.getHeight();
-    }
-
-    @Override
-    protected Bitmap doInBackground(Void... voids) {
-
-      Bitmap imgOut = Bitmap.createBitmap(WIDTH, HEIGHT, bitmap.getConfig());
-
-      int A, R, G, B;
-      int pixel;
-
-      for (int x = 0; x < WIDTH; x++){
-        for (int y = 0; y < HEIGHT; y++){
-          pixel = bitmap.getPixel(x, y);
-
-          A = Color.alpha(pixel);
-          R = Color.red(pixel);
-          G = Color.green(pixel);
-          B = Color.blue(pixel);
-
-          imgOut.setPixel(x, y, Color.argb(A, 255 - R, 255 - G, 255 - B));
-        }
-      }
-      return imgOut;
-    }
-
-    @Override
-    protected void onPostExecute(Bitmap bitmap) {
-      if (cropImageViewWeakReference != null && bitmap != null){
-        CropImageView cropImageView = this.cropImageViewWeakReference.get();
-        if (cropImageView != null){
-          cropImageView.setImageBitmap(bitmap);
-          cropImageView.applyInitialFrameRect(cropImageView.getActualCropRect());
-        }
-      }
-    }
-
   }
 
 }

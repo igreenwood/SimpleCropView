@@ -3,12 +3,9 @@ package com.isseiaoki.simplecropview;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -19,27 +16,21 @@ import java.lang.ref.WeakReference;
 public class FilterImageView extends ImageView {
     private static final String TAG = "FilterImageView";
 
-    private Bitmap NonFilterBitmap;
-    private Bitmap ImgBitmap;
+    private Bitmap imgBitmap;
+    private boolean imgFlag = true;
 
     private FilterMode mFilterMode = FilterMode.NO_FILTER;
 
     public FilterImageView(Context context) {
         super(context);
-//        NonFilterBitmap = getBitmap().copy(getBitmap().getConfig(), false);
-//        ImgBitmap = getBitmap().copy(getBitmap().getConfig(), true);
     }
 
     public FilterImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
-//        NonFilterBitmap = getBitmap().copy(getBitmap().getConfig(), false);
-//        ImgBitmap = getBitmap().copy(getBitmap().getConfig(), true);
     }
 
     public FilterImageView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-//        NonFilterBitmap = getBitmap().copy(getBitmap().getConfig(), false);
-//        ImgBitmap = getBitmap().copy(getBitmap().getConfig(), true);
     }
 
     public Bitmap getBitmap() {
@@ -52,17 +43,12 @@ public class FilterImageView extends ImageView {
         return bm;
     }
 
-    public Bitmap getNonFilterBitmap() {
-        return NonFilterBitmap;
-    }
-
     public Bitmap getImgBitmap() {
-        return ImgBitmap;
+        return imgBitmap;
     }
-
 
     public enum FilterMode {
-        NO_FILTER(0), mFilter(1), GREY_SCALE(2), SEPIA(3), DIAGONAL_SEPIA(4);
+        NO_FILTER(0), INVERT_COLORS(1), GREY_SCALE(2), SEPIA(3), DIAGONAL_SEPIA(4);
 
         private final int id;
 
@@ -76,10 +62,16 @@ public class FilterImageView extends ImageView {
     }
 
     public void setFilterMode(FilterMode filterMode) {
-        this.mFilterMode = filterMode;
-        ApplyFilter applyFilter = new ApplyFilter(this, filterMode);
-        applyFilter.execute();
-        invalidate();
+        if (imgFlag) {
+            imgBitmap = getBitmap();
+            imgFlag = false;
+        }
+        if (filterMode.getId() != mFilterMode.getId()) {
+            this.mFilterMode = filterMode;
+            ApplyFilter applyFilter = new ApplyFilter(this);
+            applyFilter.execute();
+            invalidate();
+        }
     }
 
 
@@ -92,9 +84,9 @@ public class FilterImageView extends ImageView {
         private FilterMode filterMode;
 
 
-        ApplyFilter(FilterImageView filterImageView, FilterMode filterMode) {
+        ApplyFilter(FilterImageView filterImageView) {
             imageViewWeakReference = new WeakReference<>(filterImageView);
-            bitmap = imageViewWeakReference.get().getBitmap();
+            bitmap = imageViewWeakReference.get().getImgBitmap();
             width = bitmap.getWidth();
             height = bitmap.getHeight();
             this.filterMode = imageViewWeakReference.get().mFilterMode;
@@ -105,9 +97,9 @@ public class FilterImageView extends ImageView {
             Bitmap imgOut = Bitmap.createBitmap(width, height, bitmap.getConfig());
             switch (filterMode) {
                 case NO_FILTER:
-//                    returnTheOrginalImg(imgOut); //todo fix this
+                    imgOut = Bitmap.createBitmap(this.bitmap);
                     break;
-                case mFilter:
+                case INVERT_COLORS:
                     applyMFilter(imgOut);
                     break;
                 case GREY_SCALE:
@@ -131,11 +123,9 @@ public class FilterImageView extends ImageView {
                 if (imageView != null) {
                     Log.d(TAG, "onPostExecute: imageView not null");
                     imageView.setImageBitmap(bitmap);
-
                 }
             }
         }
-
 
         private void applyMFilter(Bitmap bitmap) {
             int A, R, G, B;
@@ -152,12 +142,6 @@ public class FilterImageView extends ImageView {
 
                     bitmap.setPixel(x, y, Color.argb(A, 255 - R, 255 - G, 255 - B));
                 }
-            }
-        }
-
-        private void returnTheOrginalImg(Bitmap bitmap) {
-            if (imageViewWeakReference != null & bitmap != null) {
-//                bitmap = imageViewWeakReference.get().getNonFilterBitmap();
             }
         }
 

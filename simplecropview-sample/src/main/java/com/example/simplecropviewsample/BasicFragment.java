@@ -337,17 +337,6 @@ import permissions.dispatcher.RuntimePermissions;
         case R.id.buttonPickImage:
           BasicFragmentPermissionsDispatcher.pickImageWithCheck(BasicFragment.this);
           break;
-
-          /// Filter ///////////////////////////////////////////////////////////////
-        case R.id.buttonFilter:
-          mCropView.setFilterMode(CropImageView.FilterMode.mFilter);
-          Log.d(TAG, "onClick: Filter CLICKED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-          break;
-        case R.id.buttonNoFilter:
-//          mCropView.setFilterMode(CropImageView.FilterMode.NO_FILTER);
-          Log.d(TAG, "onClick: NO FILTER CLICKEd ////////////////////////////");
-          break;
-          /// EO Filter ////////////////////////////////////////////////////////////
       }
     }
   };

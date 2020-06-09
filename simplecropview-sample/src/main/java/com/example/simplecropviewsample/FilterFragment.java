@@ -1,14 +1,9 @@
 package com.example.simplecropviewsample;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.RectF;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,13 +15,9 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
-import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.FilterImageView;
 import com.isseiaoki.simplecropview.util.Logger;
-import com.isseiaoki.simplecropview.util.Utils;
-import com.tbruyelle.rxpermissions2.RxPermissions;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -34,17 +25,7 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.reactivex.CompletableSource;
-import io.reactivex.SingleSource;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.schedulers.Schedulers;
 
 
 public class FilterFragment extends Fragment {
@@ -330,7 +311,7 @@ public class FilterFragment extends Fragment {
                     break;
                 case R.id.Filter1Button:
                     // TODO: 6/7/20 filter 1
-                    mImageView.setFilterMode(FilterImageView.FilterMode.mFilter);
+                    mImageView.setFilterMode(FilterImageView.FilterMode.INVERT_COLORS);
                     break;
                 case R.id.Filter2Button:
                     // TODO: 6/7/20 filter 2
