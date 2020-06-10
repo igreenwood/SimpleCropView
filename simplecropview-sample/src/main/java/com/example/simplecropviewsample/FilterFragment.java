@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -17,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Switch;
 
 import com.isseiaoki.simplecropview.FilterImageView;
@@ -41,7 +43,7 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
     private static final String KEY_SOURCE_URI = "SourceUri";
 
     // Views ///////////////////////////////////////////////////////////////////////////////////////
-//    private ImageView mImageView;
+    private ImageView mtestIV;
     private FilterImageView mImageView;
     private CompositeDisposable mDisposable = new CompositeDisposable();
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
@@ -209,8 +211,15 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
         view.findViewById(R.id.Filter2Button).setOnClickListener(btnListener);
         view.findViewById(R.id.Filter3Button).setOnClickListener(btnListener);
         view.findViewById(R.id.Filter4Button).setOnClickListener(btnListener);
+        view.findViewById(R.id.Filter5Button).setOnClickListener(btnListener);
+        view.findViewById(R.id.Filter6Button).setOnClickListener(btnListener);
+        view.findViewById(R.id.Filter7Button).setOnClickListener(btnListener);
         Switch diagonalSwitch = (Switch) view.findViewById(R.id.diagonal_switch_button);
         diagonalSwitch.setOnCheckedChangeListener(this);
+
+        mtestIV = view.findViewById(R.id.test_image);
+        mtestIV.setOnClickListener(btnListener);
+        mtestIV.setVisibility(View.GONE);
 
         mExecutor = Executors.newSingleThreadExecutor();
         mExecutor.submit(new ResultActivity.LoadScaledImageTask(getActivity(), uri, mImageView, calcImageSize()));
@@ -317,6 +326,7 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
                     mImageView.setFilterMode(FilterImageView.FilterMode.NO_FILTER);
                     break;
                 case R.id.Filter1Button:
+//                    mtestIV.setImageBitmap(((BitmapDrawable) mImageView.getDrawable()).getBitmap());
                     mImageView.setFilterMode(FilterImageView.FilterMode.INVERT_COLORS);
                     break;
                 case R.id.Filter2Button:
@@ -328,7 +338,17 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
                 case R.id.Filter4Button:
                     mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_4);
                     break;
+                case R.id.Filter5Button:
+                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_5);
+                    break;
+                case R.id.Filter6Button:
+                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_6);
+                    break;
+                case R.id.Filter7Button:
+                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_7);
+                    break;
             }
+
         }
     };
 

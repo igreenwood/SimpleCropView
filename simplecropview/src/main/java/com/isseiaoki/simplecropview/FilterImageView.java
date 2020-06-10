@@ -50,7 +50,8 @@ public class FilterImageView extends ImageView {
     }
 
     public enum FilterMode {
-        NO_FILTER(0), INVERT_COLORS(1), GREY_SCALE(2), SEPIA(3), FILTER_4(4), FILTER_5(5), FILTER_6(6);
+        NO_FILTER(0), INVERT_COLORS(1), GREY_SCALE(2), SEPIA(3), FILTER_4(4), FILTER_5(5), FILTER_6(6)
+        , FILTER_7(7);
 
         private final int id;
 
@@ -128,6 +129,10 @@ public class FilterImageView extends ImageView {
                     applyFilter5(imgOut);
                     break;
                 case FILTER_6:
+                    applyFilter6(imgOut);
+                    break;
+                case FILTER_7:
+                    applyFilter7(imgOut);
                     break;
             }
             return imgOut;
@@ -154,9 +159,9 @@ public class FilterImageView extends ImageView {
                     pixel = this.bitmap.getPixel(x, y);
 
                     A = Color.alpha(pixel);
-                    R = Math.min( (int) (2.13 * Color.red(pixel)), 255);
-                    G = Math.min((int) (  Color.green(pixel)), 255);
-                    B = Math.min( (int) ( 2.32 * Color.blue(pixel)), 255);
+                    R = 255 - Color.red(pixel);
+                    G = 255 - Color.green(pixel);
+                    B = 255 - Color.blue(pixel);
 
                     if (isDiagonal) {
                         int newPixel = 0;
@@ -310,6 +315,74 @@ public class FilterImageView extends ImageView {
                     R = Math.min( (int) (2.13 * Color.red(pixel)), 255);
                     G = Math.min((int) (  Color.green(pixel)), 255);
                     B = Math.min( (int) ( Color.blue(pixel)), 255);
+
+                    if (isDiagonal) {
+                        int newPixel = 0;
+                        if (x < y - height / 2) {
+                            // apply inverse at lower
+                            newPixel = Color.argb(A, R, G, B);
+
+                        } else if ((x - (height / 2)) > y) {
+                            // apply inverse upper
+                            newPixel = Color.argb(A, R, G, B);
+
+                        } else {
+                            //  don't apply inverse
+                            newPixel = pixel;
+                        }
+                        bitmap.setPixel(x, y, newPixel);
+                    } else
+                        bitmap.setPixel(x, y, Color.argb(A, R, G, B));
+                }
+            }
+        }
+
+        private void applyFilter6(Bitmap bitmap) {
+            int A, R, G, B;
+            int pixel;
+
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    pixel = this.bitmap.getPixel(x, y);
+
+                    A = Color.alpha(pixel);
+                    R = Math.min( (int) (1.67 * Color.red(pixel)), 255);
+                    G = Math.min((int) ( 1.12 * Color.green(pixel)), 255);
+                    B = Math.min( (int) ( 1.32 * Color.blue(pixel)), 255);
+
+                    if (isDiagonal) {
+                        int newPixel = 0;
+                        if (x < y - height / 2) {
+                            // apply inverse at lower
+                            newPixel = Color.argb(A, R, G, B);
+
+                        } else if ((x - (height / 2)) > y) {
+                            // apply inverse upper
+                            newPixel = Color.argb(A, R, G, B);
+
+                        } else {
+                            //  don't apply inverse
+                            newPixel = pixel;
+                        }
+                        bitmap.setPixel(x, y, newPixel);
+                    } else
+                        bitmap.setPixel(x, y, Color.argb(A, R, G, B));
+                }
+            }
+        }
+
+        private void applyFilter7(Bitmap bitmap) {
+            int A, R, G, B;
+            int pixel;
+
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    pixel = this.bitmap.getPixel(x, y);
+
+                    A = Color.alpha(pixel);
+                    R = Math.min( (int) (1.23 * Color.red(pixel)), 255);
+                    G = Math.min((int) ( 1.12 * Color.green(pixel)), 255);
+                    B = Math.min( (int) ( 1.68 * Color.blue(pixel)), 255);
 
                     if (isDiagonal) {
                         int newPixel = 0;
