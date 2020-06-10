@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,6 +25,7 @@ import android.widget.Switch;
 import com.isseiaoki.simplecropview.FilterImageView;
 import com.isseiaoki.simplecropview.util.Logger;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -199,6 +201,27 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
 
     private void sendImageToResult() {
         // TODO: 6/8/20 must be completed with create uri for image and send to result activity
+
+//        File fdelete = new File(uri.getPath());
+//        if (fdelete.exists()) {
+//            if (fdelete.delete()) {
+//                Log.i("file deleting", "file Deleted :" + uri.getPath());
+//            } else {
+//                Log.i("file deleting","file not Deleted :" + uri.getPath());
+//            }
+//        }
+
+        StringBuilder sb = new StringBuilder().append(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                .append("afterFilter");
+
+        Uri uri2 = Uri.parse(sb.toString());
+        mImageView.setImageURI(uri2);
+        ((FilterActivity) getActivity()).startResultActivity(uri2);
+
+
+
+
+
 
 
     }
