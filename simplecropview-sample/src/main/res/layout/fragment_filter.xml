@@ -56,16 +56,6 @@
                 android:text="Invert Colors" />
 
             <Button
-                android:id="@+id/Filter2Button"
-                style="@style/AppTheme.Button.Borderless"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="@dimen/spacing_xsmall"
-                android:padding="@dimen/spacing_xsmall"
-                android:text="Sepia" />
-
-            <Button
                 android:id="@+id/Filter3Button"
                 style="@style/AppTheme.Button.Borderless"
                 android:layout_width="wrap_content"
@@ -74,6 +64,16 @@
                 android:layout_margin="@dimen/spacing_xsmall"
                 android:padding="@dimen/spacing_xsmall"
                 android:text="GreyScale" />
+
+            <Button
+                android:id="@+id/Filter2Button"
+                style="@style/AppTheme.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_margin="@dimen/spacing_xsmall"
+                android:padding="@dimen/spacing_xsmall"
+                android:text="Sepia" />
 
             <Button
                 android:id="@+id/Filter4Button"
@@ -123,5 +123,16 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="16dp"
             android:src="@drawable/ic_done_black_24dp" />
+
+        <Switch
+            android:id="@+id/diagonal_switch_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:padding="16dp"
+            style="@style/AppTheme.Button.Borderless"
+            android:text="Diagonal Filter"/>
+
     </RelativeLayout>
 </LinearLayout>

@@ -9,12 +9,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.SwitchCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
+import android.widget.Switch;
 
 import com.isseiaoki.simplecropview.FilterImageView;
 import com.isseiaoki.simplecropview.util.Logger;
@@ -28,7 +31,7 @@ import java.util.concurrent.Executors;
 import io.reactivex.disposables.CompositeDisposable;
 
 
-public class FilterFragment extends Fragment {
+public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedChangeListener {
     private static final String TAG = FilterFragment.class.getSimpleName();
 
     private static final int REQUEST_PICK_IMAGE = 10011;
@@ -42,7 +45,7 @@ public class FilterFragment extends Fragment {
     private FilterImageView mImageView;
     private CompositeDisposable mDisposable = new CompositeDisposable();
     private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
-//    private RectF mFrameRect = null;
+    //    private RectF mFrameRect = null;
     private Uri uri = null;
 
     private ExecutorService mExecutor;
@@ -61,14 +64,16 @@ public class FilterFragment extends Fragment {
         return fragment;
     }
 
-    @Override public void onCreate(Bundle savedInstanceState) {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         Log.i("Filter fragment", "on create");
     }
 
-    @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                       Bundle savedInstanceState) {
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
         Log.i("Filter fragment", "on create view");
         uri = Uri.parse(getArguments().getString("Uri"));
         return inflater.inflate(R.layout.fragment_filter, null, false);
@@ -80,7 +85,8 @@ public class FilterFragment extends Fragment {
 //        mExecutor.submit(new ResultActivity.LoadScaledImageTask(this, uri, mImageView, calcImageSize()));
     }
 
-    @Override public void onViewCreated(View view, Bundle savedInstanceState) {
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         // bind Views
         bindViews(view);
@@ -91,14 +97,16 @@ public class FilterFragment extends Fragment {
 //        mDisposable.add(loadImage(mSourceUri));
     }
 
-    @Override public void onSaveInstanceState(Bundle outState) {
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         // save data
 //        outState.putParcelable(KEY_FRAME_RECT, mImageView.getActualCropRect());
 //        outState.putParcelable(KEY_SOURCE_URI, mImageView.getSourceUri());
     }
 
-    @Override public void onDestroyView() {
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
         mDisposable.dispose();
     }
@@ -187,15 +195,13 @@ public class FilterFragment extends Fragment {
     // Bind views //////////////////////////////////////////////////////////////////////////////////
 
 
-    private void sendImageToResult(){
+    private void sendImageToResult() {
         // TODO: 6/8/20 must be completed with create uri for image and send to result activity
 
 
     }
 
     private void bindViews(View view) {
-
-
         mImageView = (FilterImageView) view.findViewById(R.id.filterImageView);
         view.findViewById(R.id.filterButtonDone).setOnClickListener(btnListener);
         view.findViewById(R.id.NoFilterButton).setOnClickListener(btnListener);
@@ -203,7 +209,8 @@ public class FilterFragment extends Fragment {
         view.findViewById(R.id.Filter2Button).setOnClickListener(btnListener);
         view.findViewById(R.id.Filter3Button).setOnClickListener(btnListener);
         view.findViewById(R.id.Filter4Button).setOnClickListener(btnListener);
-
+        Switch diagonalSwitch = (Switch) view.findViewById(R.id.diagonal_switch_button);
+        diagonalSwitch.setOnCheckedChangeListener(this);
 
         mExecutor = Executors.newSingleThreadExecutor();
         mExecutor.submit(new ResultActivity.LoadScaledImageTask(getActivity(), uri, mImageView, calcImageSize()));
@@ -300,30 +307,26 @@ public class FilterFragment extends Fragment {
     // Handle button event /////////////////////////////////////////////////////////////////////////
 
     private final View.OnClickListener btnListener = new View.OnClickListener() {
-        @Override public void onClick(View v) {
+        @Override
+        public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.filterButtonDone:
                     sendImageToResult();
                     break;
                 case R.id.NoFilterButton:
-                    // TODO: 6/7/20 no filter
                     mImageView.setFilterMode(FilterImageView.FilterMode.NO_FILTER);
                     break;
                 case R.id.Filter1Button:
-                    // TODO: 6/7/20 filter 1
                     mImageView.setFilterMode(FilterImageView.FilterMode.INVERT_COLORS);
                     break;
                 case R.id.Filter2Button:
-                    // TODO: 6/7/20 filter 2
                     mImageView.setFilterMode(FilterImageView.FilterMode.SEPIA);
                     break;
                 case R.id.Filter3Button:
-                    // TODO: 6/7/20 filter 3
                     mImageView.setFilterMode(FilterImageView.FilterMode.GREY_SCALE);
                     break;
                 case R.id.Filter4Button:
-                    // TODO: 6/7/20 filter 4
-                    mImageView.setFilterMode(FilterImageView.FilterMode.DIAGONAL_SEPIA);
+                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_4);
                     break;
             }
         }
@@ -335,5 +338,18 @@ public class FilterFragment extends Fragment {
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         display.getMetrics(metrics);
         return Math.min(Math.max(metrics.widthPixels, metrics.heightPixels), 2048);
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView.getId() == R.id.diagonal_switch_button) {
+            if (buttonView.isChecked()) {
+                Log.d(TAG, "onCheckedChanged: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + buttonView.isChecked());
+                mImageView.setIsDiagonal(true);
+            } else {
+                Log.d(TAG, "onCheckedChanged: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + buttonView.isChecked());
+                mImageView.setIsDiagonal(false);
+            }
+        }
     }
 }
