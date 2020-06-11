@@ -1,15 +1,8 @@
 package com.example.simplecropviewsample;
 
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.SwitchCompat;
 import android.util.DisplayMetrics;
@@ -19,38 +12,32 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.Switch;
 
 import com.isseiaoki.simplecropview.FilterImageView;
-import com.isseiaoki.simplecropview.util.Logger;
+import com.isseiaoki.simplecropview.util.Utils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import io.reactivex.disposables.CompositeDisposable;
 
 
-public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedChangeListener {
+public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedChangeListener, View.OnClickListener {
     private static final String TAG = FilterFragment.class.getSimpleName();
 
-    private static final int REQUEST_PICK_IMAGE = 10011;
-    private static final int REQUEST_SAF_PICK_IMAGE = 10012;
-    private static final String PROGRESS_DIALOG = "ProgressDialog";
-    private static final String KEY_FRAME_RECT = "FrameRect";
-    private static final String KEY_SOURCE_URI = "SourceUri";
+//    private static final int REQUEST_PICK_IMAGE = 10011;
+//    private static final int REQUEST_SAF_PICK_IMAGE = 10012;
+//    private static final String PROGRESS_DIALOG = "ProgressDialog";
+//    private static final String KEY_FRAME_RECT = "FrameRect";
+//    private static final String KEY_SOURCE_URI = "SourceUri";
 
     // Views ///////////////////////////////////////////////////////////////////////////////////////
-    private ImageView mtestIV;
     private FilterImageView mImageView;
     private CompositeDisposable mDisposable = new CompositeDisposable();
-    private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
-    //    private RectF mFrameRect = null;
-    private Uri uri = null;
+    private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.PNG;
+    private Uri mUri = null;
 
     private ExecutorService mExecutor;
 
@@ -79,7 +66,7 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         Log.i("Filter fragment", "on create view");
-        uri = Uri.parse(getArguments().getString("Uri"));
+        mUri = Uri.parse(getArguments().getString("Uri"));
         return inflater.inflate(R.layout.fragment_filter, null, false);
 
 //        mImageView = (ImageView) findViewById(R.id.result_image);
@@ -104,9 +91,6 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        // save data
-//        outState.putParcelable(KEY_FRAME_RECT, mImageView.getActualCropRect());
-//        outState.putParcelable(KEY_SOURCE_URI, mImageView.getSourceUri());
     }
 
     @Override
@@ -198,183 +182,126 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
 
     // Bind views //////////////////////////////////////////////////////////////////////////////////
 
-
-    private void sendImageToResult() {
-        // TODO: 6/8/20 must be completed with create uri for image and send to result activity
-
-//        File fdelete = new File(uri.getPath());
-//        if (fdelete.exists()) {
-//            if (fdelete.delete()) {
-//                Log.i("file deleting", "file Deleted :" + uri.getPath());
-//            } else {
-//                Log.i("file deleting","file not Deleted :" + uri.getPath());
-//            }
-//        }
-
-        StringBuilder sb = new StringBuilder().append(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                .append("afterFilter");
-
-        Uri uri2 = Uri.parse(sb.toString());
-        mImageView.setImageURI(uri2);
-        ((FilterActivity) getActivity()).startResultActivity(uri2);
-
-
-
-
-
-
-
+    private Uri saveAndSendImageToResultActivity() {
+        OutputStream outputStream = null;
+        try{
+           outputStream = getContext().getContentResolver().openOutputStream(mUri);
+           mImageView.getBitmap().compress(mCompressFormat, 100, outputStream);
+           return mUri;
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            Utils.closeQuietly(outputStream);
+        }
+        return mUri;
     }
 
     private void bindViews(View view) {
         mImageView = (FilterImageView) view.findViewById(R.id.filterImageView);
-        view.findViewById(R.id.filterButtonDone).setOnClickListener(btnListener);
-        view.findViewById(R.id.NoFilterButton).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter1Button).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter2Button).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter3Button).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter4Button).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter5Button).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter6Button).setOnClickListener(btnListener);
-        view.findViewById(R.id.Filter7Button).setOnClickListener(btnListener);
+        view.findViewById(R.id.filterButtonDone).setOnClickListener(this);
+        view.findViewById(R.id.NoFilterButton).setOnClickListener(this);
+        view.findViewById(R.id.Filter1Button).setOnClickListener(this);
+        view.findViewById(R.id.Filter2Button).setOnClickListener(this);
+        view.findViewById(R.id.Filter3Button).setOnClickListener(this);
+        view.findViewById(R.id.Filter4Button).setOnClickListener(this);
+        view.findViewById(R.id.Filter5Button).setOnClickListener(this);
+        view.findViewById(R.id.Filter6Button).setOnClickListener(this);
+        view.findViewById(R.id.Filter7Button).setOnClickListener(this);
         Switch diagonalSwitch = (Switch) view.findViewById(R.id.diagonal_switch_button);
         diagonalSwitch.setOnCheckedChangeListener(this);
 
-        mtestIV = view.findViewById(R.id.test_image);
-        mtestIV.setOnClickListener(btnListener);
-        mtestIV.setVisibility(View.GONE);
-
         mExecutor = Executors.newSingleThreadExecutor();
-        mExecutor.submit(new ResultActivity.LoadScaledImageTask(getActivity(), uri, mImageView, calcImageSize()));
+        mExecutor.submit(new ResultActivity.LoadScaledImageTask(getActivity(), mUri, mImageView, calcImageSize()));
 
         Log.i("Filter fragment", "bindViews");
-
     }
 
-    public void showProgress() {
-        ProgressDialogFragment f = ProgressDialogFragment.getInstance();
-        getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
-    }
-
-    public void dismissProgress() {
-        if (!isResumed()) return;
-        android.support.v4.app.FragmentManager manager = getFragmentManager();
-        if (manager == null) return;
-        ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
-        if (f != null) {
-            getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
-        }
-    }
-
-    public Uri createSaveUri() {
-        return createNewUri(getContext(), mCompressFormat);
-    }
-
-    public static String getDirPath() {
-        String dirPath = "";
-        File imageDir = null;
-        File extStorageDir = Environment.getExternalStorageDirectory();
-        if (extStorageDir.canWrite()) {
-            imageDir = new File(extStorageDir.getPath() + "/simplecropview");
-        }
-        if (imageDir != null) {
-            if (!imageDir.exists()) {
-                imageDir.mkdirs();
-            }
-            if (imageDir.canWrite()) {
-                dirPath = imageDir.getPath();
-            }
-        }
-        return dirPath;
-    }
-
-    public static Uri getUriFromDrawableResId(Context context, int drawableResId) {
-        StringBuilder builder = new StringBuilder().append(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                .append("://")
-                .append(context.getResources().getResourcePackageName(drawableResId))
-                .append("/")
-                .append(context.getResources().getResourceTypeName(drawableResId))
-                .append("/")
-                .append(context.getResources().getResourceEntryName(drawableResId));
-        return Uri.parse(builder.toString());
-    }
-
-    public static Uri createNewUri(Context context, Bitmap.CompressFormat format) {
-        long currentTimeMillis = System.currentTimeMillis();
-        Date today = new Date(currentTimeMillis);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-        String title = dateFormat.format(today);
-        String dirPath = getDirPath();
-        String fileName = "scv" + title + "." + getMimeType(format);
-        String path = dirPath + "/" + fileName;
-        File file = new File(path);
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, title);
-        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
-        values.put(MediaStore.Images.Media.MIME_TYPE, "image/" + getMimeType(format));
-        values.put(MediaStore.Images.Media.DATA, path);
-        long time = currentTimeMillis / 1000;
-        values.put(MediaStore.MediaColumns.DATE_ADDED, time);
-        values.put(MediaStore.MediaColumns.DATE_MODIFIED, time);
-        if (file.exists()) {
-            values.put(MediaStore.Images.Media.SIZE, file.length());
-        }
-
-        ContentResolver resolver = context.getContentResolver();
-        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-        Logger.i("SaveUri = " + uri);
-        return uri;
-    }
-
-    public static String getMimeType(Bitmap.CompressFormat format) {
-        switch (format) {
-            case JPEG:
-                return "jpeg";
-            case PNG:
-                return "png";
-        }
-        return "png";
-    }
-
-    // Handle button event /////////////////////////////////////////////////////////////////////////
-
-    private final View.OnClickListener btnListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.filterButtonDone:
-                    sendImageToResult();
-                    break;
-                case R.id.NoFilterButton:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.NO_FILTER);
-                    break;
-                case R.id.Filter1Button:
-//                    mtestIV.setImageBitmap(((BitmapDrawable) mImageView.getDrawable()).getBitmap());
-                    mImageView.setFilterMode(FilterImageView.FilterMode.INVERT_COLORS);
-                    break;
-                case R.id.Filter2Button:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.SEPIA);
-                    break;
-                case R.id.Filter3Button:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.GREY_SCALE);
-                    break;
-                case R.id.Filter4Button:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_4);
-                    break;
-                case R.id.Filter5Button:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_5);
-                    break;
-                case R.id.Filter6Button:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_6);
-                    break;
-                case R.id.Filter7Button:
-                    mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_7);
-                    break;
-            }
-
-        }
-    };
-
+//    public void showProgress() {
+//        ProgressDialogFragment f = ProgressDialogFragment.getInstance();
+//        getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
+//    }
+//
+//    public void dismissProgress() {
+//        if (!isResumed()) return;
+//        android.support.v4.app.FragmentManager manager = getFragmentManager();
+//        if (manager == null) return;
+//        ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
+//        if (f != null) {
+//            getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
+//        }
+//    }
+//
+//    public Uri createSaveUri() {
+//        return createNewUri(getContext(), mCompressFormat);
+//    }
+//
+//    public static String getDirPath() {
+//        String dirPath = "";
+//        File imageDir = null;
+//        File extStorageDir = Environment.getExternalStorageDirectory();
+//        if (extStorageDir.canWrite()) {
+//            imageDir = new File(extStorageDir.getPath() + "/simplecropview");
+//        }
+//        if (imageDir != null) {
+//            if (!imageDir.exists()) {
+//                imageDir.mkdirs();
+//            }
+//            if (imageDir.canWrite()) {
+//                dirPath = imageDir.getPath();
+//            }
+//        }
+//        return dirPath;
+//    }
+//
+//    public static Uri getUriFromDrawableResId(Context context, int drawableResId) {
+//        StringBuilder builder = new StringBuilder().append(ContentResolver.SCHEME_ANDROID_RESOURCE)
+//                .append("://")
+//                .append(context.getResources().getResourcePackageName(drawableResId))
+//                .append("/")
+//                .append(context.getResources().getResourceTypeName(drawableResId))
+//                .append("/")
+//                .append(context.getResources().getResourceEntryName(drawableResId));
+//        return Uri.parse(builder.toString());
+//    }
+//
+//    public static Uri createNewUri(Context context, Bitmap.CompressFormat format) {
+//        long currentTimeMillis = System.currentTimeMillis();
+//        Date today = new Date(currentTimeMillis);
+//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+//        String title = dateFormat.format(today);
+//        String dirPath = getDirPath();
+//        String fileName = "scv" + title + "." + getMimeType(format);
+//        String path = dirPath + "/" + fileName;
+//        File file = new File(path);
+//        ContentValues values = new ContentValues();
+//        values.put(MediaStore.Images.Media.TITLE, title);
+//        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+//        values.put(MediaStore.Images.Media.MIME_TYPE, "image/" + getMimeType(format));
+//        values.put(MediaStore.Images.Media.DATA, path);
+//        long time = currentTimeMillis / 1000;
+//        values.put(MediaStore.MediaColumns.DATE_ADDED, time);
+//        values.put(MediaStore.MediaColumns.DATE_MODIFIED, time);
+//        if (file.exists()) {
+//            values.put(MediaStore.Images.Media.SIZE, file.length());
+//        }
+//
+//        ContentResolver resolver = context.getContentResolver();
+//        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+//        Logger.i("SaveUri = " + uri);
+//        return uri;
+//    }
+//
+//    public static String getMimeType(Bitmap.CompressFormat format) {
+//        switch (format) {
+//            case JPEG:
+//                return "jpeg";
+//            case PNG:
+//                return "png";
+//        }
+//        return "png";
+//    }
 
     private int calcImageSize() {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -383,16 +310,50 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
         return Math.min(Math.max(metrics.widthPixels, metrics.heightPixels), 2048);
     }
 
+    // Handle button event /////////////////////////////////////////////////////////////////////////
+
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         if (buttonView.getId() == R.id.diagonal_switch_button) {
             if (buttonView.isChecked()) {
-                Log.d(TAG, "onCheckedChanged: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" + buttonView.isChecked());
                 mImageView.setIsDiagonal(true);
             } else {
-                Log.d(TAG, "onCheckedChanged: @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" + buttonView.isChecked());
                 mImageView.setIsDiagonal(false);
             }
         }
     }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.filterButtonDone:
+                ((FilterActivity) getContext()).startResultActivity(saveAndSendImageToResultActivity());
+                break;
+            case R.id.NoFilterButton:
+                mImageView.setFilterMode(FilterImageView.FilterMode.NO_FILTER);
+                break;
+            case R.id.Filter1Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.INVERT_COLORS);
+                break;
+            case R.id.Filter2Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.SEPIA);
+                break;
+            case R.id.Filter3Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.GREY_SCALE);
+                break;
+            case R.id.Filter4Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_4);
+                break;
+            case R.id.Filter5Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_5);
+                break;
+            case R.id.Filter6Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_6);
+                break;
+            case R.id.Filter7Button:
+                mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_7);
+                break;
+        }
+    }
+
 }
