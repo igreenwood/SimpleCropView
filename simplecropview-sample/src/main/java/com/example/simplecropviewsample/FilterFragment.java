@@ -18,6 +18,8 @@ import com.isseiaoki.simplecropview.FilterImageView;
 import com.isseiaoki.simplecropview.util.Utils;
 
 import java.io.OutputStream;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -99,100 +101,17 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
         mDisposable.dispose();
     }
 
-//    @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
-//        super.onActivityResult(requestCode, resultCode, result);
-//        if (resultCode == Activity.RESULT_OK) {
-//            // reset frame rect
-//            mFrameRect = null;
-//            switch (requestCode) {
-//                case REQUEST_PICK_IMAGE:
-//                    mDisposable.add(loadImage(result.getData()));
-//                    break;
-//                case REQUEST_SAF_PICK_IMAGE:
-//                    mDisposable.add(loadImage(Utils.ensureUriPermission(getContext(), result)));
-//                    break;
-//            }
-//        }
-//    }
-
-//    private Disposable loadImage(final Uri uri) {
-//        mSourceUri = uri;
-//        return new RxPermissions(getActivity()).request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//                .filter(new Predicate<Boolean>() {
-//                    @Override public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
-//                            throws Exception {
-//                        return granted;
-//                    }
-//                })
-//                .flatMapCompletable(new Function<Boolean, CompletableSource>() {
-//                    @Override
-//                    public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
-//                            throws Exception {
-//                        return mImageView.load(uri)
-//                                .useThumbnail(true)
-//                                .initialFrameRect(mFrameRect)
-//                                .executeAsCompletable();
-//                    }
-//                })
-//                .subscribeOn(Schedulers.newThread())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Action() {
-//                    @Override public void run() throws Exception {
-//                    }
-//                }, new Consumer<Throwable>() {
-//                    @Override public void accept(@NonNull Throwable throwable) throws Exception {
-//                    }
-//                });
-//    }
-
-//    private Disposable cropImage() {
-//        return mImageView.crop(mSourceUri)
-//                .executeAsSingle()
-//                .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
-//                    @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
-//                            throws Exception {
-//                        return mImageView.save(bitmap)
-//                                .compressFormat(mCompressFormat)
-//                                .executeAsSingle(createSaveUri());
-//                    }
-//                })
-//                .doOnSubscribe(new Consumer<Disposable>() {
-//                    @Override public void accept(@io.reactivex.annotations.NonNull Disposable disposable)
-//                            throws Exception {
-//                        showProgress();
-//                    }
-//                })
-//                .doFinally(new Action() {
-//                    @Override public void run() throws Exception {
-//                        dismissProgress();
-//                    }
-//                })
-//                .subscribeOn(Schedulers.newThread())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Consumer<Uri>() {
-//                    @Override public void accept(@io.reactivex.annotations.NonNull Uri uri) throws Exception {
-//                        ((FilterActivity) getActivity()).startResultActivity(uri);
-//                    }
-//                }, new Consumer<Throwable>() {
-//                    @Override public void accept(@io.reactivex.annotations.NonNull Throwable throwable)
-//                            throws Exception {
-//                    }
-//                });
-//    }
-
     // Bind views //////////////////////////////////////////////////////////////////////////////////
 
     private Uri saveAndSendImageToResultActivity() {
         OutputStream outputStream = null;
-        try{
-           outputStream = getContext().getContentResolver().openOutputStream(mUri);
-           mImageView.getBitmap().compress(mCompressFormat, 100, outputStream);
-           return mUri;
-        }
-        catch (Exception e){
+        try {
+            outputStream = getContext().getContentResolver().openOutputStream(mUri);
+            mImageView.getBitmap().compress(mCompressFormat, 100, outputStream);
+            return mUri;
+        } catch (Exception e) {
             e.printStackTrace();
-        }
-        finally {
+        } finally {
             Utils.closeQuietly(outputStream);
         }
         return mUri;
@@ -218,91 +137,6 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
         Log.i("Filter fragment", "bindViews");
     }
 
-//    public void showProgress() {
-//        ProgressDialogFragment f = ProgressDialogFragment.getInstance();
-//        getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
-//    }
-//
-//    public void dismissProgress() {
-//        if (!isResumed()) return;
-//        android.support.v4.app.FragmentManager manager = getFragmentManager();
-//        if (manager == null) return;
-//        ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
-//        if (f != null) {
-//            getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
-//        }
-//    }
-//
-//    public Uri createSaveUri() {
-//        return createNewUri(getContext(), mCompressFormat);
-//    }
-//
-//    public static String getDirPath() {
-//        String dirPath = "";
-//        File imageDir = null;
-//        File extStorageDir = Environment.getExternalStorageDirectory();
-//        if (extStorageDir.canWrite()) {
-//            imageDir = new File(extStorageDir.getPath() + "/simplecropview");
-//        }
-//        if (imageDir != null) {
-//            if (!imageDir.exists()) {
-//                imageDir.mkdirs();
-//            }
-//            if (imageDir.canWrite()) {
-//                dirPath = imageDir.getPath();
-//            }
-//        }
-//        return dirPath;
-//    }
-//
-//    public static Uri getUriFromDrawableResId(Context context, int drawableResId) {
-//        StringBuilder builder = new StringBuilder().append(ContentResolver.SCHEME_ANDROID_RESOURCE)
-//                .append("://")
-//                .append(context.getResources().getResourcePackageName(drawableResId))
-//                .append("/")
-//                .append(context.getResources().getResourceTypeName(drawableResId))
-//                .append("/")
-//                .append(context.getResources().getResourceEntryName(drawableResId));
-//        return Uri.parse(builder.toString());
-//    }
-//
-//    public static Uri createNewUri(Context context, Bitmap.CompressFormat format) {
-//        long currentTimeMillis = System.currentTimeMillis();
-//        Date today = new Date(currentTimeMillis);
-//        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
-//        String title = dateFormat.format(today);
-//        String dirPath = getDirPath();
-//        String fileName = "scv" + title + "." + getMimeType(format);
-//        String path = dirPath + "/" + fileName;
-//        File file = new File(path);
-//        ContentValues values = new ContentValues();
-//        values.put(MediaStore.Images.Media.TITLE, title);
-//        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
-//        values.put(MediaStore.Images.Media.MIME_TYPE, "image/" + getMimeType(format));
-//        values.put(MediaStore.Images.Media.DATA, path);
-//        long time = currentTimeMillis / 1000;
-//        values.put(MediaStore.MediaColumns.DATE_ADDED, time);
-//        values.put(MediaStore.MediaColumns.DATE_MODIFIED, time);
-//        if (file.exists()) {
-//            values.put(MediaStore.Images.Media.SIZE, file.length());
-//        }
-//
-//        ContentResolver resolver = context.getContentResolver();
-//        Uri uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-//        Logger.i("SaveUri = " + uri);
-//        return uri;
-//    }
-//
-//    public static String getMimeType(Bitmap.CompressFormat format) {
-//        switch (format) {
-//            case JPEG:
-//                return "jpeg";
-//            case PNG:
-//                return "png";
-//        }
-//        return "png";
-//    }
-
     private int calcImageSize() {
         DisplayMetrics metrics = new DisplayMetrics();
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -320,6 +154,7 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
             } else {
                 mImageView.setIsDiagonal(false);
             }
+            filterButtonClicked();
         }
     }
 
@@ -331,29 +166,75 @@ public class FilterFragment extends Fragment implements SwitchCompat.OnCheckedCh
                 break;
             case R.id.NoFilterButton:
                 mImageView.setFilterMode(FilterImageView.FilterMode.NO_FILTER);
+                filterButtonClicked();
                 break;
             case R.id.Filter1Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.INVERT_COLORS);
+                filterButtonClicked();
                 break;
             case R.id.Filter2Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.SEPIA);
+                filterButtonClicked();
                 break;
             case R.id.Filter3Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.GREY_SCALE);
+                filterButtonClicked();
                 break;
             case R.id.Filter4Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_4);
+                filterButtonClicked();
                 break;
             case R.id.Filter5Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_5);
+                filterButtonClicked();
                 break;
             case R.id.Filter6Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_6);
+                filterButtonClicked();
                 break;
             case R.id.Filter7Button:
                 mImageView.setFilterMode(FilterImageView.FilterMode.FILTER_7);
+                filterButtonClicked();
                 break;
         }
+    }
+
+    //    Show progress //////////////////////////////////////////////////////////
+    private static final String PROGRESS_DIALOG = "ProgressDialog";
+
+    public void showProgress() {
+        ProgressDialogFragment f = ProgressDialogFragment.getInstance();
+        getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
+    }
+
+    public void dismissProgress() {
+        if (!isResumed()) return;
+        android.support.v4.app.FragmentManager manager = getFragmentManager();
+        if (manager == null) return;
+        ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
+        if (f != null) {
+            getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
+        }
+    }
+
+    private void filterButtonClicked() {
+        showProgress();
+        final Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                if (mImageView.getIsStarted() && mImageView.getIsFinished()){
+                    dismissProgress();
+                    mImageView.setIsStarted(false);
+                    mImageView.setIsFinished(false);
+                }
+                else if (!mImageView.getIsStarted()){
+                    dismissProgress();
+                    timer.cancel();
+                    this.cancel();
+                }
+            }
+        }, 200, 300);
     }
 
 }

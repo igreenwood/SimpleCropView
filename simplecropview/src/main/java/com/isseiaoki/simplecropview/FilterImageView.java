@@ -2,9 +2,7 @@ package com.isseiaoki.simplecropview;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
@@ -13,6 +11,7 @@ import android.util.Log;
 import android.widget.ImageView;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FilterImageView extends ImageView {
     private static final String TAG = "FilterImageView";
@@ -20,6 +19,27 @@ public class FilterImageView extends ImageView {
     private Bitmap imgBitmap;
     private boolean imgFlag = true;
     private boolean isDiagonal = false;
+
+    //progress ///////////////////////////////////////////////////////////////////////
+    private AtomicBoolean IsFinished = new AtomicBoolean(false);
+    private AtomicBoolean IsStarted = new AtomicBoolean(false);
+
+    public void setIsStarted(boolean b){
+        IsStarted.set(b);
+    }
+
+    public void setIsFinished(boolean b){
+        IsFinished.set(b);
+    }
+
+    public boolean getIsFinished(){
+        return IsFinished.get();
+    }
+
+    public boolean getIsStarted(){
+        return IsStarted.get();
+    }
+    ///////////////////////////////////////////////////////////////////////////////
 
     private FilterMode mFilterMode = FilterMode.NO_FILTER;
 
@@ -78,7 +98,7 @@ public class FilterImageView extends ImageView {
     }
 
     public void setIsDiagonal(boolean isDiagonal) {
-        this.isDiagonal = isDiagonal;;
+        this.isDiagonal = isDiagonal;
         if (mFilterMode == FilterMode.NO_FILTER)
             return;
         ApplyFilter applyFilter = new ApplyFilter(this);
@@ -146,7 +166,16 @@ public class FilterImageView extends ImageView {
                     BitmapDrawable bitmapDrawable = new BitmapDrawable(bitmap);
                     imageView.setImageDrawable(bitmapDrawable);
 //                    imageView.setImageBitmap(bitmap);
+                    imageView.IsFinished.set(true);
                 }
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (imageViewWeakReference != null){
+                imageViewWeakReference.get().IsStarted.set(true);
             }
         }
 
@@ -164,7 +193,7 @@ public class FilterImageView extends ImageView {
                     B = 255 - Color.blue(pixel);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply inverse at lower
                             newPixel = Color.argb(A, R, G, B);
@@ -204,7 +233,7 @@ public class FilterImageView extends ImageView {
                     R = G = B = (int) (GS_RED * R + GS_GREEN * G + GS_BLUE * B);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply GS at lower
                             newPixel = Color.argb(A, R, G, B);
@@ -247,7 +276,7 @@ public class FilterImageView extends ImageView {
                     newB = Math.min(newB, 255);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply sepia at lower
                             newPixel = Color.argb(A, newR, newG, newB);
@@ -283,7 +312,7 @@ public class FilterImageView extends ImageView {
                     B = Math.min( (int) (2.32 * Color.blue(pixel)), 255);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply inverse at lower
                             newPixel = Color.argb(A, R, G, B);
@@ -313,11 +342,11 @@ public class FilterImageView extends ImageView {
 
                     A = Color.alpha(pixel);
                     R = Math.min( (int) (2.13 * Color.red(pixel)), 255);
-                    G = Math.min((int) (  Color.green(pixel)), 255);
-                    B = Math.min( (int) ( Color.blue(pixel)), 255);
+                    G = Math.min(Color.green(pixel), 255);
+                    B = Math.min(Color.blue(pixel), 255);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply inverse at lower
                             newPixel = Color.argb(A, R, G, B);
@@ -351,7 +380,7 @@ public class FilterImageView extends ImageView {
                     B = Math.min( (int) ( 1.32 * Color.blue(pixel)), 255);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply inverse at lower
                             newPixel = Color.argb(A, R, G, B);
@@ -385,7 +414,7 @@ public class FilterImageView extends ImageView {
                     B = Math.min( (int) ( 1.68 * Color.blue(pixel)), 255);
 
                     if (isDiagonal) {
-                        int newPixel = 0;
+                        int newPixel;
                         if (x < y - height / 2) {
                             // apply inverse at lower
                             newPixel = Color.argb(A, R, G, B);
@@ -404,46 +433,6 @@ public class FilterImageView extends ImageView {
                 }
             }
         }
-//        private void applyDiagonalSepia(Bitmap bitmap) {
-//            int A, R, G, B;
-//            int pixel;
-//
-//            for (int x = 0; x < width; ++x) {
-//                for (int y = 0; y < height; ++y) {
-//                    pixel = this.bitmap.getPixel(x, y);
-//
-//                    A = Color.alpha(pixel);
-//                    R = Color.red(pixel);
-//                    G = Color.green(pixel);
-//                    B = Color.blue(pixel);
-//
-//                    int newR = (int) (0.393 * R + 0.769 * G + 0.189 * B);
-//                    int newG = (int) (0.349 * R + 0.686 * G + 0.168 * B);
-//                    int newB = (int) (0.272 * R + 0.534 * G + 0.131 * B);
-//
-//                    newR = Math.min(newR, 255);
-//                    newG = Math.min(newG, 255);
-//                    newB = Math.min(newB, 255);
-//
-////                    bitmap.setPixel(x, y, Color.argb(A, newR, newG, newB));
-//
-//                    int newPixel = 0;
-//                    if (x < y - height / 2) {
-//                        // apply sepia at lower
-//                        newPixel = Color.argb(A, newR, newG, newB);
-//
-//                    } else if ((x - (height / 2)) > y) {
-//                        // apply sepia upper
-//                        newPixel = Color.argb(A, newR, newG, newB);
-//
-//                    } else {
-//                        //  don't apply sepia
-//                        newPixel = pixel;
-//                    }
-//                    bitmap.setPixel(x, y, newPixel);
-//                }
-//            }
-//        }
     }
 
 }
