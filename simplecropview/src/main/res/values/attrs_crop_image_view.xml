@@ -39,12 +39,5 @@
     <attr format="boolean" name="scv_animation_enabled"/>
     <attr format="integer" name="scv_animation_duration"/>
     <attr format="boolean" name="scv_handle_shadow_enabled"/>
-
-<!--    Filter //////////////////////////////////////////////////////-->
-    <attr name="scv_filter_mode">
-      <enum name="no_filter" value="0"/>
-      <enum name="mfilter" value="1"/>
-    </attr>
-<!--    EOFilter/////////////////////////////////////////////////////-->
   </declare-styleable>
 </resources>

@@ -154,10 +154,6 @@ import permissions.dispatcher.RuntimePermissions;
     view.findViewById(R.id.buttonCircle).setOnClickListener(btnListener);
     view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
 
-    /// Filter ////////////////////////////////////////////////////////////////////////////
-    view.findViewById(R.id.buttonFilter).setOnClickListener(btnListener);
-    view.findViewById(R.id.buttonNoFilter).setOnClickListener(btnListener);
-    /// EOFilter //////////////////////////////////////////////////////////////////////////
   }
 
   @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE) public void pickImage() {

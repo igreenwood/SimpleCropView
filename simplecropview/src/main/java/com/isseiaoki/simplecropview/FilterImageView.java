@@ -20,7 +20,6 @@ public class FilterImageView extends ImageView {
     private boolean imgFlag = true;
     private boolean isDiagonal = false;
 
-    //progress ///////////////////////////////////////////////////////////////////////
     private AtomicBoolean IsFinished = new AtomicBoolean(false);
     private AtomicBoolean IsStarted = new AtomicBoolean(false);
 
@@ -39,16 +38,15 @@ public class FilterImageView extends ImageView {
     public boolean getIsStarted(){
         return IsStarted.get();
     }
-    ///////////////////////////////////////////////////////////////////////////////
 
     private FilterMode mFilterMode = FilterMode.NO_FILTER;
 
     public FilterImageView(Context context) {
-        super(context);
+        this(context, null);
     }
 
     public FilterImageView(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public FilterImageView(Context context, AttributeSet attrs, int defStyleAttr) {
@@ -59,7 +57,6 @@ public class FilterImageView extends ImageView {
         Bitmap bm = null;
         Drawable drawable = getDrawable();
         if (drawable instanceof BitmapDrawable) {
-            Log.d(TAG, "getBitmap: BITMAP OK");
             bm = ((BitmapDrawable) drawable).getBitmap();
         }
         return bm;
@@ -134,7 +131,7 @@ public class FilterImageView extends ImageView {
                     imgOut = Bitmap.createBitmap(this.bitmap);
                     break;
                 case INVERT_COLORS:
-                    applyMFilter(imgOut);
+                    applyInvertColorsFilter(imgOut);
                     break;
                 case GREY_SCALE:
                     applyGreyScale(imgOut);
@@ -159,6 +156,14 @@ public class FilterImageView extends ImageView {
         }
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (imageViewWeakReference != null){
+                imageViewWeakReference.get().IsStarted.set(true);
+            }
+        }
+
+        @Override
         protected void onPostExecute(Bitmap bitmap) {
             if (imageViewWeakReference != null && bitmap != null) {
                 FilterImageView imageView = imageViewWeakReference.get();
@@ -171,15 +176,7 @@ public class FilterImageView extends ImageView {
             }
         }
 
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            if (imageViewWeakReference != null){
-                imageViewWeakReference.get().IsStarted.set(true);
-            }
-        }
-
-        private void applyMFilter(Bitmap bitmap) {
+        private void applyInvertColorsFilter(Bitmap bitmap) {
             int A, R, G, B;
             int pixel;
 
