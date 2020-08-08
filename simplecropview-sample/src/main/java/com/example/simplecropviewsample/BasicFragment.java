@@ -285,6 +285,7 @@ import permissions.dispatcher.RuntimePermissions;
     }).setCancelable(false).setMessage(messageResId).show();
   }
 
+
   // Handle button event /////////////////////////////////////////////////////////////////////////
 
   private final View.OnClickListener btnListener = new View.OnClickListener() {
