@@ -3,7 +3,7 @@ package com.isseiaoki.simplecropview;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import com.isseiaoki.simplecropview.callback.CropCallback;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Single;
 
 public class CropRequest {
 
