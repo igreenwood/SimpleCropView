@@ -3,7 +3,7 @@ package com.isseiaoki.simplecropview;
 import android.graphics.RectF;
 import android.net.Uri;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
-import io.reactivex.Completable;
+import io.reactivex.rxjava3.core.Completable;
 
 public class LoadRequest {
 

@@ -3,18 +3,18 @@ apply plugin: 'com.android.library'
 dependencies {
   implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-  implementation "io.reactivex.rxjava2:rxjava:$rxJavaVersion"
-  implementation "io.reactivex.rxjava2:rxandroid:$rxAndroidVersion"
+  implementation "io.reactivex.rxjava3:rxjava:$rxJavaVersion"
+  implementation "io.reactivex.rxjava3:rxandroid:$rxAndroidVersion"
 }
 
 android {
-  compileSdkVersion 28
-  buildToolsVersion '28.0.2'
+  compileSdkVersion 30
+  buildToolsVersion '30.0.3'
 
   defaultConfig {
     minSdkVersion 14
-    targetSdkVersion 28
-    versionCode 26
+    targetSdkVersion 30
+    versionCode 27
     versionName "1.1.8"
     consumerProguardFiles 'proguard-rules.pro'
   }
@@ -105,6 +105,8 @@ artifacts {
   archives sourcesJar
 }
 
-task findConventions << {
-  println project.getConvention()
+task findConventions {
+  doLast {
+    println project.getConvention()
+  }
 }
