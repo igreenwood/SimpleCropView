@@ -13,25 +13,26 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.util.Logger;
 import com.isseiaoki.simplecropview.util.Utils;
-import com.tbruyelle.rxpermissions2.RxPermissions;
-import io.reactivex.CompletableSource;
-import io.reactivex.SingleSource;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.schedulers.Schedulers;
+import com.tbruyelle.rxpermissions3.RxPermissions;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.core.CompletableSource;
+import io.reactivex.rxjava3.core.SingleSource;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.functions.Predicate;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -40,16 +41,24 @@ public class RxFragment extends Fragment {
   private static final String TAG = RxFragment.class.getSimpleName();
 
   private static final int REQUEST_PICK_IMAGE = 10011;
+
   private static final int REQUEST_SAF_PICK_IMAGE = 10012;
+
   private static final String PROGRESS_DIALOG = "ProgressDialog";
+
   private static final String KEY_FRAME_RECT = "FrameRect";
+
   private static final String KEY_SOURCE_URI = "SourceUri";
 
   // Views ///////////////////////////////////////////////////////////////////////////////////////
   private CropImageView mCropView;
+
   private CompositeDisposable mDisposable = new CompositeDisposable();
+
   private Bitmap.CompressFormat mCompressFormat = Bitmap.CompressFormat.JPEG;
+
   private RectF mFrameRect = null;
+
   private Uri mSourceUri = null;
 
   // Note: only the system can call this constructor by reflection.
@@ -63,17 +72,19 @@ public class RxFragment extends Fragment {
     return fragment;
   }
 
-  @Override public void onCreate(Bundle savedInstanceState) {
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setRetainInstance(true);
   }
 
-  @Override public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     return inflater.inflate(R.layout.fragment_basic, null, false);
   }
 
-  @Override public void onViewCreated(View view, Bundle savedInstanceState) {
+  @Override
+  public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     // bind Views
     bindViews(view);
@@ -86,25 +97,28 @@ public class RxFragment extends Fragment {
 
     if (mSourceUri == null) {
       // default data
-      mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
+      mSourceUri = getUriFromDrawableResId(requireContext(), R.drawable.sample5);
     }
     // load image
     mDisposable.add(loadImage(mSourceUri));
   }
 
-  @Override public void onSaveInstanceState(Bundle outState) {
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle outState) {
     super.onSaveInstanceState(outState);
     // save data
     outState.putParcelable(KEY_FRAME_RECT, mCropView.getActualCropRect());
     outState.putParcelable(KEY_SOURCE_URI, mCropView.getSourceUri());
   }
 
-  @Override public void onDestroyView() {
+  @Override
+  public void onDestroyView() {
     super.onDestroyView();
     mDisposable.dispose();
   }
 
-  @Override public void onActivityResult(int requestCode, int resultCode, Intent result) {
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent result) {
     super.onActivityResult(requestCode, resultCode, result);
     if (resultCode == Activity.RESULT_OK) {
       // reset frame rect
@@ -114,7 +128,7 @@ public class RxFragment extends Fragment {
           mDisposable.add(loadImage(result.getData()));
           break;
         case REQUEST_SAF_PICK_IMAGE:
-          mDisposable.add(loadImage(Utils.ensureUriPermission(getContext(), result)));
+          mDisposable.add(loadImage(Utils.ensureUriPermission(requireContext(), result)));
           break;
       }
     }
@@ -122,67 +136,76 @@ public class RxFragment extends Fragment {
 
   private Disposable loadImage(final Uri uri) {
     mSourceUri = uri;
-    return new RxPermissions(getActivity()).request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        .filter(new Predicate<Boolean>() {
-          @Override public boolean test(@io.reactivex.annotations.NonNull Boolean granted)
-              throws Exception {
-            return granted;
-          }
-        })
-        .flatMapCompletable(new Function<Boolean, CompletableSource>() {
-          @Override
-          public CompletableSource apply(@io.reactivex.annotations.NonNull Boolean aBoolean)
-              throws Exception {
-            return mCropView.load(uri)
-                .useThumbnail(true)
-                .initialFrameRect(mFrameRect)
-                .executeAsCompletable();
-          }
-        })
-        .subscribeOn(Schedulers.newThread())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Action() {
-          @Override public void run() throws Exception {
-          }
-        }, new Consumer<Throwable>() {
-          @Override public void accept(@NonNull Throwable throwable) throws Exception {
-          }
-        });
+    return new RxPermissions(this) // TODO according to https://github.com/tbruyelle/RxPermissions/issues/214#issuecomment-403970703
+      .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+      .filter(new Predicate<Boolean>() {
+        @Override
+        public boolean test(@NonNull Boolean granted)
+          throws Exception {
+          return granted;
+        }
+      })
+      .flatMapCompletable(new Function<Boolean, CompletableSource>() {
+        @Override
+        public CompletableSource apply(@NonNull Boolean aBoolean)
+          throws Exception {
+          return mCropView.load(uri)
+            .useThumbnail(true)
+            .initialFrameRect(mFrameRect)
+            .executeAsCompletable();
+        }
+      })
+      .subscribeOn(Schedulers.newThread())
+      .observeOn(AndroidSchedulers.mainThread())
+      .subscribe(new Action() {
+        @Override
+        public void run() throws Exception {
+        }
+      }, new Consumer<Throwable>() {
+        @Override
+        public void accept(@NonNull Throwable throwable) throws Exception {
+        }
+      });
   }
 
   private Disposable cropImage() {
     return mCropView.crop(mSourceUri)
-        .executeAsSingle()
-        .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
-          @Override public SingleSource<Uri> apply(@io.reactivex.annotations.NonNull Bitmap bitmap)
-              throws Exception {
-            return mCropView.save(bitmap)
-                .compressFormat(mCompressFormat)
-                .executeAsSingle(createSaveUri());
-          }
-        })
-        .doOnSubscribe(new Consumer<Disposable>() {
-          @Override public void accept(@io.reactivex.annotations.NonNull Disposable disposable)
-              throws Exception {
-            showProgress();
-          }
-        })
-        .doFinally(new Action() {
-          @Override public void run() throws Exception {
-            dismissProgress();
-          }
-        })
-        .subscribeOn(Schedulers.newThread())
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(new Consumer<Uri>() {
-          @Override public void accept(@io.reactivex.annotations.NonNull Uri uri) throws Exception {
-            ((RxActivity) getActivity()).startResultActivity(uri);
-          }
-        }, new Consumer<Throwable>() {
-          @Override public void accept(@io.reactivex.annotations.NonNull Throwable throwable)
-              throws Exception {
-          }
-        });
+      .executeAsSingle()
+      .flatMap(new Function<Bitmap, SingleSource<Uri>>() {
+        @Override
+        public SingleSource<Uri> apply(@NonNull Bitmap bitmap)
+          throws Exception {
+          return mCropView.save(bitmap)
+            .compressFormat(mCompressFormat)
+            .executeAsSingle(createSaveUri());
+        }
+      })
+      .doOnSubscribe(new Consumer<Disposable>() {
+        @Override
+        public void accept(@NonNull Disposable disposable)
+          throws Exception {
+          showProgress();
+        }
+      })
+      .doFinally(new Action() {
+        @Override
+        public void run() throws Exception {
+          dismissProgress();
+        }
+      })
+      .subscribeOn(Schedulers.newThread())
+      .observeOn(AndroidSchedulers.mainThread())
+      .subscribe(new Consumer<Uri>() {
+        @Override
+        public void accept(@NonNull Uri uri) throws Exception {
+          ((RxActivity) getActivity()).startResultActivity(uri);
+        }
+      }, new Consumer<Throwable>() {
+        @Override
+        public void accept(@NonNull Throwable throwable)
+          throws Exception {
+        }
+      });
   }
 
   // Bind views //////////////////////////////////////////////////////////////////////////////////
@@ -208,7 +231,7 @@ public class RxFragment extends Fragment {
   public void pickImage() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
       startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"),
-          REQUEST_PICK_IMAGE);
+        REQUEST_PICK_IMAGE);
     } else {
       Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
       intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -219,16 +242,17 @@ public class RxFragment extends Fragment {
 
   public void showProgress() {
     ProgressDialogFragment f = ProgressDialogFragment.getInstance();
-    getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
+    getParentFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
   }
 
   public void dismissProgress() {
-    if (!isResumed()) return;
-    android.support.v4.app.FragmentManager manager = getFragmentManager();
-    if (manager == null) return;
+    if (!isResumed()) {
+      return;
+    }
+    FragmentManager manager = getParentFragmentManager();
     ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
     if (f != null) {
-      getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
+      getParentFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
     }
   }
 
@@ -256,12 +280,12 @@ public class RxFragment extends Fragment {
 
   public static Uri getUriFromDrawableResId(Context context, int drawableResId) {
     StringBuilder builder = new StringBuilder().append(ContentResolver.SCHEME_ANDROID_RESOURCE)
-        .append("://")
-        .append(context.getResources().getResourcePackageName(drawableResId))
-        .append("/")
-        .append(context.getResources().getResourceTypeName(drawableResId))
-        .append("/")
-        .append(context.getResources().getResourceEntryName(drawableResId));
+      .append("://")
+      .append(context.getResources().getResourcePackageName(drawableResId))
+      .append("/")
+      .append(context.getResources().getResourceTypeName(drawableResId))
+      .append("/")
+      .append(context.getResources().getResourceEntryName(drawableResId));
     return Uri.parse(builder.toString());
   }
 
@@ -305,7 +329,8 @@ public class RxFragment extends Fragment {
   // Handle button event /////////////////////////////////////////////////////////////////////////
 
   private final View.OnClickListener btnListener = new View.OnClickListener() {
-    @Override public void onClick(View v) {
+    @Override
+    public void onClick(View v) {
       switch (v.getId()) {
         case R.id.buttonDone:
           mDisposable.add(cropImage());

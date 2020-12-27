@@ -2,13 +2,13 @@ package com.example.simplecropviewsample;
 
 import android.content.Context;
 import android.graphics.Typeface;
-import android.support.v7.app.ActionBar;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.TypefaceSpan;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import androidx.appcompat.app.ActionBar;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;

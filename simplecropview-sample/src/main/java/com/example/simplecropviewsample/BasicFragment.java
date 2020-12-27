@@ -14,14 +14,16 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.StringRes;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import com.isseiaoki.simplecropview.CropImageView;
 import com.isseiaoki.simplecropview.callback.CropCallback;
 import com.isseiaoki.simplecropview.callback.LoadCallback;
@@ -72,7 +74,7 @@ import permissions.dispatcher.RuntimePermissions;
     return inflater.inflate(R.layout.fragment_basic, null, false);
   }
 
-  @Override public void onViewCreated(View view, Bundle savedInstanceState) {
+  @Override public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     // bind Views
     bindViews(view);
@@ -87,7 +89,7 @@ import permissions.dispatcher.RuntimePermissions;
 
     if (mSourceUri == null) {
       // default data
-      mSourceUri = getUriFromDrawableResId(getContext(), R.drawable.sample5);
+      mSourceUri = getUriFromDrawableResId(requireContext(), R.drawable.sample5);
       Log.e("aoki", "mSourceUri = "+mSourceUri);
     }
     // load image
@@ -97,7 +99,7 @@ import permissions.dispatcher.RuntimePermissions;
         .execute(mLoadCallback);
   }
 
-  @Override public void onSaveInstanceState(Bundle outState) {
+  @Override public void onSaveInstanceState(@NonNull Bundle outState) {
     super.onSaveInstanceState(outState);
     // save data
     outState.putParcelable(KEY_FRAME_RECT, mCropView.getActualCropRect());
@@ -154,6 +156,7 @@ import permissions.dispatcher.RuntimePermissions;
     view.findViewById(R.id.buttonShowCircleButCropAsSquare).setOnClickListener(btnListener);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
   @NeedsPermission(Manifest.permission.READ_EXTERNAL_STORAGE) public void pickImage() {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
       startActivityForResult(new Intent(Intent.ACTION_GET_CONTENT).setType("image/*"),
@@ -171,6 +174,7 @@ import permissions.dispatcher.RuntimePermissions;
     mCropView.crop(mSourceUri).execute(mCropCallback);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
   @OnShowRationale(Manifest.permission.READ_EXTERNAL_STORAGE)
   public void showRationaleForPick(PermissionRequest request) {
     showRationaleDialog(R.string.permission_pick_rationale, request);
@@ -183,16 +187,15 @@ import permissions.dispatcher.RuntimePermissions;
 
   public void showProgress() {
     ProgressDialogFragment f = ProgressDialogFragment.getInstance();
-    getFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
+    getParentFragmentManager().beginTransaction().add(f, PROGRESS_DIALOG).commitAllowingStateLoss();
   }
 
   public void dismissProgress() {
     if (!isResumed()) return;
-    android.support.v4.app.FragmentManager manager = getFragmentManager();
-    if (manager == null) return;
+    FragmentManager manager = getParentFragmentManager();
     ProgressDialogFragment f = (ProgressDialogFragment) manager.findFragmentByTag(PROGRESS_DIALOG);
     if (f != null) {
-      getFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
+      getParentFragmentManager().beginTransaction().remove(f).commitAllowingStateLoss();
     }
   }
 
@@ -272,7 +275,7 @@ import permissions.dispatcher.RuntimePermissions;
   }
 
   private void showRationaleDialog(@StringRes int messageResId, final PermissionRequest request) {
-    new AlertDialog.Builder(getActivity()).setPositiveButton(R.string.button_allow,
+    new AlertDialog.Builder(requireActivity()).setPositiveButton(R.string.button_allow,
         new DialogInterface.OnClickListener() {
           @Override public void onClick(@NonNull DialogInterface dialog, int which) {
             request.proceed();
@@ -290,7 +293,7 @@ import permissions.dispatcher.RuntimePermissions;
     @Override public void onClick(View v) {
       switch (v.getId()) {
         case R.id.buttonDone:
-          BasicFragmentPermissionsDispatcher.cropImageWithCheck(BasicFragment.this);
+          BasicFragmentPermissionsDispatcher.cropImageWithPermissionCheck(BasicFragment.this);
           break;
         case R.id.buttonFitImage:
           mCropView.setCropMode(CropImageView.CropMode.FIT_IMAGE);
@@ -329,7 +332,7 @@ import permissions.dispatcher.RuntimePermissions;
           mCropView.rotateImage(CropImageView.RotateDegrees.ROTATE_90D);
           break;
         case R.id.buttonPickImage:
-          BasicFragmentPermissionsDispatcher.pickImageWithCheck(BasicFragment.this);
+          BasicFragmentPermissionsDispatcher.pickImageWithPermissionCheck(BasicFragment.this);
           break;
       }
     }
