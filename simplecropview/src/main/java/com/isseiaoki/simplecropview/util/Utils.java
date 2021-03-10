@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static android.graphics.Bitmap.createBitmap;
 
@@ -277,15 +278,52 @@ import static android.graphics.Bitmap.createBitmap;
       }
       // DownloadsProvider
       else if (isDownloadsDocument(uri)) {
-        final String id = DocumentsContract.getDocumentId(uri);
-        // String "id" may not represent a valid Long type data, it may equals to
-        // something like "raw:/storage/emulated/0/Download/some_file" instead.
-        // Doing a check before passing the "id" to Long.valueOf(String) would be much safer.
-        if (RawDocumentsHelper.isRawDocId(id)) {
-          filePath = RawDocumentsHelper.getAbsoluteFilePath(id);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+          try (Cursor cursor = context.getContentResolver().query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+              String fileName = cursor.getString(0);
+              filePath = Environment.getExternalStorageDirectory().toString() + "/Download/" + fileName;
+              if (!TextUtils.isEmpty(filePath)) {
+                return new File(filePath);
+              }
+            }
+          }
+          String id = DocumentsContract.getDocumentId(uri);
+          if (!TextUtils.isEmpty(id)) {
+            if (id.startsWith("raw:")) {
+              id = id.replaceFirst("raw:", "");
+            }
+            String[] contentUriPrefixes = new String[]{
+                    "content://downloads/public_downloads",
+                    "content://downloads/my_downloads"
+            };
+            for (String contentUriPrefix : contentUriPrefixes) {
+              try {
+                final Uri contentUri = ContentUris.withAppendedId(Uri.parse(contentUriPrefix), Long.valueOf(id));
+
+                filePath = getDataColumn(context, contentUri, null, null);
+              } catch (NumberFormatException e) {
+                // Android 8 and above, the id is not a long value
+                filePath = Objects.requireNonNull(uri.getPath()).replaceFirst("^/document/raw:", "").replaceFirst("^raw:", "");
+              }
+            }
+          }
+
         } else {
-          final Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
-          filePath = getDataColumn(context, contentUri, null, null);
+          String id = DocumentsContract.getDocumentId(uri);
+          if (id.startsWith("raw:")) {
+            id = id.replaceFirst("raw:", "");
+          }
+          Uri contentUri = null;
+          try {
+            contentUri = ContentUris.withAppendedId(
+                    Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+          } catch (NumberFormatException ignored) {
+          }
+          if (contentUri != null) {
+            filePath = getDataColumn(context, contentUri, null, null);
+          }
         }
       }
       // MediaProvider
