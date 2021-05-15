@@ -1399,6 +1399,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   /**
+   * Flip Image.
+   * @param flipMode type of flip operation.
+   */
+  public void flipImage(FlipMode flipMode) {
+    switch (flipMode) {
+      case HORIZONTAL:
+        mMatrix.postScale(-1, 1);
+        break;
+      case VERTICAL:
+        mMatrix.postScale(1, -1);
+        break;
+      default:
+        throw new IllegalStateException("Unexpected value: " + flipMode);
+    }
+    updateLayout();
+  }
+
+  /**
    * Load image from Uri.
    * This method is deprecated. Use loadAsync(Uri, LoadCallback) instead.
    *
@@ -2354,6 +2372,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
     public int getId() {
       return ID;
     }
+  }
+
+  public enum FlipMode {
+    HORIZONTAL, VERTICAL
   }
 
   public enum ShowMode {
