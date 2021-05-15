@@ -1003,13 +1003,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   // Frame aspect ratio correction ///////////////////////////////////////////////////////////////
 
-  private void recalculateFrameRect(int durationMillis) {
+  private void recalculateFrameRect(int durationMillis, final RectF newRect) {
     if (mImageRect == null) return;
     if (mIsAnimating) {
       getAnimator().cancelAnimation();
     }
     final RectF currentRect = new RectF(mFrameRect);
-    final RectF newRect = calcFrameRect(mImageRect);
     final float diffL = newRect.left - currentRect.left;
     final float diffT = newRect.top - currentRect.top;
     final float diffR = newRect.right - currentRect.right;
@@ -1023,7 +1022,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
         @Override public void onAnimationUpdated(float scale) {
           mFrameRect = new RectF(currentRect.left + diffL * scale, currentRect.top + diffT * scale,
-              currentRect.right + diffR * scale, currentRect.bottom + diffB * scale);
+                  currentRect.right + diffR * scale, currentRect.bottom + diffB * scale);
           invalidate();
         }
 
@@ -1035,9 +1034,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
       });
       animator.startAnimation(durationMillis);
     } else {
-      mFrameRect = calcFrameRect(mImageRect);
+      mFrameRect = newRect;
       invalidate();
     }
+  }
+
+  private void recalculateFrameRect(int durationMillis) {
+    recalculateFrameRect(durationMillis, calcFrameRect(mImageRect));
   }
 
   private float getRatioX(float w) {
@@ -1958,6 +1961,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
       mCropMode = mode;
       recalculateFrameRect(durationMillis);
     }
+  }
+
+  /**
+   * Set frame rectangle
+   *
+   * @param newRect new frame rectangle relative to mImageRect
+   */
+  public void setFrameRect(RectF newRect) {
+    mCropMode = CropMode.FREE;
+    RectF absoluteRect = new RectF(
+            newRect.left + mImageRect.left, newRect.top + mImageRect.top,
+            newRect.right + mImageRect.left, newRect.bottom + mImageRect.top
+    );
+    recalculateFrameRect(mAnimationDurationMillis, absoluteRect);
   }
 
   /**
