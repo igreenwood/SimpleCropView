@@ -514,7 +514,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   private void setMatrix() {
     mMatrix.reset();
-    mMatrix.setTranslate(mCenter.x - mImgWidth * 0.5f, mCenter.y - mImgHeight * 0.5f);
+    mMatrix.setTranslate(mCenter.x - mImgWidth * mScale * 0.5f, mCenter.y - mImgHeight * mScale * 0.5f);
     mMatrix.postScale(mScale, mScale, mCenter.x, mCenter.y);
     mMatrix.postRotate(mAngle, mCenter.x, mCenter.y);
   }
