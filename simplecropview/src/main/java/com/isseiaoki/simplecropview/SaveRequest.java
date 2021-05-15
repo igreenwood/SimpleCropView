@@ -36,6 +36,11 @@ public class SaveRequest {
     }
   }
 
+  public void execute(Uri saveUri) {
+    build();
+    cropImageView.saveAsync(saveUri, image, null);
+  }
+
   public void execute(Uri saveUri, SaveCallback callback) {
     build();
     cropImageView.saveAsync(saveUri, image, callback);
