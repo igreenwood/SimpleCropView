@@ -539,8 +539,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   private float calcScale(int viewW, int viewH, float angle) {
-    mImgWidth = getDrawable().getIntrinsicWidth();
-    mImgHeight = getDrawable().getIntrinsicHeight();
+    if (getDrawable() != null) {
+      mImgWidth = getDrawable().getIntrinsicWidth();
+      mImgHeight = getDrawable().getIntrinsicHeight();
+    }
     if (mImgWidth <= 0) mImgWidth = viewW;
     if (mImgHeight <= 0) mImgHeight = viewH;
     float viewRatio = (float) viewW / (float) viewH;
