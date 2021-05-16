@@ -1250,6 +1250,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
   }
 
   private Rect calcCropRect(int originalImageWidth, int originalImageHeight) {
+    int imageW = Math.round(getRotatedWidth(mAngle, originalImageWidth, originalImageHeight));
+    int imageH = Math.round(getRotatedHeight(mAngle, originalImageWidth, originalImageHeight));
+
+    if (!mIsCropEnabled) {
+      return new Rect(0, 0, imageW, imageH);
+    }
     float scaleToOriginal =
         getRotatedWidth(mAngle, originalImageWidth, originalImageHeight) / mImageRect.width();
     float offsetX = mImageRect.left * scaleToOriginal;
@@ -1258,8 +1264,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
     int top = Math.round(mFrameRect.top * scaleToOriginal - offsetY);
     int right = Math.round(mFrameRect.right * scaleToOriginal - offsetX);
     int bottom = Math.round(mFrameRect.bottom * scaleToOriginal - offsetY);
-    int imageW = Math.round(getRotatedWidth(mAngle, originalImageWidth, originalImageHeight));
-    int imageH = Math.round(getRotatedHeight(mAngle, originalImageWidth, originalImageHeight));
     return new Rect(Math.max(left, 0), Math.max(top, 0), Math.min(right, imageW),
         Math.min(bottom, imageH));
   }
