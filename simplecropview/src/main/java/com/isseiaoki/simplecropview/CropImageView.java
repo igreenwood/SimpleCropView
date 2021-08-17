@@ -649,7 +649,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
       case RIGHT_BOTTOM:
         moveHandleRB(diffX, diffY);
         break;
+      case LEFT:
+        moveHandleLT(diffX, 0);
+        break;
+      case TOP:
+        moveHandleLT(0, diffY);
+        break;
+      case RIGHT:
+        moveHandleRB(diffX, 0);
+        break;
+      case BOTTOM:
+        moveHandleRB(0, diffY);
+        break;
       case OUT_OF_BOUNDS:
+        break;
+      default:
         break;
     }
     invalidate();
@@ -696,6 +710,35 @@ import java.util.concurrent.atomic.AtomicBoolean;
       if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
       return;
     }
+
+    if(isInsideLeft(x, y)){
+      mTouchArea = TouchArea.LEFT;
+      if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
+      if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
+      return;
+    }
+
+    if(isInsideTop(x, y)){
+      mTouchArea = TouchArea.TOP;
+      if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
+      if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
+      return;
+    }
+
+    if(isInsideRight(x, y)){
+      mTouchArea = TouchArea.RIGHT;
+      if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
+      if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
+      return;
+    }
+
+    if(isInsideBottom(x, y)){
+      mTouchArea = TouchArea.BOTTOM;
+      if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
+      if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
+      return;
+    }
+
     if (isInsideFrame(x, y)) {
       if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
       mTouchArea = TouchArea.CENTER;
@@ -740,6 +783,34 @@ import java.util.concurrent.atomic.AtomicBoolean;
     float dy = y - mFrameRect.bottom;
     float d = dx * dx + dy * dy;
     return sq(mHandleSize + mTouchPadding) >= d;
+  }
+
+  private boolean isInsideLeft(float x, float y){
+    float dx = x - mFrameRect.left;
+    float dyT = y - mFrameRect.top - mTouchPadding - mHandleSize;
+    float dyB = y - mFrameRect.bottom - mTouchPadding - mHandleSize;
+    return Math.abs(dx) < mTouchPadding && dyT > 0 && dyB < 0;
+  }
+
+  private boolean isInsideTop(float x, float y){
+    float dy = y - mFrameRect.top;
+    float dxL = x - mFrameRect.left - mTouchPadding - mHandleSize;
+    float dxR = x - mFrameRect.right - mTouchPadding - mHandleSize;
+    return Math.abs(dy) < mTouchPadding && dxL > 0 && dxR < 0;
+  }
+
+  private boolean isInsideRight(float x, float y){
+    float dx = x - mFrameRect.right;
+    float dyT = y - mFrameRect.top - mTouchPadding - mHandleSize;
+    float dyB = y - mFrameRect.bottom - mTouchPadding - mHandleSize;
+    return Math.abs(dx) < mTouchPadding && dyT > 0 && dyB < 0;
+  }
+
+  private boolean isInsideBottom(float x, float y){
+    float dy = y - mFrameRect.bottom;
+    float dxL = x - mFrameRect.left - mTouchPadding - mHandleSize;
+    float dxR = x - mFrameRect.right - mTouchPadding - mHandleSize;
+    return Math.abs(dy) < mTouchPadding && dxL > 0 && dxR < 0;
   }
 
   // Adjust frame ////////////////////////////////////////////////////////////////////////////////
@@ -2339,7 +2410,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   // Enum ////////////////////////////////////////////////////////////////////////////////////////
 
   private enum TouchArea {
-    OUT_OF_BOUNDS, CENTER, LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM
+    OUT_OF_BOUNDS, CENTER, LEFT_TOP, RIGHT_TOP, LEFT_BOTTOM, RIGHT_BOTTOM,LEFT,TOP,RIGHT,BOTTOM
   }
 
   public enum CropMode {

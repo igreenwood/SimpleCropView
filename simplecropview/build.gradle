@@ -105,6 +105,4 @@ artifacts {
   archives sourcesJar
 }
 
-task findConventions << {
-  println project.getConvention()
-}
+//t
