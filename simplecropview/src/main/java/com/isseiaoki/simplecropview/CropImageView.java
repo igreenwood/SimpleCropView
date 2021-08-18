@@ -145,6 +145,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private boolean mIsHandleShadowEnabled = true;
   private int mHandleStrokeColor;
   private int mHandleStrokeSize = 0;
+  private boolean mFrameSideDragging = false;
 
   // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -375,6 +376,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
           DEFAULT_ANIMATION_DURATION_MILLIS);
       mIsHandleShadowEnabled =
           ta.getBoolean(R.styleable.scv_CropImageView_scv_handle_shadow_enabled, true);
+      mFrameSideDragging =
+              ta.getBoolean(R.styleable.scv_CropImageView_scv_frame_side_dragging_enabled, true);
     } catch (Exception e) {
       e.printStackTrace();
     } finally {
@@ -521,7 +524,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   private void drawHandleStroke(Canvas canvas) {
     mPaintFrame.setStyle(Paint.Style.FILL);
-    mPaintFrame.setColor(WHITE);
+    mPaintFrame.setColor(mHandleStrokeColor);
     RectF rect = new RectF(mFrameRect);
     canvas.drawCircle(rect.left , rect.top , mHandleSize + mHandleStrokeSize, mPaintFrame);
     canvas.drawCircle(rect.right , rect.top, mHandleSize + mHandleStrokeSize, mPaintFrame);
@@ -728,28 +731,28 @@ import java.util.concurrent.atomic.AtomicBoolean;
       return;
     }
 
-    if(isInsideLeft(x, y)){
+    if(isInsideLeft(x, y) && mFrameSideDragging){
       mTouchArea = TouchArea.LEFT;
       if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
       if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
       return;
     }
 
-    if(isInsideTop(x, y)){
+    if(isInsideTop(x, y)  && mFrameSideDragging){
       mTouchArea = TouchArea.TOP;
       if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
       if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
       return;
     }
 
-    if(isInsideRight(x, y)){
+    if(isInsideRight(x, y)  && mFrameSideDragging){
       mTouchArea = TouchArea.RIGHT;
       if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
       if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;
       return;
     }
 
-    if(isInsideBottom(x, y)){
+    if(isInsideBottom(x, y) && mFrameSideDragging){
       mTouchArea = TouchArea.BOTTOM;
       if (mHandleShowMode == ShowMode.SHOW_ON_TOUCH) mShowHandle = true;
       if (mGuideShowMode == ShowMode.SHOW_ON_TOUCH) mShowGuide = true;

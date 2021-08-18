@@ -41,5 +41,6 @@
     <attr format="boolean" name="scv_animation_enabled"/>
     <attr format="integer" name="scv_animation_duration"/>
     <attr format="boolean" name="scv_handle_shadow_enabled"/>
+    <attr format="boolean" name="scv_frame_side_dragging_enabled"/>
   </declare-styleable>
 </resources>
