@@ -25,7 +25,8 @@
       custom:scv_min_frame_size="50dp"
       custom:scv_overlay_color="@color/overlay"
       custom:scv_touch_padding="8dp"
-      />
+      custom:scv_handle_stroke_size = "5dp"
+      custom:scv_handle_stroke_color = "#fd5c02"/>
 
   <View
       android:layout_width="match_parent"

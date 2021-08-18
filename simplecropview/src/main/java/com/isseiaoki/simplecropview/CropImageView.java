@@ -143,6 +143,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private boolean mIsAnimationEnabled = true;
   private int mAnimationDurationMillis = DEFAULT_ANIMATION_DURATION_MILLIS;
   private boolean mIsHandleShadowEnabled = true;
+  private int mHandleStrokeColor;
+  private int mHandleStrokeSize = 0;
 
   // Constructor /////////////////////////////////////////////////////////////////////////////////
 
@@ -209,6 +211,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     ss.guideStrokeWeight = this.mGuideStrokeWeight;
     ss.isCropEnabled = this.mIsCropEnabled;
     ss.handleColor = this.mHandleColor;
+    ss.handleColor = this.mHandleColor;
     ss.guideColor = this.mGuideColor;
     ss.initialFrameScale = this.mInitialFrameScale;
     ss.angle = this.mAngle;
@@ -251,6 +254,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     this.mGuideStrokeWeight = ss.guideStrokeWeight;
     this.mIsCropEnabled = ss.isCropEnabled;
     this.mHandleColor = ss.handleColor;
+    this.mHandleStrokeColor = ss.handleStrokeColor;
     this.mGuideColor = ss.guideColor;
     this.mInitialFrameScale = ss.initialFrameScale;
     this.mAngle = ss.angle;
@@ -332,6 +336,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
           ta.getColor(R.styleable.scv_CropImageView_scv_overlay_color, TRANSLUCENT_BLACK);
       mFrameColor = ta.getColor(R.styleable.scv_CropImageView_scv_frame_color, WHITE);
       mHandleColor = ta.getColor(R.styleable.scv_CropImageView_scv_handle_color, WHITE);
+      mHandleStrokeColor = ta.getColor(R.styleable.scv_CropImageView_scv_handle_stroke_color, WHITE);
       mGuideColor = ta.getColor(R.styleable.scv_CropImageView_scv_guide_color, TRANSLUCENT_WHITE);
       for (ShowMode mode : ShowMode.values()) {
         if (ta.getInt(R.styleable.scv_CropImageView_scv_guide_show_mode, 1) == mode.getId()) {
@@ -350,6 +355,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       setHandleShowMode(mHandleShowMode);
       mHandleSize = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_handle_size,
           (int) (HANDLE_SIZE_IN_DP * mDensity));
+      mHandleStrokeSize = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_handle_stroke_size, 0);
       mTouchPadding = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_touch_padding, 0);
       mMinFrameSize = ta.getDimensionPixelSize(R.styleable.scv_CropImageView_scv_min_frame_size,
           (int) (MIN_FRAME_SIZE_IN_DP * mDensity));
@@ -493,6 +499,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
   private void drawHandles(Canvas canvas) {
     if (mIsHandleShadowEnabled) drawHandleShadows(canvas);
+    if (mHandleStrokeSize != 0) drawHandleStroke(canvas);
     mPaintFrame.setStyle(Paint.Style.FILL);
     mPaintFrame.setColor(mHandleColor);
     canvas.drawCircle(mFrameRect.left, mFrameRect.top, mHandleSize, mPaintFrame);
@@ -510,6 +517,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
     canvas.drawCircle(rect.right, rect.top, mHandleSize, mPaintFrame);
     canvas.drawCircle(rect.left, rect.bottom, mHandleSize, mPaintFrame);
     canvas.drawCircle(rect.right, rect.bottom, mHandleSize, mPaintFrame);
+  }
+
+  private void drawHandleStroke(Canvas canvas) {
+    mPaintFrame.setStyle(Paint.Style.FILL);
+    mPaintFrame.setColor(WHITE);
+    RectF rect = new RectF(mFrameRect);
+    canvas.drawCircle(rect.left , rect.top , mHandleSize + mHandleStrokeSize, mPaintFrame);
+    canvas.drawCircle(rect.right , rect.top, mHandleSize + mHandleStrokeSize, mPaintFrame);
+    canvas.drawCircle(rect.left , rect.bottom , mHandleSize + mHandleStrokeSize, mPaintFrame);
+    canvas.drawCircle(rect.right , rect.bottom, mHandleSize + mHandleStrokeSize, mPaintFrame);
   }
 
   private void setMatrix() {
@@ -2467,6 +2484,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     boolean showGuide;
     boolean showHandle;
     int handleSize;
+    int handleStrokeSize;
     int touchPadding;
     float minFrameSize;
     float customRatioX;
@@ -2475,6 +2493,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
     float guideStrokeWeight;
     boolean isCropEnabled;
     int handleColor;
+    int handleStrokeColor;
     int guideColor;
     float initialFrameScale;
     float angle;
@@ -2511,6 +2530,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       showGuide = (in.readInt() != 0);
       showHandle = (in.readInt() != 0);
       handleSize = in.readInt();
+      handleStrokeSize = in.readInt();
       touchPadding = in.readInt();
       minFrameSize = in.readFloat();
       customRatioX = in.readFloat();
@@ -2519,6 +2539,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       guideStrokeWeight = in.readFloat();
       isCropEnabled = (in.readInt() != 0);
       handleColor = in.readInt();
+      handleStrokeColor = in.readInt();
       guideColor = in.readInt();
       initialFrameScale = in.readFloat();
       angle = in.readFloat();
@@ -2552,6 +2573,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       out.writeInt(showGuide ? 1 : 0);
       out.writeInt(showHandle ? 1 : 0);
       out.writeInt(handleSize);
+      out.writeInt(handleStrokeSize);
       out.writeInt(touchPadding);
       out.writeFloat(minFrameSize);
       out.writeFloat(customRatioX);
@@ -2560,6 +2582,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
       out.writeFloat(guideStrokeWeight);
       out.writeInt(isCropEnabled ? 1 : 0);
       out.writeInt(handleColor);
+      out.writeInt(handleStrokeColor);
       out.writeInt(guideColor);
       out.writeFloat(initialFrameScale);
       out.writeFloat(angle);
