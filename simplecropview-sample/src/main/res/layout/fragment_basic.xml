@@ -17,15 +17,17 @@
       custom:scv_frame_color="@color/colorAccent"
       custom:scv_frame_stroke_weight="1dp"
       custom:scv_guide_color="@color/colorAccent"
-      custom:scv_guide_show_mode="show_always"
+      custom:scv_guide_show_mode="show_on_touch"
       custom:scv_guide_stroke_weight="1dp"
       custom:scv_handle_color="@color/colorAccent"
       custom:scv_handle_show_mode="show_always"
-      custom:scv_handle_size="14dp"
+      custom:scv_handle_size="6dp"
       custom:scv_min_frame_size="50dp"
       custom:scv_overlay_color="@color/overlay"
       custom:scv_touch_padding="8dp"
-      />
+      custom:scv_handle_stroke_size = "5dp"
+      custom:scv_handle_stroke_color = "#fd5c02"
+      custom:scv_frame_side_dragging_enabled = "false"/>
 
   <View
       android:layout_width="match_parent"
